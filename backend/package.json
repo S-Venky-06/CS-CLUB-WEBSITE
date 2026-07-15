@@ -1,0 +1,15 @@
+{
+  "name": "cs-club-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Express.js backend for the Cybersecurity Club website — Google OAuth + Google Sheets API.",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
