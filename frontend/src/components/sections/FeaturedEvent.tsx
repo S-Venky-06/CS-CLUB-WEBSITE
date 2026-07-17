@@ -18,6 +18,15 @@ export default function FeaturedEvent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [eventDetails, setEventDetails] = useState({
+    title: "New Club Members Registration — For Juniors",
+    description: "Calling all juniors! Join the Cybersecurity Club of GCET to learn more about CTF, Cybersecurity and many more. No prior experience is required just curiosity and a passion for technology. Sign up!!!!",
+    dateLabel: "Open Now",
+    location: "Online Registration",
+    warningNote: "Note : Only 2nd Years Can Register.",
+    status: "active",
+  });
+
   const getWordCount = (text: string) => {
     const normalized = text.replace(/[\s\r\n\t\u00a0\u2000-\u200b\u2028\u2029]+/g, " ");
     return normalized.trim().split(" ").filter(Boolean).length;
@@ -53,6 +62,48 @@ export default function FeaturedEvent() {
 
     checkRegistration();
   }, [user]);
+
+  // Fetch featured event dynamic details
+  useEffect(() => {
+    const fetchFeaturedEvent = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/featured`);
+        const json = await res.json();
+        if (res.ok && json.success && json.data) {
+          const event = json.data;
+          
+          const formattedDate = new Date(event.date).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          let cleanDesc = event.description || "";
+          let note = "";
+          const noteIndex = cleanDesc.toLowerCase().indexOf("note :");
+          if (noteIndex !== -1) {
+            note = cleanDesc.substring(noteIndex);
+            cleanDesc = cleanDesc.substring(0, noteIndex).trim();
+          }
+
+          setEventDetails({
+            title: event.title,
+            description: cleanDesc,
+            dateLabel: formattedDate,
+            location: event.location || "Online Registration",
+            warningNote: note,
+            status: event.status || "active",
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to load featured event details, using fallbacks:", err);
+      }
+    };
+
+    fetchFeaturedEvent();
+  }, []);
 
   const handleRegister = async () => {
     if (!user) {
@@ -169,13 +220,13 @@ export default function FeaturedEvent() {
           {/* Content */}
           <div className="p-6 sm:p-8">
             <h3 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-3">
-              New Club Members Registration — For Juniors
+              {eventDetails.title}
             </h3>
 
             <div className="flex flex-wrap gap-4 sm:gap-6 mb-5">
               <div className="flex items-center gap-2 text-sm text-muted">
                 <Calendar className="w-4 h-4 text-secondary" />
-                <span>Open Now</span>
+                <span>{eventDetails.dateLabel}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted">
                 <Clock className="w-4 h-4 text-secondary" />
@@ -183,19 +234,28 @@ export default function FeaturedEvent() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted">
                 <MapPin className="w-4 h-4 text-secondary" />
-                <span>Online Registration</span>
+                <span>{eventDetails.location}</span>
               </div>
             </div>
 
             <p className="text-muted text-sm sm:text-base leading-relaxed mb-6">
-              Calling all juniors! Join the Cybersecurity Club of GCET to jumpstart your
-              journey into ethical hacking, digital forensics, and network defense. No prior
-              experience is required—just curiosity and a passion for technology. Sign up
-              now to access exclusive workshops, training sessions, and CTF challenges.
+              {eventDetails.description}
+              {eventDetails.warningNote && (
+                <span className="block mt-2 text-red-500 font-semibold">
+                  {eventDetails.warningNote}
+                </span>
+              )}
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              {isRegistered ? (
+              {eventDetails.status !== "active" ? (
+                <button
+                  disabled
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-glass-border/15 border border-glass-border/30 text-muted font-semibold text-sm transition-all duration-300 opacity-60 cursor-not-allowed"
+                >
+                  Registration Closed
+                </button>
+              ) : isRegistered ? (
                 <button
                   disabled
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold text-sm transition-all duration-300"
@@ -229,12 +289,6 @@ export default function FeaturedEvent() {
                   )}
                 </button>
               )}
-              <a
-                href="#"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-glass-border text-muted hover:text-foreground hover:border-secondary/30 font-medium text-sm transition-all duration-300"
-              >
-                Learn More
-              </a>
             </div>
 
             {errorMessage && (

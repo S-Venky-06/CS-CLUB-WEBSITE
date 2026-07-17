@@ -26,6 +26,7 @@ interface Event {
   capacity: number;
   deadline: string;
   status: "active" | "cancelled" | "completed";
+  location?: string;
 }
 
 export default function EventsManagement() {
@@ -47,6 +48,7 @@ export default function EventsManagement() {
   const [capacity, setCapacity] = useState("");
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState<"active" | "cancelled" | "completed">("active");
+  const [location, setLocation] = useState("");
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -83,6 +85,7 @@ export default function EventsManagement() {
     setCapacity("");
     setDeadline("");
     setStatus("active");
+    setLocation("");
     setErrorMessage("");
     setIsModalOpen(true);
   };
@@ -97,6 +100,7 @@ export default function EventsManagement() {
     setCapacity(String(event.capacity));
     setDeadline(new Date(event.deadline).toISOString().substring(0, 16));
     setStatus(event.status);
+    setLocation(event.location || "");
     setErrorMessage("");
     setIsModalOpen(true);
   };
@@ -115,6 +119,7 @@ export default function EventsManagement() {
       capacity: parseInt(capacity, 10),
       deadline: new Date(deadline).toISOString(),
       status,
+      location: location.trim(),
     };
 
     try {
@@ -243,6 +248,12 @@ export default function EventsManagement() {
                     <td className="p-4">
                       <div className="font-semibold text-sm text-foreground">{event.title}</div>
                       <div className="text-xs text-muted truncate max-w-xs">{event.description}</div>
+                      {event.location && (
+                        <div className="text-[10px] text-accent/90 mt-1 font-semibold flex items-center gap-1">
+                          <span>📍</span>
+                          <span>{event.location}</span>
+                        </div>
+                      )}
                     </td>
                     <td className="p-4 text-xs text-muted">
                       {new Date(event.date).toLocaleDateString(undefined, {
@@ -448,6 +459,21 @@ export default function EventsManagement() {
                     value={capacity}
                     onChange={(e) => setCapacity(e.target.value)}
                     placeholder="E.g., 50"
+                    className="w-full px-4.5 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Event Location / Format
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="E.g., Online Registration or Seminar Hall A"
                     className="w-full px-4.5 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
                   />
                 </div>

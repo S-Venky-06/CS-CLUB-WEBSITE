@@ -53,6 +53,10 @@ export const eventSchema = z.object({
     required_error: "status is required.",
     invalid_type_error: "status must be either active, cancelled, or completed.",
   }),
+  location: z
+    .string()
+    .max(100, "Location cannot exceed 100 characters.")
+    .optional(),
 });
 
 export type EventInput = z.infer<typeof eventSchema>;

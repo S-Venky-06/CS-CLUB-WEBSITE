@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getHealth } from "../controllers/index.js";
-import { getPublicAnnouncements } from "../controllers/admin.controller.js";
+import { getPublicAnnouncements, getFeaturedEvent } from "../controllers/admin.controller.js";
 import authRoutes from "./auth.routes.js";
 import registrationRoutes from "./registration.routes.js";
 import adminRoutes from "./admin.routes.js";
@@ -12,6 +12,9 @@ router.get("/health", getHealth);
 
 /** Public Announcements list */
 router.get("/announcements", getPublicAnnouncements);
+
+/** Public Featured Event details */
+router.get("/events/featured", getFeaturedEvent);
 
 /** Mount /api/v1/auth/* endpoints */
 router.use("/auth", authRoutes);

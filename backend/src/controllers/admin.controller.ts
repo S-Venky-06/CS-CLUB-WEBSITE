@@ -485,3 +485,17 @@ export const getPublicAnnouncements = asyncHandler(
   },
 );
 
+/**
+ * GET /api/v1/events/featured (Public)
+ * Retrieves details of the featured live event (ID: evt-01).
+ */
+export const getFeaturedEvent = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    const event = await findEventById("evt-01");
+    if (!event) {
+      throw new ApiError(HttpStatus.NOT_FOUND, "Featured event was not configured in Google Sheets.");
+    }
+    sendResponse(res, HttpStatus.OK, "Featured event details retrieved successfully.", event);
+  },
+);
+

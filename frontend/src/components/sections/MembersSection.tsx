@@ -117,15 +117,6 @@ const coreTeam: Member[] = [
     instagram: "https://www.instagram.com/_padmavathipranathi/",
   },
   {
-    name: "Sai Lasya",
-    role: "Core Member",
-    specialty: "",
-    initials: "SL",
-    image: "/members/core3.png",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
     name: "Harsh Jha",
     role: "Core Member",
     specialty: "",

@@ -6,6 +6,7 @@ export interface Event {
   capacity: number;
   deadline: string;
   status: "active" | "cancelled" | "completed";
+  location?: string;
 }
 
 export interface Registration {

@@ -12,7 +12,7 @@ export async function findEventById(eventId: string): Promise<Event | null> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:G500",
+    range: "Events!A2:H500",
   });
 
   const rows = response.data.values;
@@ -29,6 +29,7 @@ export async function findEventById(eventId: string): Promise<Event | null> {
     capacity: parseInt(match[4] || "0", 10),
     deadline: match[5] || "",
     status: (match[6] || "active") as "active" | "cancelled" | "completed",
+    location: match[7] || "",
   };
 }
 
@@ -40,7 +41,7 @@ export async function findAllEvents(): Promise<Event[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:G500",
+    range: "Events!A2:H500",
   });
 
   const rows = response.data.values;
@@ -56,6 +57,7 @@ export async function findAllEvents(): Promise<Event[]> {
       capacity: parseInt(row[4] || "0", 10),
       deadline: row[5] || "",
       status: (row[6] || "active") as "active" | "cancelled" | "completed",
+      location: row[7] || "",
     }));
 }
 
@@ -74,12 +76,13 @@ export async function createEvent(event: Event): Promise<void> {
       String(event.capacity),
       event.deadline,
       event.status,
+      event.location || "",
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:G2",
+    range: "Events!A2:H2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -99,7 +102,7 @@ export async function updateEvent(
   // 1. Fetch current rows to locate row index
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:G500",
+    range: "Events!A2:H500",
   });
 
   const rows = response.data.values;
@@ -124,12 +127,13 @@ export async function updateEvent(
     updates.capacity !== undefined ? String(updates.capacity) : (match[4] || "0"),
     updates.deadline !== undefined ? updates.deadline : (match[5] || ""),
     updates.status !== undefined ? updates.status : (match[6] || "active"),
+    updates.location !== undefined ? updates.location : (match[7] || ""),
   ];
 
   // 3. Write back to the targeted row
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: `Events!A${rowIndex}:G${rowIndex}`,
+    range: `Events!A${rowIndex}:H${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
       values: [updatedRow],
