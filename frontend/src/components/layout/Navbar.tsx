@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell, Clock } from "lucide-react";
 import Image from "next/image";
 
 const navLinks = [
@@ -13,10 +13,20 @@ const navLinks = [
   { label: "About", href: "#about" },
 ];
 
+const initialNotifications: {
+  id: number;
+  title: string;
+  description: string;
+  time: string;
+  unread: boolean;
+}[] = [];
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("Home");
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const pathname = usePathname();
 
   const getHref = (href: string) => {
@@ -147,6 +157,91 @@ export default function Navbar() {
 
           {/* Right — CTA + Mobile Toggle */}
           <div className="flex items-center gap-3">
+            {/* Notifications Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="relative p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface border border-transparent hover:border-glass-border transition-all duration-200 cursor-pointer"
+                aria-label="View notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.some(n => n.unread) && (
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <>
+                    {/* Backdrop to close dropdown on click outside */}
+                    <div 
+                      className="fixed inset-0 z-40 cursor-default" 
+                      onClick={() => setIsNotifOpen(false)} 
+                    />
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute right-0 mt-3.5 w-80 sm:w-96 rounded-2xl bg-[#13131A]/95 backdrop-blur-xl border border-glass-border z-50 p-4 shadow-2xl shadow-primary/10 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between pb-3 border-b border-glass-border">
+                        <span className="font-heading font-bold text-sm text-foreground">
+                          Latest Updates
+                        </span>
+                        {notifications.some(n => n.unread) && (
+                          <button
+                            onClick={() => {
+                              setNotifications(notifications.map(n => ({ ...n, unread: false })));
+                            }}
+                            className="text-xs text-accent hover:underline font-semibold cursor-pointer"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="mt-3 space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                        {notifications.length === 0 ? (
+                          <div className="text-center py-6 text-sm text-muted">
+                            No notifications yet.
+                          </div>
+                        ) : (
+                          notifications.map((notif) => (
+                            <div
+                              key={notif.id}
+                              className={`p-3 rounded-xl border transition-all duration-200 ${
+                                notif.unread
+                                  ? "bg-primary/10 border-primary/20 hover:bg-primary/15"
+                                  : "bg-surface/30 border-transparent hover:bg-surface/50"
+                              }`}
+                            >
+                              <div className="flex justify-between items-start gap-2 mb-1">
+                                <h4 className="font-heading text-xs font-semibold text-foreground">
+                                  {notif.title}
+                                </h4>
+                                {notif.unread && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1" />
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted leading-relaxed mb-2">
+                                {notif.description}
+                              </p>
+                              <div className="flex items-center gap-1.5 text-[9px] text-muted/60">
+                                <Clock className="w-3 h-3" />
+                                <span>{notif.time}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
             <a
               href="#"
               className="hidden md:inline-flex items-center px-5 py-2 text-sm font-semibold rounded-lg bg-accent text-white hover:brightness-110 transition-all duration-200 shadow-lg shadow-accent/20 hover:shadow-accent/40"

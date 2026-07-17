@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -157,7 +158,7 @@ const coreTeam: Member[] = [
 function MemberCard({
   member,
   isLeadership = false,
-  priority = false,
+  priority = true,
 }: {
   member: Member;
   isLeadership?: boolean;
@@ -297,7 +298,7 @@ export default function MembersSection() {
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 * i }}
               >
-                <MemberCard member={member} isLeadership={true} priority={i === 0} />
+                <MemberCard member={member} isLeadership={true} priority={true} />
               </motion.div>
             ))}
           </div>
