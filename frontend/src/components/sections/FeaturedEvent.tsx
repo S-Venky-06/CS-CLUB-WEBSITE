@@ -15,8 +15,11 @@ export default function FeaturedEvent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [motivationText, setMotivationText] = useState("");
+  const [phone, setPhone] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const isValidPhone = /^[0-9]{10}$/.test(phone);
 
   const [eventDetails, setEventDetails] = useState({
     title: "New Club Members Registration — For Juniors",
@@ -127,6 +130,7 @@ export default function FeaturedEvent() {
           eventId: "evt-01",
           name: userName,
           motivation: motivationText,
+          phone,
         }),
       });
 
@@ -136,6 +140,7 @@ export default function FeaturedEvent() {
         setIsRegistered(true);
         setSuccessMessage("You are successfully registered for the Junior Registration!");
         setMotivationText("");
+        setPhone("");
         setIsModalOpen(false);
         setTimeout(() => setSuccessMessage(""), 5000);
       } else {
@@ -358,6 +363,25 @@ export default function FeaturedEvent() {
                 </div>
 
                 <div>
+                  <label htmlFor="modal-phone" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Mobile Number
+                  </label>
+                  <input
+                    id="modal-phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
+                    placeholder="Enter 10-digit mobile number"
+                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  {!isValidPhone && phone.length > 0 && (
+                    <span className="text-[10px] text-red-400 mt-1 block">
+                      Mobile number must be exactly 10 digits.
+                    </span>
+                  )}
+                </div>
+
+                <div>
                   <label htmlFor="modal-motivation" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
                     Why do you want to join this club?
                   </label>
@@ -392,7 +416,7 @@ export default function FeaturedEvent() {
                 </button>
                 <button
                   onClick={handleRegister}
-                  disabled={isRegistering || !isValidMotivation || !isValidName}
+                  disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   {isRegistering ? (

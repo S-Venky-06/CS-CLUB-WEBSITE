@@ -14,7 +14,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:G10000",
+    range: "Registrations!A2:H10000",
   });
 
   const rows = response.data.values;
@@ -35,6 +35,7 @@ export async function findRegistration(
     registeredAt: match[4] || "",
     attended: match[5] === "TRUE",
     motivation: match[6] || "",
+    phone: match[7] || "",
   };
 }
 
@@ -55,12 +56,13 @@ export async function createRegistration(
       registration.registeredAt,
       "FALSE", // Attended defaults to false
       registration.motivation,
+      registration.phone || "",
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:G2",
+    range: "Registrations!A2:H2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -94,7 +96,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:G10000",
+    range: "Registrations!A2:H10000",
   });
 
   const rows = response.data.values;
@@ -110,6 +112,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       registeredAt: row[4] || "",
       attended: row[5] === "TRUE",
       motivation: row[6] || "",
+      phone: row[7] || "",
     }));
 }
 
@@ -121,7 +124,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:G10000",
+    range: "Registrations!A2:H10000",
   });
 
   const rows = response.data.values;
@@ -137,6 +140,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       registeredAt: row[4] || "",
       attended: row[5] === "TRUE",
       motivation: row[6] || "",
+      phone: row[7] || "",
     }));
 }
 
@@ -152,7 +156,7 @@ export async function updateAttendance(
   // 1. Fetch current rows to locate row index
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:G10000",
+    range: "Registrations!A2:H10000",
   });
 
   const rows = response.data.values;

@@ -17,6 +17,7 @@ export async function registerForEvent(
   email: string,
   name: string,
   motivation: string,
+  phone: string,
 ): Promise<Omit<Registration, "attended">> {
   // 1. Check if event exists (throws 404 if not)
   const event = await getEventDetails(eventId);
@@ -69,6 +70,7 @@ export async function registerForEvent(
     name,
     registeredAt,
     motivation,
+    phone,
   };
 
   // 7. Write to storage (Google Sheets)

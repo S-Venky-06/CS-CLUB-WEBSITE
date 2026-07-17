@@ -17,6 +17,7 @@ export interface Registration {
   registeredAt: string;
   attended: boolean;
   motivation: string;
+  phone: string;
 }
 
 export interface Member {

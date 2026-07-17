@@ -26,6 +26,7 @@ interface Registration {
   registeredAt: string;
   attended: boolean;
   motivation: string;
+  phone?: string;
 }
 
 interface Event {
@@ -144,12 +145,13 @@ export default function RegistrationsManagement() {
     if (filteredRegistrations.length === 0) return;
 
     // Map rows
-    const headers = ["Registration ID", "Event ID", "Name", "Email", "Registered At", "Attended"];
+    const headers = ["Registration ID", "Event ID", "Name", "Email", "Mobile Number", "Registered At", "Attended Status"];
     const rows = filteredRegistrations.map((reg) => [
       reg.registrationId,
       reg.eventId,
       reg.name,
       reg.email,
+      reg.phone || "",
       new Date(reg.registeredAt).toISOString(),
       reg.attended ? "TRUE" : "FALSE",
     ]);
@@ -195,13 +197,14 @@ export default function RegistrationsManagement() {
     doc.text(`Total Count: ${totalCount} | Checked In: ${attendedCount} | Attendance Rate: ${checkInRate}%`, 14, 39);
 
     // Map table content
-    const tableColumns = ["Reg ID", "Student Name", "Student Email", "Target Event", "Attendance Status"];
+    const tableColumns = ["Reg ID", "Student Name", "Student Email", "Mobile Number", "Target Event", "Attendance Status"];
     const tableRows = filteredRegistrations.map((reg) => {
       const targetEventTitle = events.find(e => e.eventId === reg.eventId)?.title || reg.eventId;
       return [
         reg.registrationId,
         reg.name,
         reg.email,
+        reg.phone || "",
         targetEventTitle,
         reg.attended ? "Attended" : "Absent",
       ];
@@ -383,9 +386,14 @@ export default function RegistrationsManagement() {
                 {filteredRegistrations.map((reg) => (
                   <tr key={reg.registrationId} className="hover:bg-surface/10 transition-colors">
                     <td className="p-4 text-xs font-mono font-bold text-primary">{reg.registrationId}</td>
-                    <td className="p-4">
+                     <td className="p-4">
                       <div className="font-semibold text-sm text-foreground">{reg.name}</div>
                       <div className="text-xs text-muted truncate max-w-xs">{reg.email}</div>
+                      {reg.phone && (
+                        <div className="text-[10px] text-accent font-semibold font-mono mt-0.5">
+                          📞 {reg.phone}
+                        </div>
+                      )}
                     </td>
                     <td className="p-4 text-xs font-semibold text-foreground">
                       {events.find(e => e.eventId === reg.eventId)?.title || reg.eventId}

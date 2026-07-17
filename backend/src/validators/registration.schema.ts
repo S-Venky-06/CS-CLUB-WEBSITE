@@ -38,6 +38,12 @@ export const eventRegistrationSchema = z.object({
       },
       { message: "Motivation cannot exceed 2000 words." }
     ),
+  phone: z
+    .string({
+      required_error: "phone is required.",
+      invalid_type_error: "phone must be a string.",
+    })
+    .regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits."),
 });
 
 export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;

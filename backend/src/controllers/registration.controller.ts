@@ -9,11 +9,11 @@ import { HttpStatus } from "../constants/index.js";
  */
 export const postRegistration = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { eventId, motivation, name: customName } = req.body;
+    const { eventId, motivation, name: customName, phone } = req.body;
     const { email, name: sessionName } = req.session!.user!; // Ensured by requireAuth middleware
     const displayName = customName || sessionName;
 
-    const registration = await registerForEvent(eventId, email, displayName, motivation);
+    const registration = await registerForEvent(eventId, email, displayName, motivation, phone);
 
     sendResponse(
       res,
