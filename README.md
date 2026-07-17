@@ -55,8 +55,8 @@ cd backend
 |------------|-----------------------------------|---------|
 | Frontend   | Next.js, React, TypeScript, Tailwind CSS, Framer Motion | Vercel |
 | Backend    | Express.js, TypeScript            | Render  |
-| Auth       | Google OAuth 2.0                  | —       |
-| Data       | Google Sheets API                 | —       |
+| Auth       | Google OAuth 2.0                  | Completed |
+| Data       | Google Sheets API                 | Completed |
 
 ## License
 
