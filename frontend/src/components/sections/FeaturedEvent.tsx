@@ -1,12 +1,103 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { Calendar, Clock, MapPin, ArrowRight } from "lucide-react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function FeaturedEvent() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  const { user } = useAuth();
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [motivationText, setMotivationText] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const getWordCount = (text: string) => {
+    const normalized = text.replace(/[\s\r\n\t\u00a0\u2000-\u200b\u2028\u2029]+/g, " ");
+    return normalized.trim().split(" ").filter(Boolean).length;
+  };
+  const wordCount = getWordCount(motivationText);
+  const isValidMotivation = wordCount >= 10 && wordCount <= 2000;
+  const isValidName = userName.trim().length > 0;
+
+  useEffect(() => {
+    if (!user) {
+      setIsRegistered(false);
+      setUserName("");
+      return;
+    }
+    setUserName(user.name);
+
+    const checkRegistration = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations/me`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            const registered = json.data.some((reg: any) => reg.eventId === "evt-01");
+            setIsRegistered(registered);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking registration:", err);
+      }
+    };
+
+    checkRegistration();
+  }, [user]);
+
+  const handleRegister = async () => {
+    if (!user) {
+      setErrorMessage("Please sign in with Google in the top navigation menu to register.");
+      setTimeout(() => setErrorMessage(""), 5000);
+      return;
+    }
+
+    setIsRegistering(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          eventId: "evt-01",
+          name: userName,
+          motivation: motivationText,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (res.status === 201 || res.status === 409) {
+        setIsRegistered(true);
+        setSuccessMessage("You are successfully registered for the Junior Registration!");
+        setMotivationText("");
+        setIsModalOpen(false);
+        setTimeout(() => setSuccessMessage(""), 5000);
+      } else {
+        setErrorMessage(json.message || "Registration failed. Please try again.");
+        setTimeout(() => setErrorMessage(""), 5000);
+      }
+    } catch (err) {
+      setErrorMessage("Could not connect to the server. Please try again later.");
+      setTimeout(() => setErrorMessage(""), 5000);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   return (
     <section id="events" className="relative py-24 sm:py-32" ref={ref}>
@@ -97,20 +188,47 @@ export default function FeaturedEvent() {
             </div>
 
             <p className="text-muted text-sm sm:text-base leading-relaxed mb-6">
-              Calling all juniors! Join the Cybersecurity Club of GCET to jumpstart your 
-              journey into ethical hacking, digital forensics, and network defense. No prior 
-              experience is required—just curiosity and a passion for technology. Sign up 
+              Calling all juniors! Join the Cybersecurity Club of GCET to jumpstart your
+              journey into ethical hacking, digital forensics, and network defense. No prior
+              experience is required—just curiosity and a passion for technology. Sign up
               now to access exclusive workshops, training sessions, and CTF challenges.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a
-                href="#"
-                className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:brightness-110 transition-all duration-300"
-              >
-                Register Now
-                <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-              </a>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {isRegistered ? (
+                <button
+                  disabled
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold text-sm transition-all duration-300"
+                >
+                  <Check className="w-4 h-4" />
+                  Registered
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      setErrorMessage("Please sign in with Google in the top navigation menu to register.");
+                      setTimeout(() => setErrorMessage(""), 5000);
+                    } else {
+                      setIsModalOpen(true);
+                    }
+                  }}
+                  disabled={isRegistering}
+                  className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer"
+                >
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    <>
+                      Register Now
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              )}
               <a
                 href="#"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-glass-border text-muted hover:text-foreground hover:border-secondary/30 font-medium text-sm transition-all duration-300"
@@ -118,9 +236,128 @@ export default function FeaturedEvent() {
                 Learn More
               </a>
             </div>
+
+            {errorMessage && (
+              <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+                <Check className="w-4 h-4 flex-shrink-0" />
+                <span>{successMessage}</span>
+              </div>
+            )}
           </div>
         </motion.article>
       </div>
+
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-[#0B0B0F]/80 backdrop-blur-md cursor-default"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-lg rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
+            >
+              <h4 className="font-heading text-xl sm:text-2xl font-bold text-foreground mb-6">
+                Confirm Event Registration
+              </h4>
+
+              <div className="space-y-5 mb-8">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Email Address (Google Account)
+                  </label>
+                  <div className="w-full px-4 py-3 rounded-xl bg-surface/30 border border-glass-border text-muted text-sm select-none">
+                    {user?.email}
+                  </div>
+                  <span className="text-[10px] text-muted/60 mt-1 block">
+                    * This email is locked to your secure session.
+                  </span>
+                </div>
+
+                <div>
+                  <label htmlFor="modal-name" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Display Name
+                  </label>
+                  <input
+                    id="modal-name"
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="modal-motivation" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Why do you want to join this club?
+                  </label>
+                  <textarea
+                    id="modal-motivation"
+                    rows={4}
+                    value={motivationText}
+                    onChange={(e) => setMotivationText(e.target.value)}
+                    placeholder="Write a few sentences describing your motivation to join..."
+                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    <span className={`text-[10px] font-semibold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {wordCount < 10
+                        ? `At least 10 words required (Current: ${wordCount})`
+                        : `${wordCount} words`
+                      }
+                    </span>
+                    <span className="text-[10px] text-muted/60">
+                      Max 2000 words
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-glass-border pt-4">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-glass-border text-muted hover:text-foreground hover:bg-surface/50 text-sm font-medium transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRegister}
+                  disabled={isRegistering || !isValidMotivation || !isValidName}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    <>
+                      Confirm & Register
+                      <Check className="w-4.5 h-4.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

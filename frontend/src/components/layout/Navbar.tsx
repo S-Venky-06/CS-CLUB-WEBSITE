@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Bell, Clock } from "lucide-react";
+import { Menu, X, Bell, Clock, LogOut, Shield, User } from "lucide-react";
 import Image from "next/image";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { GoogleLogin } from "@react-oauth/google";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -14,7 +16,7 @@ const navLinks = [
 ];
 
 const initialNotifications: {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   time: string;
@@ -27,11 +29,61 @@ export default function Navbar() {
   const [activeLink, setActiveLink] = useState("Home");
   const [notifications, setNotifications] = useState(initialNotifications);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
+  // Fetch active notifications/announcements
+  useEffect(() => {
+    const fetchActiveAnnouncements = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/announcements`);
+        const json = await res.json();
+        if (res.ok && json.success) {
+          const activeItems = json.data;
+          const readIds = JSON.parse(localStorage.getItem("read_announcements") || "[]");
+          
+          const mapped = activeItems.map((item: any) => ({
+            id: item.announcementId,
+            title: "Announcement",
+            description: item.message,
+            time: new Date(item.createdAt).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unread: !readIds.includes(item.announcementId),
+          }));
+          
+          setNotifications(mapped);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch active announcements for navbar:", err);
+      }
+    };
+
+    fetchActiveAnnouncements();
+  }, []);
+
+  const handleMarkAllRead = () => {
+    const ids = notifications.map(n => n.id);
+    localStorage.setItem("read_announcements", JSON.stringify(ids));
+    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  };
+  const { user, loading, login, logout } = useAuth();
   const pathname = usePathname();
 
+  const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
+  const visibleLinks = isAdmin
+    ? [
+        ...navLinks.slice(0, 3),
+        { label: "Dashboard", href: "/dashboard" },
+        ...navLinks.slice(3),
+      ]
+    : navLinks;
+
   const getHref = (href: string) => {
-    if (href === "/events" || href === "/members") return href;
-    if (pathname === "/events" || pathname === "/members") {
+    if (href.startsWith("/")) return href;
+    if (pathname === "/events" || pathname === "/members" || pathname.startsWith("/dashboard")) {
       return `/${href}`;
     }
     return href;
@@ -132,7 +184,7 @@ export default function Navbar() {
 
           {/* Center — Nav Links (Desktop) */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {visibleLinks.map((link) => (
               <a
                 key={link.label}
                 href={getHref(link.href)}
@@ -192,9 +244,7 @@ export default function Navbar() {
                         </span>
                         {notifications.some(n => n.unread) && (
                           <button
-                            onClick={() => {
-                              setNotifications(notifications.map(n => ({ ...n, unread: false })));
-                            }}
+                            onClick={handleMarkAllRead}
                             className="text-xs text-accent hover:underline font-semibold cursor-pointer"
                           >
                             Mark all as read
@@ -242,12 +292,99 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
-            <a
-              href="#"
-              className="hidden md:inline-flex items-center px-5 py-2 text-sm font-semibold rounded-lg bg-accent text-white hover:brightness-110 transition-all duration-200 shadow-lg shadow-accent/20 hover:shadow-accent/40"
-            >
-              Login
-            </a>
+            {loading ? (
+              <div className="hidden md:block w-24 h-9 bg-surface/50 animate-pulse rounded-lg border border-glass-border" />
+            ) : !user ? (
+              <div className="hidden md:block scale-95 origin-right">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    if (credentialResponse.credential) {
+                      await login(credentialResponse.credential);
+                    }
+                  }}
+                  onError={() => console.error("Google Login Failed")}
+                  theme="filled_blue"
+                  shape="rectangular"
+                  text="signin"
+                />
+              </div>
+            ) : (
+              <div className="relative hidden md:block">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 p-1 rounded-full border border-glass-border hover:border-primary/50 bg-[#13131A] transition-all cursor-pointer overflow-hidden"
+                  aria-label="View user profile"
+                >
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                    <Image
+                      src={user.picture}
+                      alt={user.name}
+                      fill
+                      sizes="32px"
+                      className="object-cover"
+                    />
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <>
+                      {/* Backdrop to close profile on click outside */}
+                      <div 
+                        className="fixed inset-0 z-40 cursor-default" 
+                        onClick={() => setIsProfileOpen(false)} 
+                      />
+                      
+                      <motion.div
+                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute right-0 mt-3.5 w-64 rounded-2xl bg-[#13131A]/95 backdrop-blur-xl border border-glass-border z-50 p-4 shadow-2xl shadow-primary/10 overflow-hidden"
+                      >
+                        <div className="flex items-center gap-3 pb-3 border-b border-glass-border">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+                            <Image
+                              src={user.picture}
+                              alt={user.name}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="overflow-hidden">
+                            <h4 className="font-heading font-bold text-xs text-foreground truncate">
+                              {user.name}
+                            </h4>
+                            <p className="text-[10px] text-muted truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-semibold text-primary-light">
+                            <Shield className="w-3.5 h-3.5" />
+                            <span className="capitalize">Role: {user.role}</span>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              logout();
+                              setIsProfileOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-left text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               className="md:hidden p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
@@ -275,7 +412,7 @@ export default function Navbar() {
             className="md:hidden bg-[#13131A] border-t border-glass-border overflow-hidden"
           >
             <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link, i) => (
+              {visibleLinks.map((link, i) => (
                 <motion.a
                   key={link.label}
                   href={getHref(link.href)}
@@ -295,13 +432,60 @@ export default function Navbar() {
                   {link.label}
                 </motion.a>
               ))}
-              <a
-                href="#"
-                onClick={() => setIsMobileOpen(false)}
-                className="block mt-3 px-4 py-3 text-center text-sm font-semibold rounded-lg bg-accent text-white hover:brightness-110 transition-all"
-              >
-                Login
-              </a>
+              {loading ? (
+                <div className="w-full h-10 bg-surface/50 animate-pulse rounded-lg border border-glass-border" />
+              ) : !user ? (
+                <div className="flex justify-center mt-3 scale-95">
+                  <GoogleLogin
+                    onSuccess={async (credentialResponse) => {
+                      if (credentialResponse.credential) {
+                        await login(credentialResponse.credential);
+                        setIsMobileOpen(false);
+                      }
+                    }}
+                    onError={() => console.error("Google Login Failed")}
+                    theme="filled_blue"
+                    shape="rectangular"
+                    width="100%"
+                  />
+                </div>
+              ) : (
+                <div className="mt-4 pt-4 border-t border-glass-border space-y-3">
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-primary/20">
+                      <Image
+                        src={user.picture}
+                        alt={user.name}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="overflow-hidden">
+                      <h4 className="font-heading font-bold text-xs text-foreground truncate">
+                        {user.name}
+                      </h4>
+                      <p className="text-[10px] text-muted truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mx-2 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-semibold text-primary-light">
+                    <Shield className="w-3.5 h-3.5" />
+                    <span className="capitalize">Role: {user.role}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-all cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

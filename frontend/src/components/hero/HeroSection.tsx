@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import HeroIllustration from "./HeroIllustration";
 
 export default function HeroSection() {
@@ -66,13 +67,13 @@ export default function HeroSection() {
               transition={{ duration: 0.5, delay: 0.45 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <a
-                href="#events"
+              <Link
+                href="/events"
                 className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:brightness-110 transition-all duration-300"
               >
                 Explore Events
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </a>
+              </Link>
               <a
                 href="#about"
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl glass-card text-foreground font-semibold text-sm hover:border-secondary/40 transition-all duration-300"
