@@ -107,13 +107,22 @@ const coreTeam: Member[] = [
     instagram: "https://www.instagram.com/suubbbuu/",
   },
   {
-    name: "V.Padmavathi Prathi",
+    name: "V.Padmavathi Pranathi",
     role: "Core Member",
     specialty: "EY Intern",
     initials: "PR",
     image: "/members/core2.png",
     linkedin: "https://www.linkedin.com/in/v-padmavathi-pranathi-5165a8359/",
     instagram: "https://www.instagram.com/_padmavathipranathi/",
+  },
+  {
+    name: "Sai Lasya",
+    role: "Core Member",
+    specialty: "",
+    initials: "SL",
+    image: "/members/core3.png",
+    linkedin: "https://www.linkedin.com/in/lasya-k-376740318/",
+    instagram: "https://www.instagram.com/lasya_jpg/",
   },
   {
     name: "Harsh Jha",
