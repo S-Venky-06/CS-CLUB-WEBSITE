@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyGoogleToken } from "../services/index.js";
-import { sendResponse, ApiError } from "../utils/index.js";
+import { sendResponse, ApiError, generateToken } from "../utils/index.js";
 import { HttpStatus } from "../constants/index.js";
 import { env } from "../config/index.js";
 import type { SessionUser, UserRole } from "../types/index.js";
@@ -55,7 +55,12 @@ export async function googleLogin(
 
       req.session.user = sessionUser;
 
-      sendResponse(res, HttpStatus.OK, "Authentication successful.", sessionUser);
+      const token = generateToken(sessionUser);
+
+      sendResponse(res, HttpStatus.OK, "Authentication successful.", {
+        user: sessionUser,
+        token,
+      });
     });
   } catch (error) {
     next(error);

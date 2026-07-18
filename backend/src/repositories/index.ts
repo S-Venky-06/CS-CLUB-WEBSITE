@@ -5,4 +5,5 @@ export {
   createRegistration,
   countRegistrationsForEvent,
   findRegistrationsByUser,
+  findAllRegistrations,
 } from "./registration.repository.js";

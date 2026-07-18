@@ -1,7 +1,6 @@
 import {
-  findRegistration,
   createRegistration,
-  countRegistrationsForEvent,
+  findAllRegistrations,
   findRegistrationsByUser,
 } from "../repositories/index.js";
 import { getEventDetails } from "./event.service.js";
@@ -49,8 +48,15 @@ export async function registerForEvent(
     );
   }
 
-  // 4. Check for duplicate registration
-  const existing = await findRegistration(eventId, email);
+  // 4. Fetch all registrations once to optimize Sheets API read requests
+  const allRegistrations = await findAllRegistrations();
+
+  // 5. Check for duplicate registration
+  const normalizedEmail = email.toLowerCase().trim();
+  const existing = allRegistrations.find(
+    (reg: Registration) =>
+      reg.eventId === eventId && reg.email.toLowerCase().trim() === normalizedEmail,
+  );
   if (existing) {
     throw new ApiError(
       HttpStatus.CONFLICT,
@@ -58,8 +64,8 @@ export async function registerForEvent(
     );
   }
 
-  // 5. Check capacity limits
-  const currentCapacity = await countRegistrationsForEvent(eventId);
+  // 6. Check capacity limits
+  const currentCapacity = allRegistrations.filter((reg: Registration) => reg.eventId === eventId).length;
   if (currentCapacity >= event.capacity) {
     throw new ApiError(
       HttpStatus.BAD_REQUEST,

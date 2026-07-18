@@ -130,6 +130,9 @@ export default function FeaturedEvent() {
     setErrorMessage("");
     setSuccessMessage("");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations`, {
         method: "POST",
@@ -137,6 +140,7 @@ export default function FeaturedEvent() {
           "Content-Type": "application/json",
         },
         credentials: "include",
+        signal: controller.signal,
         body: JSON.stringify({
           eventId: "evt-01",
           name: userName,
@@ -154,6 +158,7 @@ export default function FeaturedEvent() {
         }),
       });
 
+      clearTimeout(timeoutId);
       const json = await res.json();
 
       if (res.status === 201 || res.status === 409) {
@@ -174,8 +179,13 @@ export default function FeaturedEvent() {
         setErrorMessage(json.message || "Registration failed. Please try again.");
         setTimeout(() => setErrorMessage(""), 5000);
       }
-    } catch (err) {
-      setErrorMessage("Could not connect to the server. Please try again later.");
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        setErrorMessage("Registration request timed out. Please check your internet connection or try again.");
+      } else {
+        setErrorMessage("Could not connect to the server. Please try again later.");
+      }
       setTimeout(() => setErrorMessage(""), 5000);
     } finally {
       setIsRegistering(false);

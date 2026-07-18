@@ -28,6 +28,24 @@ app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 app.use(session(sessionConfig));
 
+// ─── Token Authentication Parser Middleware ─────────
+import { verifyToken } from "./utils/index.js";
+app.use((req, _res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    const decodedUser = verifyToken(token);
+    if (decodedUser) {
+      if (!req.session) {
+        req.session = { user: decodedUser } as any;
+      } else {
+        req.session.user = decodedUser;
+      }
+    }
+  }
+  next();
+});
+
 // ─── Performance ─────────────────────────────────
 app.use(compression());
 

@@ -27,22 +27,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if session cookie is already active on mount
+  // Setup global fetch interceptor to automatically attach Authorization header
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const originalFetch = window.fetch;
+    window.fetch = async function (input, init) {
+      const urlStr =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+          ? input.toString()
+          : (input as any).url || "";
+
+      if (urlStr.startsWith(API_URL)) {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const newInit = { ...init };
+          const headers = new Headers(newInit.headers || {});
+          if (!headers.has("Authorization")) {
+            headers.set("Authorization", `Bearer ${token}`);
+          }
+          newInit.headers = headers;
+          return originalFetch(input, newInit);
+        }
+      }
+      return originalFetch(input, init);
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
+  // Check if session token is already active on mount
   useEffect(() => {
     async function checkSession() {
       try {
+        const token = localStorage.getItem("token");
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${API_URL}/api/v1/auth/me`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           credentials: "include", // Required to send cookies cross-origin
         });
 
         if (res.ok) {
           const payload = await res.json();
           if (payload.success && payload.data) {
-            setUser(payload.data);
+            // Support both old and new payload shapes
+            if (payload.data.user) {
+              setUser(payload.data.user);
+            } else {
+              setUser(payload.data);
+            }
           }
         }
       } catch (error) {
@@ -69,7 +113,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const payload = await res.json();
         if (payload.success && payload.data) {
-          setUser(payload.data);
+          if (payload.data.token) {
+            localStorage.setItem("token", payload.data.token);
+            setUser(payload.data.user);
+          } else {
+            setUser(payload.data);
+          }
           return true;
         }
       }
@@ -82,16 +131,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       await fetch(`${API_URL}/api/v1/auth/logout`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         credentials: "include",
       });
     } catch (error) {
       console.error("Logout endpoint call failed:", error);
     } finally {
+      localStorage.removeItem("token");
       setUser(null);
     }
   };
