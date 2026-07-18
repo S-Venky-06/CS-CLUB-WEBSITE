@@ -169,9 +169,7 @@ function MemberCard({
     <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border/60 hover:border-primary/30 transition-all duration-300 rounded-2xl shadow-lg">
       {/* Rectangular Image slot */}
       <div
-        className={`relative w-full overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent ${
-          isLeadership ? "aspect-[4/3] sm:h-56" : "aspect-[4/3] sm:h-44"
-        }`}
+        className="relative w-full overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent aspect-[3/4]"
       >
         <div className="absolute inset-0 border border-primary/20" />
 
@@ -182,7 +180,7 @@ function MemberCard({
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
             onError={() => setImageError(true)}
-            className="object-cover object-top filter grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="object-cover object-center filter grayscale group-hover:grayscale-0 transition-all duration-500"
             priority={priority}
             loading={priority ? undefined : "lazy"}
           />
