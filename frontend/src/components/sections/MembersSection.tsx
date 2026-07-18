@@ -169,8 +169,9 @@ function MemberCard({
     <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border/60 hover:border-primary/30 transition-all duration-300 rounded-2xl shadow-lg">
       {/* Rectangular Image slot */}
       <div
-        className={`relative w-full overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent ${isLeadership ? "h-56" : "h-44"
-          }`}
+        className={`relative w-full overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent ${
+          isLeadership ? "aspect-[4/3] sm:h-56" : "aspect-[4/3] sm:h-44"
+        }`}
       >
         <div className="absolute inset-0 border border-primary/20" />
 
@@ -179,17 +180,18 @@ function MemberCard({
             src={member.image}
             alt={`${member.name}'s portrait`}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 20vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
             onError={() => setImageError(true)}
-            className="object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="object-cover object-top filter grayscale group-hover:grayscale-0 transition-all duration-500"
             priority={priority}
             loading={priority ? undefined : "lazy"}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/30 via-secondary/15 to-surface">
             <span
-              className={`font-heading font-bold text-foreground tracking-widest ${isLeadership ? "text-3xl" : "text-xl"
-                }`}
+              className={`font-heading font-bold text-foreground tracking-widest ${
+                isLeadership ? "text-3xl" : "text-xl"
+              }`}
             >
               {member.initials}
             </span>
@@ -289,7 +291,7 @@ export default function MembersSection() {
               Club Leadership
             </h3>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
             {leadership.map((member, i) => (
               <motion.div
                 key={member.name}
@@ -311,7 +313,7 @@ export default function MembersSection() {
               Team Leads
             </h3>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
             {leads.map((member, i) => (
               <motion.div
                 key={member.name}
@@ -333,7 +335,7 @@ export default function MembersSection() {
               Core Members
             </h3>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-5">
             {coreTeam.map((member, i) => (
               <motion.div
                 key={member.name}
