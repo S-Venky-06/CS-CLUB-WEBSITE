@@ -18,6 +18,15 @@ export interface Registration {
   attended: boolean;
   motivation: string;
   phone: string;
+  year: string;
+  section: string;
+  branch: string;
+  rollNumber: string;
+  projects?: string;
+  linkedin?: string;
+  tryhackme?: string;
+  hackthebox?: string;
+  otherComments?: string;
 }
 
 export interface Member {

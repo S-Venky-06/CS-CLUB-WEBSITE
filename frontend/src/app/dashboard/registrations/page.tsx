@@ -27,6 +27,15 @@ interface Registration {
   attended: boolean;
   motivation: string;
   phone?: string;
+  year?: string;
+  section?: string;
+  branch?: string;
+  rollNumber?: string;
+  projects?: string;
+  linkedin?: string;
+  tryhackme?: string;
+  hackthebox?: string;
+  otherComments?: string;
 }
 
 interface Event {
@@ -47,7 +56,7 @@ export default function RegistrationsManagement() {
   const [attendanceFilter, setAttendanceFilter] = useState<"all" | "present" | "absent">("all");
 
   // Modal State
-  const [selectedMotivation, setSelectedMotivation] = useState<string | null>(null);
+  const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -145,13 +154,41 @@ export default function RegistrationsManagement() {
     if (filteredRegistrations.length === 0) return;
 
     // Map rows
-    const headers = ["Registration ID", "Event ID", "Name", "Email", "Mobile Number", "Registered At", "Attended Status"];
+    const headers = [
+      "Registration ID",
+      "Event ID",
+      "Name",
+      "Email",
+      "Mobile Number",
+      "Roll Number",
+      "Year",
+      "Branch",
+      "Section",
+      "LinkedIn URL",
+      "TryHackMe URL",
+      "HackTheBox URL",
+      "Projects",
+      "Motivation",
+      "Other Comments",
+      "Registered At",
+      "Attended Status",
+    ];
     const rows = filteredRegistrations.map((reg) => [
       reg.registrationId,
       reg.eventId,
       reg.name,
       reg.email,
       reg.phone || "",
+      reg.rollNumber || "",
+      reg.year || "",
+      reg.branch || "",
+      reg.section || "",
+      reg.linkedin || "",
+      reg.tryhackme || "",
+      reg.hackthebox || "",
+      reg.projects || "",
+      reg.motivation || "",
+      reg.otherComments || "",
       new Date(reg.registeredAt).toISOString(),
       reg.attended ? "TRUE" : "FALSE",
     ]);
@@ -197,15 +234,15 @@ export default function RegistrationsManagement() {
     doc.text(`Total Count: ${totalCount} | Checked In: ${attendedCount} | Attendance Rate: ${checkInRate}%`, 14, 39);
 
     // Map table content
-    const tableColumns = ["Reg ID", "Student Name", "Student Email", "Mobile Number", "Target Event", "Attendance Status"];
+    const tableColumns = ["Reg ID", "Student Name", "Roll Number", "Mobile Number", "Year/Branch/Sec", "Attendance Status"];
     const tableRows = filteredRegistrations.map((reg) => {
-      const targetEventTitle = events.find(e => e.eventId === reg.eventId)?.title || reg.eventId;
+      const classLabel = `${reg.year || ""} (${reg.branch || ""} - ${reg.section || ""})`;
       return [
         reg.registrationId,
         reg.name,
-        reg.email,
+        reg.rollNumber || "",
         reg.phone || "",
-        targetEventTitle,
+        classLabel,
         reg.attended ? "Attended" : "Absent",
       ];
     });
@@ -388,7 +425,12 @@ export default function RegistrationsManagement() {
                     <td className="p-4 text-xs font-mono font-bold text-primary">{reg.registrationId}</td>
                      <td className="p-4">
                       <div className="font-semibold text-sm text-foreground">{reg.name}</div>
-                      <div className="text-xs text-muted truncate max-w-xs">{reg.email}</div>
+                      <div className="text-xs text-muted flex items-center gap-1.5 mt-0.5">
+                        <span className="font-mono text-[10px] bg-glass-border/30 px-1.5 py-0.5 rounded text-secondary font-bold">
+                          {reg.rollNumber || "N/A"}
+                        </span>
+                        <span className="truncate max-w-[150px]">{reg.email}</span>
+                      </div>
                       {reg.phone && (
                         <div className="text-[10px] text-accent font-semibold font-mono mt-0.5">
                           📞 {reg.phone}
@@ -428,11 +470,11 @@ export default function RegistrationsManagement() {
                     </td>
                     <td className="p-4 text-right">
                       <button
-                        onClick={() => setSelectedMotivation(reg.motivation)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-glass-border hover:border-primary/30 text-muted hover:text-foreground hover:bg-surface/50 text-xs font-medium transition-all cursor-pointer"
+                        onClick={() => setSelectedReg(reg)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-glass-border hover:border-primary/30 text-muted hover:text-foreground hover:bg-surface/50 text-xs font-medium transition-all cursor-pointer animate-hover"
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        Motivation
+                        Details
                       </button>
                     </td>
                   </tr>
@@ -443,16 +485,16 @@ export default function RegistrationsManagement() {
         )}
       </div>
 
-      {/* ─── Motivation Details Modal Overlay ────────── */}
+      {/* ─── Student Profile Details Modal Overlay ────── */}
       <AnimatePresence>
-        {selectedMotivation !== null && (
+        {selectedReg !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setSelectedMotivation(null)}
+              onClick={() => setSelectedReg(null)}
               className="absolute inset-0 bg-[#0B0B0F]/80 backdrop-blur-md cursor-default"
             />
 
@@ -462,28 +504,139 @@ export default function RegistrationsManagement() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.25 }}
-              className="relative w-full max-w-lg rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
+              className="relative w-full max-w-2xl rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
             >
               <div className="flex items-center justify-between pb-4 border-b border-glass-border mb-5">
-                <h4 className="font-heading text-lg font-bold text-foreground">
-                  Statement of Motivation
-                </h4>
+                <div>
+                  <h4 className="font-heading text-lg font-bold text-foreground">
+                    Student Registration Profile
+                  </h4>
+                  <p className="text-xs text-muted mt-0.5">
+                    Registration ID: <span className="font-mono text-primary font-bold">{selectedReg.registrationId}</span>
+                  </p>
+                </div>
                 <button
-                  onClick={() => setSelectedMotivation(null)}
+                  onClick={() => setSelectedReg(null)}
                   className="p-1.5 rounded-lg border border-glass-border text-muted hover:text-foreground cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="bg-[#181824] rounded-xl border border-glass-border p-5 text-sm text-muted leading-relaxed max-h-[300px] overflow-y-auto font-medium">
-                {selectedMotivation || "No statement was provided for this registration."}
+              {/* Scrollable details panel */}
+              <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-1 text-sm text-muted">
+                {/* Academic & Contact Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Personal info */}
+                  <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4 space-y-2">
+                    <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Academic History</span>
+                    <div>
+                      <span className="text-[11px] text-muted block">Student Name</span>
+                      <span className="text-sm font-semibold text-foreground">{selectedReg.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted block">Roll Number</span>
+                      <span className="text-sm font-semibold font-mono text-foreground">{selectedReg.rollNumber || "N/A"}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div>
+                        <span className="text-[11px] text-muted block">Year</span>
+                        <span className="text-xs font-semibold text-foreground">{selectedReg.year || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-muted block">Branch</span>
+                        <span className="text-xs font-semibold text-foreground">{selectedReg.branch || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-muted block">Section</span>
+                        <span className="text-xs font-semibold text-foreground">{selectedReg.section || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact & Profiles info */}
+                  <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4 space-y-2">
+                    <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Contact & Cybersecurity Profiles</span>
+                    <div>
+                      <span className="text-[11px] text-muted block">Email Address</span>
+                      <span className="text-xs font-semibold text-foreground break-all">{selectedReg.email}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-muted block">Mobile Number</span>
+                      <span className="text-xs font-semibold text-foreground font-mono">{selectedReg.phone || "N/A"}</span>
+                    </div>
+                    <div className="flex gap-2.5 pt-1.5">
+                      {selectedReg.linkedin && selectedReg.linkedin !== "#" ? (
+                        <a
+                          href={selectedReg.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 rounded bg-[#0A66C2]/15 text-[#0A66C2] border border-[#0A66C2]/20 text-[10px] font-bold hover:brightness-110"
+                        >
+                          LinkedIn
+                        </a>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-surface border border-glass-border text-muted text-[10px]">No LinkedIn</span>
+                      )}
+
+                      {selectedReg.tryhackme ? (
+                        <a
+                          href={selectedReg.tryhackme}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold hover:brightness-110"
+                        >
+                          TryHackMe
+                        </a>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-surface border border-glass-border text-muted text-[10px]">No THM</span>
+                      )}
+
+                      {selectedReg.hackthebox ? (
+                        <a
+                          href={selectedReg.hackthebox}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 rounded bg-[#9FEF00]/10 text-[#9FEF00] border border-[#9FEF00]/20 text-[10px] font-bold hover:brightness-110"
+                        >
+                          HTB
+                        </a>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-surface border border-glass-border text-muted text-[10px]">No HTB</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Motivation statement */}
+                <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4">
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block mb-2">Statement of Motivation</span>
+                  <div className="text-xs text-muted leading-relaxed whitespace-pre-wrap font-medium">
+                    {selectedReg.motivation || "No statement was provided."}
+                  </div>
+                </div>
+
+                {/* Projects statement */}
+                <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4">
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block mb-2">Cybersecurity / Programming Projects</span>
+                  <div className="text-xs text-muted leading-relaxed whitespace-pre-wrap font-medium">
+                    {selectedReg.projects || "No projects were described."}
+                  </div>
+                </div>
+
+                {/* Other comments */}
+                <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4">
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block mb-2">Other Comments / Certifications</span>
+                  <div className="text-xs text-muted leading-relaxed whitespace-pre-wrap font-medium">
+                    {selectedReg.otherComments || "No additional comments."}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-end pt-4 mt-5">
+              <div className="flex justify-end pt-4 mt-5 border-t border-glass-border">
                 <button
-                  onClick={() => setSelectedMotivation(null)}
-                  className="px-5 py-2.5 rounded-xl bg-surface/50 border border-glass-border text-foreground hover:bg-surface text-sm font-semibold transition-colors cursor-pointer"
+                  onClick={() => setSelectedReg(null)}
+                  className="px-5 py-2.5 rounded-xl bg-surface border border-glass-border text-foreground hover:bg-surface/80 text-sm font-semibold transition-colors cursor-pointer"
                 >
                   Close
                 </button>

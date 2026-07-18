@@ -65,7 +65,6 @@ const leads: Member[] = [
     initials: "VP",
     image: "/members/lead_design.png",
     linkedin: "https://www.linkedin.com/in/vaishnavipratha7/",
-    instagram: "#",
   },
   {
     name: "Vikram Aditya",
@@ -219,9 +218,9 @@ function MemberCard({
         </p>
 
         {/* Social link bar */}
-        {(member.linkedin || member.instagram) && (
+        {((member.linkedin && member.linkedin !== "#") || (member.instagram && member.instagram !== "#")) && (
           <div className="flex items-center gap-3 pt-3.5 border-t border-glass-border/40">
-            {member.linkedin && (
+            {member.linkedin && member.linkedin !== "#" && (
               <a
                 href={member.linkedin}
                 className="w-8 h-8 rounded-lg bg-surface border border-glass-border flex items-center justify-center text-muted hover:text-foreground hover:border-secondary/40 hover:bg-primary/10 transition-all duration-200"
@@ -230,7 +229,7 @@ function MemberCard({
                 <Linkedin className="w-3.5 h-3.5" />
               </a>
             )}
-            {member.instagram && (
+            {member.instagram && member.instagram !== "#" && (
               <a
                 href={member.instagram}
                 className="w-8 h-8 rounded-lg bg-surface border border-glass-border flex items-center justify-center text-muted hover:text-foreground hover:border-secondary/40 hover:bg-primary/10 transition-all duration-200"

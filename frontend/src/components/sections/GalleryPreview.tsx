@@ -7,21 +7,21 @@ import { X } from "lucide-react";
 const galleryItems = [
   {
     id: 1,
-    title: "Cyber Congress 25",
+    title: "Cyber Congress",
     description: "The Cyber Congress focuses on building awareness and skills in cybersecurity. The program introduces core threat vectors, digital hygiene practices, and industry career pathways, progressing into advanced security concepts like machine learning, threat intelligence, and defensive architectures, concluding with practical hands-on laboratories using Wireshark and Burp Suite.",
     gradient: "from-primary via-secondary to-primary/60",
     pattern: "M20,30 L60,10 L90,40 L70,80 L30,70 Z",
   },
   {
     id: 2,
-    title: "Shastra 25",
+    title: "Shastra",
     description: "A fun, one-day event showcasing cybersecurity topics through interactive games.",
     gradient: "from-secondary via-primary to-accent/30",
     pattern: "M40,20 L80,20 L80,60 L60,80 L20,60 Z",
   },
   {
     id: 3,
-    title: "Chrakuvyh 24",
+    title: "Chrakuvyh",
     description: "A signature capture-the-flag (CTF) competition designed to challenge participants across multiple disciplines of information security. Challenges span cryptography, reverse engineering, web exploitation, network forensics, and binary analysis.",
     gradient: "from-accent/40 via-primary to-secondary",
     pattern: "M50,10 L90,30 L90,70 L50,90 L10,70 L10,30 Z",
@@ -80,7 +80,7 @@ export default function GalleryPreview() {
             >
               {/* Highlight background glow on hover */}
               <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-300`} />
-              
+
               <div className="flex items-center gap-3.5 relative z-10">
                 {/* Visual indicator tag */}
                 <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${item.gradient} flex-shrink-0`} />

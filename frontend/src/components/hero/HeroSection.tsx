@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import HeroIllustration from "./HeroIllustration";
+import MomentsShowcase from "./MomentsShowcase";
 
 export default function HeroSection() {
   return (
@@ -114,7 +114,7 @@ export default function HeroSection() {
             transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
             className="hidden lg:block"
           >
-            <HeroIllustration />
+            <MomentsShowcase />
           </motion.div>
         </div>
       </div>

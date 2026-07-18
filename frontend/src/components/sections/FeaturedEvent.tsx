@@ -2,7 +2,7 @@
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
+import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function FeaturedEvent() {
@@ -16,10 +16,21 @@ export default function FeaturedEvent() {
   const [userName, setUserName] = useState("");
   const [motivationText, setMotivationText] = useState("");
   const [phone, setPhone] = useState("");
+  const [year, setYear] = useState("2nd Year");
+  const [section, setSection] = useState("");
+  const [branch, setBranch] = useState("CSE");
+  const [rollNumber, setRollNumber] = useState("");
+  const [projects, setProjects] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [tryhackme, setTryhackme] = useState("");
+  const [hackthebox, setHackthebox] = useState("");
+  const [otherComments, setOtherComments] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
+  const isValidRoll = rollNumber.trim().length > 0;
+  const isValidSection = section.trim().length > 0;
 
   const [eventDetails, setEventDetails] = useState({
     title: "New Club Members Registration — For Juniors",
@@ -131,6 +142,15 @@ export default function FeaturedEvent() {
           name: userName,
           motivation: motivationText,
           phone,
+          year,
+          section,
+          branch,
+          rollNumber,
+          projects,
+          linkedin,
+          tryhackme,
+          hackthebox,
+          otherComments,
         }),
       });
 
@@ -141,6 +161,13 @@ export default function FeaturedEvent() {
         setSuccessMessage("You are successfully registered for the Junior Registration!");
         setMotivationText("");
         setPhone("");
+        setSection("");
+        setRollNumber("");
+        setProjects("");
+        setLinkedin("");
+        setTryhackme("");
+        setHackthebox("");
+        setOtherComments("");
         setIsModalOpen(false);
         setTimeout(() => setSuccessMessage(""), 5000);
       } else {
@@ -304,9 +331,14 @@ export default function FeaturedEvent() {
             )}
 
             {successMessage && (
-              <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-                <Check className="w-4 h-4 flex-shrink-0" />
-                <span>{successMessage}</span>
+              <div className="mt-4 flex flex-col gap-2 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-semibold">{successMessage}</span>
+                </div>
+                <p className="text-muted text-[10px] mt-1 border-t border-emerald-500/20 pt-2">
+                  📧 Please check your registered Google email inbox (and spam folder) for the confirmation details.
+                </p>
               </div>
             )}
           </div>
@@ -329,81 +361,212 @@ export default function FeaturedEvent() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full max-w-lg rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
+              className="relative w-full max-w-2xl rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
             >
               <h4 className="font-heading text-xl sm:text-2xl font-bold text-foreground mb-6">
                 Confirm Event Registration
               </h4>
-
-              <div className="space-y-5 mb-8">
+              <div className="space-y-5 mb-6 max-h-[60vh] overflow-y-auto pr-1">
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
                     Email Address (Google Account)
                   </label>
-                  <div className="w-full px-4 py-3 rounded-xl bg-surface/30 border border-glass-border text-muted text-sm select-none">
+                  <div className="w-full px-4 py-2.5 rounded-xl bg-surface/30 border border-glass-border text-muted text-xs select-none">
                     {user?.email}
                   </div>
-                  <span className="text-[10px] text-muted/60 mt-1 block">
-                    * This email is locked to your secure session.
-                  </span>
                 </div>
 
-                <div>
-                  <label htmlFor="modal-name" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
-                    Display Name
-                  </label>
-                  <input
-                    id="modal-name"
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors"
-                  />
-                </div>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label htmlFor="modal-name" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Display Name *
+                    </label>
+                    <input
+                      id="modal-name"
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="modal-phone" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
-                    Mobile Number
-                  </label>
-                  <input
-                    id="modal-phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
-                    placeholder="Enter 10-digit mobile number"
-                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors"
-                  />
-                  {!isValidPhone && phone.length > 0 && (
-                    <span className="text-[10px] text-red-400 mt-1 block">
-                      Mobile number must be exactly 10 digits.
+                  <div>
+                    <label htmlFor="modal-phone" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Mobile Number *
+                    </label>
+                    <input
+                      id="modal-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
+                      placeholder="Enter 10-digit number"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                    {!isValidPhone && phone.length > 0 && (
+                      <span className="text-[10px] text-red-400 mt-1 block">
+                        Must be exactly 10 digits.
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-roll" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Roll Number *
+                    </label>
+                    <input
+                      id="modal-roll"
+                      type="text"
+                      value={rollNumber}
+                      onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
+                      placeholder="e.g. 23R11A6236"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-section" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Section *
+                    </label>
+                    <input
+                      id="modal-section"
+                      type="text"
+                      value={section}
+                      onChange={(e) => setSection(e.target.value.toUpperCase())}
+                      placeholder="e.g. A, B, C"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Academic Year *
+                    </label>
+                    <div className="w-full px-4 py-2.5 rounded-xl bg-surface/30 border border-glass-border text-muted text-xs select-none">
+                      2nd Year
+                    </div>
+                    <span className="text-[10px] text-muted/60 mt-1 block">
+                      * Locked to 2nd year students only.
                     </span>
-                  )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-branch" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Branch *
+                    </label>
+                    <select
+                      id="modal-branch"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-xs focus:outline-none focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="CSE">CSE</option>
+                      <option value="CSE (AIML)">CSE (AIML)</option>
+                      <option value="CSE (DS)">CSE (DS)</option>
+                      <option value="CSE (CS)">CSE (CS)</option>
+                      <option value="IT">IT</option>
+                      <option value="ECE">ECE</option>
+                      <option value="EEE">EEE</option>
+                      <option value="MECH">MECH</option>
+                      <option value="CIVIL">CIVIL</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-linkedin" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      LinkedIn URL (Optional)
+                    </label>
+                    <input
+                      id="modal-linkedin"
+                      type="url"
+                      value={linkedin}
+                      onChange={(e) => setLinkedin(e.target.value)}
+                      placeholder="https://linkedin.com/in/..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-thm" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      TryHackMe URL (Optional)
+                    </label>
+                    <input
+                      id="modal-thm"
+                      type="url"
+                      value={tryhackme}
+                      onChange={(e) => setTryhackme(e.target.value)}
+                      placeholder="https://tryhackme.com/p/..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-htb" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Hack The Box URL (Optional)
+                    </label>
+                    <input
+                      id="modal-htb"
+                      type="url"
+                      value={hackthebox}
+                      onChange={(e) => setHackthebox(e.target.value)}
+                      placeholder="https://app.hackthebox.com/profile/..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label htmlFor="modal-motivation" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
-                    Why do you want to join this club?
+                    Why do you want to join this club? *
                   </label>
                   <textarea
                     id="modal-motivation"
-                    rows={4}
+                    rows={3}
                     value={motivationText}
                     onChange={(e) => setMotivationText(e.target.value)}
-                    placeholder="Write a few sentences describing your motivation to join..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                    placeholder="Write at least 10 words describing your motivation to join..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors resize-none"
                   />
                   <div className="flex justify-between items-center mt-1">
-                    <span className={`text-[10px] font-semibold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    <span className={`text-[9px] font-semibold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
                       {wordCount < 10
                         ? `At least 10 words required (Current: ${wordCount})`
                         : `${wordCount} words`
                       }
                     </span>
-                    <span className="text-[10px] text-muted/60">
+                    <span className="text-[9px] text-muted/60">
                       Max 2000 words
                     </span>
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="modal-projects" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Projects (Optional)
+                  </label>
+                  <textarea
+                    id="modal-projects"
+                    rows={2.5}
+                    value={projects}
+                    onChange={(e) => setProjects(e.target.value)}
+                    placeholder="Describe any cybersecurity or programming projects you worked on..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="modal-comments" className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                    Other Comments (Optional)
+                  </label>
+                  <textarea
+                    id="modal-comments"
+                    rows={2}
+                    value={otherComments}
+                    onChange={(e) => setOtherComments(e.target.value)}
+                    placeholder="Any certifications, areas of interest, or questions..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground placeholder:text-muted/40 text-xs focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                  />
                 </div>
               </div>
 
@@ -416,7 +579,7 @@ export default function FeaturedEvent() {
                 </button>
                 <button
                   onClick={handleRegister}
-                  disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone}
+                  disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone || !isValidRoll || !isValidSection}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   {isRegistering ? (

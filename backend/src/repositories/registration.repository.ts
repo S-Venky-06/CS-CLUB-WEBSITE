@@ -14,7 +14,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:H10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -36,6 +36,15 @@ export async function findRegistration(
     attended: match[5] === "TRUE",
     motivation: match[6] || "",
     phone: match[7] || "",
+    year: match[8] || "",
+    section: match[9] || "",
+    branch: match[10] || "",
+    rollNumber: match[11] || "",
+    projects: match[12] || "",
+    linkedin: match[13] || "",
+    tryhackme: match[14] || "",
+    hackthebox: match[15] || "",
+    otherComments: match[16] || "",
   };
 }
 
@@ -57,12 +66,21 @@ export async function createRegistration(
       "FALSE", // Attended defaults to false
       registration.motivation,
       registration.phone || "",
+      registration.year || "",
+      registration.section || "",
+      registration.branch || "",
+      registration.rollNumber || "",
+      registration.projects || "",
+      registration.linkedin || "",
+      registration.tryhackme || "",
+      registration.hackthebox || "",
+      registration.otherComments || "",
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:H2",
+    range: "Registrations!A2:Q2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -96,7 +114,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:H10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -113,6 +131,15 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       attended: row[5] === "TRUE",
       motivation: row[6] || "",
       phone: row[7] || "",
+      year: row[8] || "",
+      section: row[9] || "",
+      branch: row[10] || "",
+      rollNumber: row[11] || "",
+      projects: row[12] || "",
+      linkedin: row[13] || "",
+      tryhackme: row[14] || "",
+      hackthebox: row[15] || "",
+      otherComments: row[16] || "",
     }));
 }
 
@@ -124,7 +151,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:H10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -141,6 +168,15 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       attended: row[5] === "TRUE",
       motivation: row[6] || "",
       phone: row[7] || "",
+      year: row[8] || "",
+      section: row[9] || "",
+      branch: row[10] || "",
+      rollNumber: row[11] || "",
+      projects: row[12] || "",
+      linkedin: row[13] || "",
+      tryhackme: row[14] || "",
+      hackthebox: row[15] || "",
+      otherComments: row[16] || "",
     }));
 }
 
@@ -156,7 +192,7 @@ export async function updateAttendance(
   // 1. Fetch current rows to locate row index
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:H10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
