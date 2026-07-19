@@ -13,6 +13,7 @@ export default function FeaturedEvent() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTipModalOpen, setIsTipModalOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [motivationText, setMotivationText] = useState("");
   const [phone, setPhone] = useState("");
@@ -312,7 +313,7 @@ export default function FeaturedEvent() {
                       setErrorMessage("Please sign in with Google in the top navigation menu to register.");
                       setTimeout(() => setErrorMessage(""), 5000);
                     } else {
-                      setIsModalOpen(true);
+                      setIsTipModalOpen(true);
                     }
                   }}
                   disabled={isRegistering}
@@ -356,6 +357,87 @@ export default function FeaturedEvent() {
       </div>
 
       <AnimatePresence>
+        {isTipModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTipModalOpen(false)}
+              className="absolute inset-0 bg-[#0B0B0F]/80 backdrop-blur-md cursor-default"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-md rounded-2xl bg-[#13131A] border border-glass-border p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
+            >
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+              <div className="flex items-center gap-3 border-b border-glass-border/40 pb-4 mb-6">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/40">
+                    <img 
+                      src="/members/president.png" 
+                      alt="Dhanush Reddy" 
+                      className="object-cover w-full h-full"
+                      onError={(e) => {
+                        (e.target as any).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#13131A] animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-foreground text-sm">
+                    Dhanush Reddy
+                  </h4>
+                  <p className="text-[10px] text-accent font-semibold tracking-wider uppercase">
+                    Club President • Incoming Message
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6 text-sm leading-relaxed text-muted">
+                <div className="rounded-xl bg-[#181824] border border-glass-border/40 p-4 relative">
+                  <div className="absolute top-4 -left-1.5 w-3 h-3 bg-[#181824] border-l border-b border-glass-border/40 rotate-45" />
+                  
+                  <p className="font-bold text-foreground mb-2 flex items-center gap-1.5 text-xs text-secondary tracking-wide uppercase">
+                    💡 Pro Tip
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted">
+                    Want to increase your chances of getting selected into the club? Make sure to provide your <strong className="text-foreground">LinkedIn, Hack The Box, and TryHackMe profile links</strong> on the form!
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted mt-2.5">
+                    If you don't have HTB or TryHackMe links yet, don't worry! You can describe any <strong className="text-foreground">simple cybersecurity project</strong> you have done in the comments. Good luck!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setIsTipModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-glass-border/60 hover:bg-white/5 text-muted font-semibold text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setIsTipModalOpen(false);
+                    setIsModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-xs hover:brightness-110 shadow-lg shadow-accent/20 transition-all cursor-pointer"
+                >
+                  Continue to Form
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
