@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Shield, Cpu, CheckCircle, Wifi, AlertTriangle } from "lucide-react";
 
+import { usePathname } from "next/navigation";
+
 interface BackendWakeupContextType {
   isAwake: boolean;
 }
@@ -19,6 +21,7 @@ interface LogEntry {
 }
 
 export function BackendWakeupProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [isAwake, setIsAwake] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -53,6 +56,15 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
   // Main wakeup loop on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Skip visual loader if entering on a subpage directly
+    if (pathname !== "/") {
+      setIsAwake(true);
+      setShowOverlay(false);
+      // Silent background wake-up ping
+      fetch(`${API_URL}/api/v1/health`).catch(() => {});
+      return;
+    }
 
     // Check if backend was already marked as awake in this browser session
     const wasAwoken = sessionStorage.getItem("backend_was_woken") === "true";
