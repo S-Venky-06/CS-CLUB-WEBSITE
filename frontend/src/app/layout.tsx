@@ -56,6 +56,7 @@ export const viewport = {
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { BackendWakeupProvider } from "@/components/providers/BackendWakeupProvider";
 
 export default function RootLayout({
   children,
@@ -74,7 +75,9 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <BackendWakeupProvider>{children}</BackendWakeupProvider>
+        </AuthProvider>
       </body>
     </html>
   );
