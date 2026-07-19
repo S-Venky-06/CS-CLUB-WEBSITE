@@ -93,11 +93,17 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
       const checkHealth = async () => {
         if (!isSubscribed) return;
 
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+
         try {
           const res = await fetch(`${API_URL}/api/v1/health`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
           });
+
+          clearTimeout(timeout);
 
           if (res.ok) {
             setIsConnecting(false);
@@ -118,6 +124,7 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
             handleRetry();
           }
         } catch (err) {
+          clearTimeout(timeout);
           handleRetry();
         }
       };
