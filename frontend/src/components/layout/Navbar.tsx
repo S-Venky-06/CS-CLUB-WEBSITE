@@ -275,7 +275,7 @@ export default function Navbar() {
                                   <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1" />
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted leading-relaxed mb-2">
+                              <p className="text-[11px] text-muted leading-relaxed mb-2 whitespace-pre-line">
                                 {notif.description}
                               </p>
                               <div className="flex items-center gap-1.5 text-[9px] text-muted/60">

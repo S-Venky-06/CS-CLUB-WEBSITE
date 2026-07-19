@@ -242,7 +242,7 @@ export default function NotificationsManagement() {
                       className="p-4.5 rounded-xl bg-[#181824]/40 border border-glass-border/60 hover:border-glass-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors"
                     >
                       <div className="flex-1 space-y-1.5 min-w-0">
-                        <p className="text-sm text-foreground font-semibold leading-relaxed break-words">
+                        <p className="text-sm text-foreground font-semibold leading-relaxed break-words whitespace-pre-line">
                           {ann.message}
                         </p>
                         <span className="text-[10px] text-muted block font-semibold">
