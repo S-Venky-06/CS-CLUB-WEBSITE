@@ -1,59 +1,147 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import MomentsShowcase from "./MomentsShowcase";
 
+// Animated counter component for the stats
+function AnimatedCounter({ value, label, href, delay }: { value: number; label: string; href: string; delay: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+    let start = 0;
+    const end = value;
+    const duration = 2000;
+    const incrementTime = duration / end;
+    
+    let timer: NodeJS.Timeout;
+    
+    const runTimer = () => {
+      timer = setTimeout(() => {
+        start += 1;
+        setCount(start);
+        if (start < end) {
+          runTimer();
+        }
+      }, incrementTime);
+    };
+    
+    // Initial delay before counting
+    setTimeout(runTimer, delay * 1000);
+    
+    return () => clearTimeout(timer);
+  }, [value, isInView, delay]);
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      className="text-center group/stat hover:opacity-100 transition-opacity relative"
+    >
+      <div className="absolute -inset-4 rounded-xl bg-primary/0 group-hover/stat:bg-primary/10 transition-colors duration-300 blur-sm -z-10" />
+      <p className="font-heading text-3xl font-bold text-foreground group-hover/stat:text-cyan group-hover/stat:text-glow transition-all duration-300">
+        {count}
+      </p>
+      <p className="text-sm text-muted mt-1 uppercase tracking-wider font-semibold">{label}</p>
+      {/* Animated underline */}
+      <div className="h-px w-0 bg-gradient-to-r from-transparent via-cyan to-transparent group-hover/stat:w-full transition-all duration-500 mt-2 mx-auto" />
+    </a>
+  );
+}
+
+// Letter animation variants
+const letterContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 },
+  },
+};
+
+const letterVariant = {
+  hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { type: "spring" as const, damping: 12, stiffness: 200 },
+  },
+};
+
+// Typewriter variants
+const typewriterVariant = {
+  hidden: { opacity: 0, width: "0%" },
+  visible: { 
+    opacity: 1, 
+    width: "100%",
+    transition: { delay: 0.8, duration: 1.5, ease: "easeInOut" as const }
+  }
+};
+
 export default function HeroSection() {
+  const title1 = "CYBERSECURITY".split("");
+  const title2 = "CLUB OF GCET".split("");
+
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden"
+      className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
           {/* Left — Text Content */}
-          <div className="text-center lg:text-left">
+          <div className="text-center lg:text-left z-10 relative">
+            {/* Glow behind text */}
+            <div className="absolute top-1/2 left-1/2 lg:left-0 -translate-x-1/2 lg:-translate-x-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
+
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-xs font-medium text-muted mb-6"
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-glass-border-hover/50 text-xs font-medium text-foreground mb-8 relative overflow-hidden group"
             >
-              <Sparkles className="w-3.5 h-3.5 text-accent" />
-              <span>Defending the Digital Frontier</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+              <Sparkles className="w-3.5 h-3.5 text-cyan animate-pulse-soft" />
+              <span className="tracking-wide">Defending the Digital Frontier</span>
             </motion.div>
 
             {/* Heading */}
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight mb-4"
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="font-heading text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight mb-6"
             >
-              <span className="text-foreground">CYBERSECURITY</span>
-              <br />
-              <span className="gradient-text-primary">CLUB OF GCET</span>
+              <span className="block text-foreground text-glow">
+                CYBERSECURITY
+              </span>
+              <span className="block gradient-text mt-1">
+                CLUB OF GCET
+              </span>
             </motion.h1>
 
             {/* Tagline */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
-              className="font-heading text-lg sm:text-xl text-secondary font-medium tracking-widest uppercase mb-4"
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="font-heading text-base sm:text-lg lg:text-xl text-cyan font-semibold tracking-[0.2em] uppercase mb-6"
             >
               Learn &bull; Secure &bull; Innovate
             </motion.p>
 
             {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              className="text-muted text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed"
+              initial={{ opacity: 0, filter: "blur(10px)", y: 10 }}
+              animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+              transition={{ duration: 0.8, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="text-muted text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
             >
               A student-driven community at GCET dedicated to fostering
               cybersecurity excellence through hands-on workshops, CTF
@@ -64,19 +152,21 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              transition={{ duration: 0.6, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start"
             >
               <Link
                 href="/events"
-                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:brightness-110 transition-all duration-300"
+                className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-white font-semibold text-sm shadow-lg shadow-primary/30 overflow-hidden transition-all duration-300 hover:shadow-primary/50 hover:-translate-y-1"
               >
-                Explore Events
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                <span className="relative z-10">Explore Events</span>
+                <ArrowRight className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
+              
               <a
                 href="#about"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl glass-card text-foreground font-semibold text-sm hover:border-secondary/40 transition-all duration-300"
+                className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl glass-card text-foreground font-semibold text-sm transition-all duration-300 hover:border-cyan/50 hover:bg-cyan/5 hover:text-cyan hover:-translate-y-1"
               >
                 Learn More
               </a>
@@ -86,33 +176,20 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="flex items-center gap-8 mt-12 justify-center lg:justify-start"
+              transition={{ delay: 1.8, duration: 1 }}
+              className="flex items-center gap-12 mt-16 justify-center lg:justify-start"
             >
-              {[
-                { value: "12", label: "Members", href: "/members" },
-                { value: "3", label: "Major Events", href: "/events" },
-              ].map((stat, i) => (
-                <a
-                  key={i}
-                  href={stat.href}
-                  className="text-center group/stat hover:opacity-80 transition-opacity"
-                >
-                  <p className="font-heading text-2xl font-bold text-foreground group-hover/stat:text-accent transition-colors">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">{stat.label}</p>
-                </a>
-              ))}
+              <AnimatedCounter value={12} label="Members" href="/members" delay={1.8} />
+              <AnimatedCounter value={3} label="Major Events" href="/events" delay={2.0} />
             </motion.div>
           </div>
 
           {/* Right — Illustration */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-            className="block"
+            initial={{ opacity: 0, scale: 0.85, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="block relative z-10"
           >
             <MomentsShowcase />
           </motion.div>

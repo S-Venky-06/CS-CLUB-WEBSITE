@@ -3,54 +3,82 @@
 import AnimatedBackground from "@/components/background/AnimatedBackground";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ArrowLeft, Terminal } from "lucide-react";
+import { ArrowLeft, Terminal, ShieldAlert } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function NotFound() {
   return (
     <>
       <AnimatedBackground />
       <Navbar />
-      <main className="min-h-[80vh] flex items-center justify-center px-4 pt-24 pb-16">
-        <div className="max-w-md w-full relative group">
-          {/* Glowing purple shadow effect in background */}
-          <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-2xl group-hover:bg-primary/30 transition-all duration-500" />
+      <main className="min-h-[85vh] flex items-center justify-center px-4 pt-32 pb-16 relative overflow-hidden">
+        
+        {/* Background Cyber Elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-20 mix-blend-overlay" />
+        
+        <div className="max-w-xl w-full relative group perspective-[1000px]">
           
-          <div className="relative glass-card p-8 sm:p-10 flex flex-col items-center text-center overflow-hidden border border-glass-border">
+          <motion.div 
+            initial={{ opacity: 0, y: 40, rotateX: 20 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+            className="relative glass-prominent p-8 sm:p-12 flex flex-col items-center text-center overflow-hidden border border-red-500/30 rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.15)] backdrop-blur-2xl"
+          >
             {/* Top decorative hazard pattern */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-primary to-accent opacity-85" />
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-accent to-red-600" />
+            
+            {/* Corner brackets */}
+            <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-red-500/50" />
+            <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-red-500/50" />
+            <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-red-500/50" />
+            <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-red-500/50" />
             
             {/* Terminal warning icon */}
-            <div className="w-14 h-14 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center mb-6">
-              <Terminal className="w-6 h-6 text-accent animate-pulse" />
+            <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center mb-8 shadow-[0_0_20px_rgba(239,68,68,0.2)] relative">
+              <div className="absolute inset-0 rounded-full border border-red-500/20 animate-ping-slow" />
+              <ShieldAlert className="w-10 h-10 text-red-500" />
             </div>
 
-            {/* Glowing Monospace 404 Header */}
-            <h1 className="font-heading text-6xl sm:text-7xl font-bold text-foreground tracking-wider mb-2 select-none text-glow">
-              404
-            </h1>
+            {/* Glitching 404 Header */}
+            <div className="relative mb-4">
+              <h1 className="font-heading text-7xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-400 to-red-600 tracking-widest select-none drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                404
+              </h1>
+              <h1 className="absolute inset-0 font-heading text-7xl sm:text-9xl font-black text-cyan opacity-50 mix-blend-screen -translate-x-[2px] translate-y-[2px] animate-glitch-1 pointer-events-none select-none tracking-widest">
+                404
+              </h1>
+              <h1 className="absolute inset-0 font-heading text-7xl sm:text-9xl font-black text-accent opacity-50 mix-blend-screen translate-x-[2px] -translate-y-[2px] animate-glitch-2 pointer-events-none select-none tracking-widest">
+                404
+              </h1>
+            </div>
             
-            {/* Tech subtitle status */}
-            <span className="text-[10px] font-mono text-accent uppercase tracking-widest bg-accent/10 px-2.5 py-1 rounded border border-accent/20 mb-6">
-              STATUS: ACCESS_DENIED
-            </span>
+            {/* Tech subtitle status with typing animation */}
+            <div className="mb-8 w-full max-w-[300px] overflow-hidden whitespace-nowrap border-r-2 border-red-500 animate-[typing_2s_steps(40,end),blink-caret_0.75s_step-end_infinite] mx-auto text-center">
+              <span className="text-xs sm:text-sm font-mono text-red-400 uppercase tracking-[0.3em] font-bold">
+                <Terminal className="w-3 h-3 inline-block mr-2 -mt-1" />
+                SYSTEM_FAILURE
+              </span>
+            </div>
 
             {/* Main Message */}
-            <p className="text-foreground font-heading text-lg font-semibold mb-2">
-              The page you&apos;re looking for doesn&apos;t exist.
-            </p>
-            <p className="text-muted text-sm leading-relaxed max-w-[280px]">
-              The requested directory or file was not found on this secure node.
+            <h2 className="text-white font-heading text-2xl font-bold mb-3 tracking-wide">
+              Entity Not Found
+            </h2>
+            <p className="text-muted text-base leading-relaxed max-w-[320px] mb-10 font-medium">
+              The requested directory or sector was not found on this secure node. It may have been relocated or purged.
             </p>
 
             {/* Action Button */}
             <a
               href="/"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 mt-8 w-full rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:brightness-110 transition-all duration-300"
+              className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 w-full sm:w-auto rounded-xl bg-red-500/10 text-red-400 font-bold text-sm border border-red-500/30 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all duration-300"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Return Home
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%,100%_100%] bg-[position:-100%_0,0_0] bg-no-repeat group-hover:animate-shimmer-sweep rounded-xl" />
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="tracking-wide">Return to Mainframe</span>
             </a>
-          </div>
+          </motion.div>
         </div>
       </main>
       <Footer />

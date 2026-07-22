@@ -48,7 +48,6 @@ export default function MomentsShowcase() {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
-        // Choose a random next index that is different from the current one
         let nextIndex = prev;
         if (MOMENT_IMAGES.length > 1) {
           while (nextIndex === prev) {
@@ -59,15 +58,15 @@ export default function MomentsShowcase() {
         }
         return nextIndex;
       });
-    }, 6000); // 6 seconds
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [isHovered, hasMounted]);
 
   if (!hasMounted) {
     return (
-      <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center">
-        <div className="w-[340px] h-[340px] rounded-2xl bg-[#13131A]/85 border border-glass-border/30 animate-pulse" />
+      <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center pt-8">
+        <div className="w-[360px] h-[360px] rounded-2xl glass-card border border-glass-border/30 animate-pulse" />
       </div>
     );
   }
@@ -75,34 +74,53 @@ export default function MomentsShowcase() {
   const currentImage = MOMENT_IMAGES[currentIndex];
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center">
+    <div className="relative w-full max-w-md mx-auto aspect-square flex flex-col items-center justify-center pt-8">
+      
+      {/* Floating Badge */}
+      <motion.div 
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: -20, opacity: 1 }}
+        transition={{ delay: 1, type: "spring" }}
+        className="absolute top-0 z-20"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan/10 border border-cyan/30 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+          <div className="w-2 h-2 rounded-full bg-cyan animate-pulse" />
+          <span className="text-[10px] font-bold text-cyan tracking-widest uppercase">Live Moments</span>
+        </div>
+      </motion.div>
+
       {/* Ambient purple glow behind */}
       <div
-        className={`absolute inset-0 rounded-full blur-3xl transition-opacity duration-500 pointer-events-none ${
-          isHovered ? "opacity-55" : "opacity-35"
+        className={`absolute inset-0 rounded-full blur-3xl transition-opacity duration-700 pointer-events-none ${
+          isHovered ? "opacity-60 scale-110" : "opacity-40 scale-100"
         }`}
         style={{
           background:
-            "radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(108,63,255,0.3) 0%, transparent 70%)",
         }}
         aria-hidden="true"
       />
 
-      {/* Glassmorphic card frame wrapper */}
+      {/* Glassmorphic card frame wrapper with holographic border */}
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative w-[340px] h-[340px] rounded-2xl bg-[#13131A]/85 border border-glass-border shadow-[0_0_30px_rgba(108,99,255,0.12)] p-4.5 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:border-accent/40 hover:shadow-[0_0_40px_rgba(108,99,255,0.25)]"
+        className="relative w-[360px] h-[360px] rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(108,63,255,0.3)] group z-10"
       >
+        {/* Holographic Border Effect on Hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-primary via-cyan to-primary pointer-events-none p-[1px] -z-10">
+           <div className="w-full h-full bg-surface/90 rounded-2xl" />
+        </div>
+
         {/* Carousel image slide viewport */}
-        <div className="relative w-full h-[260px] rounded-xl overflow-hidden bg-[#0B0B0F]">
+        <div className="relative w-full h-[280px] rounded-xl overflow-hidden bg-[#050507]">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
+              initial={{ opacity: 0, scale: 1.1, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.95, filter: "blur(2px)" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="absolute inset-0 w-full h-full"
             >
               <Image
@@ -110,29 +128,42 @@ export default function MomentsShowcase() {
                 alt={currentImage.alt}
                 fill
                 priority={currentIndex === 0 || currentIndex === 1}
-                sizes="(max-width: 768px) 100vw, 360px"
-                className="object-cover transition-transform duration-700 ease-out pointer-events-none select-none"
+                sizes="(max-width: 768px) 100vw, 380px"
+                className="object-cover transition-transform duration-[10000ms] ease-linear pointer-events-none select-none"
                 style={{
-                  transform: isHovered ? "scale(1.04)" : "scale(1)",
+                  transform: isHovered ? "scale(1.15)" : "scale(1.05)",
                 }}
               />
+              
+              {/* Image Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+              
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Small pagination dots */}
-        <div className="flex justify-center items-center gap-1.5 pt-1">
+        <div className="flex justify-center items-center gap-2 pt-2">
           {MOMENT_IMAGES.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer relative overflow-hidden ${
                 index === currentIndex
-                  ? "bg-accent w-4"
-                  : "bg-muted/40 hover:bg-muted/70"
+                  ? "bg-cyan w-6 shadow-[0_0_8px_rgba(0,240,255,0.8)]"
+                  : "bg-muted/30 w-1.5 hover:bg-muted/60 hover:w-3"
               }`}
               aria-label={`Go to slide ${index + 1}`}
-            />
+            >
+              {index === currentIndex && (
+                <motion.div
+                  className="absolute inset-0 bg-white"
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ duration: 6, ease: "linear" }}
+                />
+              )}
+            </button>
           ))}
         </div>
       </div>

@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Instagram, Linkedin, Shield, Award, Users } from "lucide-react";
 import Image from "next/image";
 
@@ -164,15 +163,27 @@ function MemberCard({
   priority?: boolean;
 }) {
   const [imageError, setImageError] = useState(false);
+  const glowColor = isLeadership ? "rgba(255,85,0,0.4)" : "rgba(0,240,255,0.4)";
+  const gradientClass = isLeadership ? "from-accent to-primary" : "from-cyan to-primary";
 
   return (
-    <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border/60 hover:border-primary/30 transition-all duration-300 rounded-2xl shadow-lg">
-      {/* Rectangular Image slot */}
-      <div
-        className="relative w-full overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent aspect-[3/4]"
-      >
-        <div className="absolute inset-0 border border-primary/20" />
+    <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border hover:border-transparent transition-all duration-500 rounded-2xl shadow-lg transform-gpu hover:-translate-y-2">
+      
+      {/* Holographic Border Effect on Hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-br from-primary via-cyan to-accent pointer-events-none p-[1.5px] -z-10">
+         <div className="w-full h-full bg-[#0B0B12] rounded-2xl" />
+      </div>
 
+      {/* Ambient glow behind card */}
+      <div 
+        className="absolute -inset-2 opacity-0 group-hover:opacity-60 blur-xl transition-opacity duration-500 -z-20"
+        style={{ background: glowColor }}
+      />
+
+      {/* Image slot */}
+      <div
+        className="relative w-full overflow-hidden bg-gradient-to-br from-surface to-background aspect-[3/4]"
+      >
         {!imageError ? (
           <Image
             src={member.image}
@@ -180,12 +191,12 @@ function MemberCard({
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
             onError={() => setImageError(true)}
-            className="object-cover object-center filter grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="object-cover object-center filter grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out group-hover:scale-105"
             priority={priority}
             loading={priority ? undefined : "lazy"}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/30 via-secondary/15 to-surface">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface to-[#13131A]">
             <span
               className={`font-heading font-bold text-foreground tracking-widest ${
                 isLeadership ? "text-3xl" : "text-xl"
@@ -196,43 +207,40 @@ function MemberCard({
           </div>
         )}
 
-        {/* Cyber scanner details */}
-        {isLeadership && (
-          <>
-            <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-accent/40" />
-            <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-accent/40" />
-            <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-accent/40" />
-            <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-accent/40" />
-          </>
-        )}
-        <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/15 to-transparent -translate-y-full group-hover:translate-y-full transition-transform duration-1000 ease-out" />
+        {/* Cyber scanner frame */}
+        <div className="absolute inset-0 border-[4px] border-[#0B0B12] opacity-50 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B12] via-transparent to-transparent opacity-80 z-10" />
+        <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none z-10 mix-blend-overlay" />
+        
+        {/* Animated Scanline */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan/20 to-transparent -translate-y-full group-hover:animate-[scan-line_2s_linear_infinite] z-20 pointer-events-none" />
       </div>
 
       {/* Card Content block */}
-      <div className="p-5 flex flex-col flex-grow text-left">
+      <div className="p-5 flex flex-col flex-grow text-left relative z-20 bg-[#0B0B12]/80 backdrop-blur-md">
         {member.role && (
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest mb-1.5">
+          <span className={`inline-block w-max px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest mb-3 bg-gradient-to-r ${gradientClass} text-white shadow-md`}>
             {member.role}
           </span>
         )}
         <h4
-          className={`font-heading font-bold text-foreground mb-1 ${isLeadership ? "text-xl" : "text-base"
-            }`}
+          className={`font-heading font-bold text-foreground mb-1.5 transition-colors duration-300 group-hover:text-white ${
+            isLeadership ? "text-xl" : "text-base"
+          }`}
         >
           {member.name}
         </h4>
-        <p className="text-xs text-muted leading-relaxed mb-5 flex-grow">
+        <p className="text-xs text-muted leading-relaxed mb-4 flex-grow group-hover:text-muted/90 transition-colors">
           {member.specialty}
         </p>
 
         {/* Social link bar */}
         {((member.linkedin && member.linkedin !== "#") || (member.instagram && member.instagram !== "#")) && (
-          <div className="flex items-center gap-3 pt-3.5 border-t border-glass-border/40">
+          <div className="flex items-center gap-3 pt-4 border-t border-glass-border">
             {member.linkedin && member.linkedin !== "#" && (
               <a
                 href={member.linkedin}
-                className="w-8 h-8 rounded-lg bg-surface border border-glass-border flex items-center justify-center text-muted hover:text-foreground hover:border-secondary/40 hover:bg-primary/10 transition-all duration-200"
+                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-cyan hover:border-cyan hover:shadow-[0_0_10px_rgba(0,240,255,0.4)] hover:-translate-y-1 transition-all duration-300"
                 aria-label={`${member.name}'s LinkedIn`}
               >
                 <Linkedin className="w-3.5 h-3.5" />
@@ -241,7 +249,7 @@ function MemberCard({
             {member.instagram && member.instagram !== "#" && (
               <a
                 href={member.instagram}
-                className="w-8 h-8 rounded-lg bg-surface border border-glass-border flex items-center justify-center text-muted hover:text-foreground hover:border-secondary/40 hover:bg-primary/10 transition-all duration-200"
+                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-accent hover:border-accent hover:shadow-[0_0_10px_rgba(255,85,0,0.4)] hover:-translate-y-1 transition-all duration-300"
                 aria-label={`${member.name}'s Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
@@ -257,97 +265,124 @@ function MemberCard({
 export default function MembersSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [activeTab, setActiveTab] = useState<"leadership" | "leads" | "core">("leadership");
+
+  const tabs = [
+    { id: "leadership", label: "Leadership", icon: Shield, color: "text-accent" },
+    { id: "leads", label: "Team Leads", icon: Award, color: "text-cyan" },
+    { id: "core", label: "Core Members", icon: Users, color: "text-primary" },
+  ] as const;
 
   return (
-    <section id="members" className="relative py-24 sm:py-32" ref={ref}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="members" className="relative py-28 sm:py-36 overflow-hidden" ref={ref}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+          animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-16 relative"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-accent mb-3 block">
-            Command Structure
-          </span>
-          <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Meet the Core Team
+          <div className="inline-block relative mb-4">
+            <span className="text-sm font-bold tracking-[0.2em] uppercase text-cyan block relative z-10">
+              Command Structure
+            </span>
+            <motion.div 
+              initial={{ scaleX: 0 }}
+              animate={isInView ? { scaleX: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
+              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent origin-left"
+            />
+          </div>
+          <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+            Meet the <span className="gradient-text">Core Team</span>
           </h2>
-          <p className="text-muted text-base sm:text-lg max-w-2xl mx-auto">
+          <p className="text-muted text-lg max-w-2xl mx-auto">
             The dedicated student leaders driving the training, operations, and technical
             innovation of the Cybersecurity Club.
           </p>
         </motion.div>
 
-        {/* 1. CLUB LEADERSHIP */}
-        <div className="mb-20">
-          <div className="flex items-center gap-2 mb-8 justify-center md:justify-start">
-            <Shield className="w-5 h-5 text-accent" />
-            <h3 className="font-heading text-lg font-bold tracking-wider text-muted uppercase">
-              Club Leadership
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
-            {leadership.map((member, i) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 40 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.1 * i }}
-              >
-                <MemberCard member={member} isLeadership={true} priority={true} />
-              </motion.div>
-            ))}
-          </div>
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
+                activeTab === tab.id ? "text-white" : "text-muted hover:text-foreground hover:bg-surface/50"
+              }`}
+            >
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTabIndicator"
+                  className="absolute inset-0 rounded-full bg-surface border border-glass-border-hover shadow-[0_0_15px_rgba(108,63,255,0.2)]"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <tab.icon className={`w-4 h-4 relative z-10 ${activeTab === tab.id ? tab.color : ""}`} />
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* 2. TEAM LEADS */}
-        <div className="mb-20">
-          <div className="flex items-center gap-2 mb-8 justify-center md:justify-start">
-            <Award className="w-5 h-5 text-secondary" />
-            <h3 className="font-heading text-lg font-bold tracking-wider text-muted uppercase">
-              Team Leads
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-            {leads.map((member, i) => (
+        {/* Tab Content */}
+        <div className="min-h-[500px]">
+          <AnimatePresence mode="wait">
+            {activeTab === "leadership" && (
               <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.08 * i }}
+                key="leadership"
+                initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
+                transition={{ duration: 0.4 }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto"
               >
-                <MemberCard member={member} isLeadership={false} />
+                {leadership.map((member, i) => (
+                  <MemberCard key={member.name} member={member} isLeadership={true} priority={true} />
+                ))}
               </motion.div>
-            ))}
-          </div>
-        </div>
+            )}
 
-        {/* 3. CORE TEAM MEMBERS */}
-        <div>
-          <div className="flex items-center gap-2 mb-8 justify-center md:justify-start">
-            <Users className="w-5 h-5 text-muted" />
-            <h3 className="font-heading text-lg font-bold tracking-wider text-muted uppercase">
-              Core Members
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-5">
-            {coreTeam.map((member, i) => (
+            {activeTab === "leads" && (
               <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: 0.05 * i }}
+                key="leads"
+                initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
+                transition={{ duration: 0.4 }}
+                className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6"
               >
-                <MemberCard member={member} isLeadership={false} />
+                {leads.map((member, i) => (
+                  <MemberCard key={member.name} member={member} isLeadership={false} priority={false} />
+                ))}
               </motion.div>
-            ))}
-          </div>
+            )}
+
+            {activeTab === "core" && (
+              <motion.div
+                key="core"
+                initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
+                transition={{ duration: 0.4 }}
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6"
+              >
+                {coreTeam.map((member, i) => (
+                  <MemberCard key={member.name} member={member} isLeadership={false} priority={false} />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>
+      
+      {/* Decorative Orbs */}
+      <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 -left-1/4 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
     </section>
   );
 }
