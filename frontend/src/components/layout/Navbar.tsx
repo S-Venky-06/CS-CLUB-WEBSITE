@@ -311,7 +311,7 @@ export default function Navbar() {
             {loading ? (
               <div className="hidden md:block w-24 h-9 bg-surface/50 animate-pulse rounded-xl border border-glass-border" />
             ) : !user ? (
-              <div className="hidden md:block scale-95 origin-right rounded-lg overflow-hidden bg-[#13131A] border border-white/10 shadow-md [&>div]:!bg-[#13131A] [&_iframe]:!bg-[#13131A]">
+              <div className="hidden md:block scale-95 origin-right rounded-full overflow-hidden bg-[#0A0A10] border border-white/10 p-0.5 shadow-lg max-w-[220px]">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
                     if (credentialResponse.credential) {
@@ -320,7 +320,7 @@ export default function Navbar() {
                   }}
                   onError={() => console.error("Google Login Failed")}
                   theme="filled_black"
-                  shape="rectangular"
+                  shape="pill"
                   text="signin"
                 />
               </div>
@@ -459,19 +459,21 @@ export default function Navbar() {
               {loading ? (
                 <div className="w-full h-12 bg-surface/50 animate-pulse rounded-xl border border-glass-border mt-4" />
               ) : !user ? (
-                <div className="mt-6 pt-6 border-t border-white/10 flex justify-center rounded-lg overflow-hidden bg-[#13131A] [&>div]:!bg-[#13131A] [&_iframe]:!bg-[#13131A]">
-                  <GoogleLogin
-                    onSuccess={async (credentialResponse) => {
-                      if (credentialResponse.credential) {
-                        await login(credentialResponse.credential);
-                        setIsMobileOpen(false);
-                      }
-                    }}
-                    onError={() => console.error("Google Login Failed")}
-                    theme="filled_black"
-                    shape="rectangular"
-                    width="100%"
-                  />
+                <div className="mt-6 pt-6 border-t border-white/10 flex justify-center">
+                  <div className="w-full max-w-xs rounded-full overflow-hidden bg-[#0A0A10] border border-white/10 p-1 flex justify-center shadow-lg">
+                    <GoogleLogin
+                      onSuccess={async (credentialResponse) => {
+                        if (credentialResponse.credential) {
+                          await login(credentialResponse.credential);
+                          setIsMobileOpen(false);
+                        }
+                      }}
+                      onError={() => console.error("Google Login Failed")}
+                      theme="filled_black"
+                      shape="pill"
+                      width="100%"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
