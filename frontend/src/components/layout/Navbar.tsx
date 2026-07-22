@@ -327,7 +327,7 @@ export default function Navbar() {
                     }
                   }}
                   onError={() => console.error("Google Login Failed")}
-                  theme="outline"
+                  theme="filled_black"
                   shape="rectangular"
                   text="signin"
                 />
@@ -481,7 +481,7 @@ export default function Navbar() {
                       }
                     }}
                     onError={() => console.error("Google Login Failed")}
-                    theme="outline"
+                    theme="filled_black"
                     shape="rectangular"
                     width="100%"
                   />
