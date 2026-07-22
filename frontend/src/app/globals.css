@@ -229,12 +229,10 @@ input:focus, textarea:focus, select:focus {
 /* Fix Google GSI SDK iframe white background box & force transparent pill */
 iframe[src*="accounts.google.com"],
 iframe[id^="gsi_"],
-div[id^="gsi_"],
-div:has(> iframe[src*="accounts.google.com"]) {
+div[id^="gsi_"] {
   background-color: transparent !important;
   background: transparent !important;
   border-radius: 9999px !important;
   border: none !important;
   box-shadow: none !important;
-}
 }
