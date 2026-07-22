@@ -2,19 +2,39 @@
 
 /* ===== Custom Theme Tokens (Tailwind v4) ===== */
 @theme inline {
-  --color-background: #09090B;
-  --color-surface: #13131A;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-primary: #5B2A86;
   --color-secondary: #7A3EB1;
   --color-accent: #FF7A1A;
-  --color-foreground: #F8FAFC;
-  --color-muted: #A1A1AA;
-  --color-glass: rgba(19, 19, 26, 0.6);
-  --color-glass-border: rgba(91, 42, 134, 0.15);
-  --color-glass-border-hover: rgba(122, 62, 177, 0.3);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-glass-border-hover: var(--glass-border-hover);
 
   --font-heading: "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
+}
+
+:root {
+  --background: #09090B;
+  --surface: #13131A;
+  --foreground: #F8FAFC;
+  --muted: #A1A1AA;
+  --glass: rgba(19, 19, 26, 0.5);
+  --glass-border: rgba(91, 42, 134, 0.12);
+  --glass-border-hover: rgba(122, 62, 177, 0.3);
+}
+
+.light {
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --foreground: #09090B;
+  --muted: #52525B;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(91, 42, 134, 0.1);
+  --glass-border-hover: rgba(122, 62, 177, 0.25);
 }
 
 /* ===== Base Styles ===== */
@@ -27,10 +47,11 @@ html {
 }
 
 body {
-  background-color: #09090B;
-  color: #F8FAFC;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-body);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ===== Scrollbar Styling ===== */
@@ -38,7 +59,7 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #09090B;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
   background: #5B2A86;
@@ -56,23 +77,23 @@ body {
 
 /* ===== Glassmorphism Utility ===== */
 .glass {
-  background: rgba(19, 19, 26, 0.6);
+  background: var(--glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(91, 42, 134, 0.15);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-card {
-  background: rgba(19, 19, 26, 0.5);
+  background: var(--glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(91, 42, 134, 0.12);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   transition: all 0.3s ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(122, 62, 177, 0.3);
+  border-color: var(--glass-border-hover);
   box-shadow: 0 8px 32px rgba(91, 42, 134, 0.15);
 }
 

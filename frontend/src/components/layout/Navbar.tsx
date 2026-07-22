@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Bell, Clock, LogOut, Shield, User } from "lucide-react";
+import { Menu, X, Bell, Clock, LogOut, Shield, User, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { GoogleLogin } from "@react-oauth/google";
@@ -24,12 +25,18 @@ const initialNotifications: {
 }[] = [];
 
 export default function Navbar() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("Home");
   const [notifications, setNotifications] = useState(initialNotifications);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Fetch active notifications/announcements
   useEffect(() => {
@@ -209,6 +216,23 @@ export default function Navbar() {
 
           {/* Right — CTA + Mobile Toggle */}
           <div className="flex items-center gap-3">
+            {/* Desktop Theme Toggle */}
+            {mounted ? (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="hidden md:block p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface border border-transparent hover:border-glass-border transition-all duration-200 cursor-pointer"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5 transition-transform hover:rotate-45 duration-300" />
+                ) : (
+                  <Moon className="w-5 h-5 transition-transform hover:-rotate-12 duration-300" />
+                )}
+              </button>
+            ) : (
+              <div className="hidden md:block w-9 h-9" />
+            )}
+
             {/* Notifications Bell */}
             <div className="relative">
               <button
@@ -385,6 +409,19 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             )}
+            {/* Mobile Theme Toggle */}
+            {mounted ? (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="md:hidden p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-400" />}
+              </button>
+            ) : (
+              <div className="md:hidden w-9 h-9" />
+            )}
+
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               className="md:hidden p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"

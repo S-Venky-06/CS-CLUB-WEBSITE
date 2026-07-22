@@ -70,12 +70,21 @@ export default function AnnouncementBanner() {
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: "auto", opacity: 1 }}
         exit={{ height: 0, opacity: 0 }}
-        className="w-full relative bg-gradient-to-r from-primary/10 via-purple-500/10 to-accent/10 border-b border-glass-border/30 backdrop-blur-md z-50 overflow-hidden"
+        className="w-full relative bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-amber-500/20 border-b border-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.25)] backdrop-blur-md z-50 overflow-hidden"
       >
+        {/* Subtle scanline animation overlay */}
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-amber-400 to-transparent animate-scan" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
-          <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
-            {/* Megaphone icon */}
-            <Megaphone className="w-4 h-4 text-primary flex-shrink-0 animate-bounce" />
+          <div className="flex-1 flex items-center justify-center gap-2.5 min-w-0">
+            {/* Glowing Megaphone icon */}
+            <Megaphone className="w-4 h-4 text-amber-400 flex-shrink-0 animate-bounce" />
+
+            {/* Neon Badge */}
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-[10px] font-bold text-amber-300 uppercase tracking-wider animate-pulse flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              LATEST UPDATE
+            </span>
             
             {/* Sliding text */}
             <div className="relative overflow-hidden h-5 w-full flex items-center justify-center">
@@ -86,7 +95,7 @@ export default function AnnouncementBanner() {
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -15, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="text-xs font-semibold text-foreground/90 text-center truncate px-2"
+                  className="text-xs font-bold text-amber-200/90 text-center truncate px-1 tracking-wide"
                 >
                   {currentAnnouncement.message}
                 </motion.span>
@@ -97,7 +106,7 @@ export default function AnnouncementBanner() {
           {/* Dismiss button */}
           <button
             onClick={handleDismiss}
-            className="p-1 rounded-lg hover:bg-white/5 text-muted hover:text-foreground transition-colors cursor-pointer flex-shrink-0"
+            className="p-1 rounded-lg hover:bg-amber-500/10 text-amber-400/70 hover:text-amber-300 transition-colors cursor-pointer flex-shrink-0"
             aria-label="Dismiss announcement"
           >
             <X className="w-3.5 h-3.5" />

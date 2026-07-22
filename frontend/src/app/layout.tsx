@@ -57,6 +57,7 @@ export const viewport = {
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { BackendWakeupProvider } from "@/components/providers/BackendWakeupProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -67,6 +68,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
         <a
@@ -75,9 +77,11 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <AuthProvider>
-          <BackendWakeupProvider>{children}</BackendWakeupProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <BackendWakeupProvider>{children}</BackendWakeupProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
