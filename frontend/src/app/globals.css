@@ -223,7 +223,18 @@ input:focus, textarea:focus, select:focus {
   height: 4px;
   background: rgba(0, 240, 255, 0.5);
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
-  animation: scan-line 6s linear infinite;
-  pointer-events: none;
-  z-index: 50;
+  animation: scan-line 3s linear infinite;
+}
+
+/* Fix Google GSI SDK iframe white background box & force transparent pill */
+iframe[src*="accounts.google.com"],
+iframe[id^="gsi_"],
+div[id^="gsi_"],
+div:has(> iframe[src*="accounts.google.com"]) {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-radius: 9999px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
 }

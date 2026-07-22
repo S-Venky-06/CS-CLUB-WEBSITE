@@ -311,7 +311,7 @@ export default function Navbar() {
             {loading ? (
               <div className="hidden md:block w-24 h-9 bg-surface/50 animate-pulse rounded-xl border border-glass-border" />
             ) : !user ? (
-              <div className="hidden md:block scale-95 origin-right rounded-full overflow-hidden bg-[#0A0A10] border border-white/10 p-0.5 shadow-lg max-w-[220px]">
+              <div className="hidden md:inline-flex rounded-full overflow-hidden bg-[#0A0A10] p-0.5 shadow-md [&_iframe]:!bg-transparent [&>div]:!bg-transparent">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
                     if (credentialResponse.credential) {
@@ -321,6 +321,7 @@ export default function Navbar() {
                   onError={() => console.error("Google Login Failed")}
                   theme="filled_black"
                   shape="pill"
+                  size="medium"
                   text="signin"
                 />
               </div>
@@ -460,7 +461,7 @@ export default function Navbar() {
                 <div className="w-full h-12 bg-surface/50 animate-pulse rounded-xl border border-glass-border mt-4" />
               ) : !user ? (
                 <div className="mt-6 pt-6 border-t border-white/10 flex justify-center">
-                  <div className="w-full max-w-xs rounded-full overflow-hidden bg-[#0A0A10] border border-white/10 p-1 flex justify-center shadow-lg">
+                  <div className="inline-flex rounded-full overflow-hidden bg-[#0A0A10] p-0.5 shadow-lg [&_iframe]:!bg-transparent [&>div]:!bg-transparent">
                     <GoogleLogin
                       onSuccess={async (credentialResponse) => {
                         if (credentialResponse.credential) {
@@ -471,7 +472,7 @@ export default function Navbar() {
                       onError={() => console.error("Google Login Failed")}
                       theme="filled_black"
                       shape="pill"
-                      width="100%"
+                      size="medium"
                     />
                   </div>
                 </div>

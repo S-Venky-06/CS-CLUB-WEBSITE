@@ -153,20 +153,20 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start"
+              className="flex flex-row items-center gap-3 sm:gap-5 justify-center lg:justify-start w-full max-w-sm sm:max-w-none mx-auto lg:mx-0"
             >
               <Link
                 href="/events"
-                className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-white font-semibold text-sm shadow-lg shadow-primary/30 overflow-hidden transition-all duration-300 hover:shadow-primary/50 hover:-translate-y-1"
+                className="group relative inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-3 sm:py-4 rounded-xl bg-primary text-white font-semibold text-xs sm:text-sm shadow-lg shadow-primary/30 overflow-hidden transition-all duration-300 hover:shadow-primary/50 hover:-translate-y-1 flex-1 sm:flex-initial text-center"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                <span className="relative z-10">Explore Events</span>
-                <ArrowRight className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="relative z-10 whitespace-nowrap">Explore Events</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               
               <a
                 href="#about"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl glass-card text-foreground font-semibold text-sm transition-all duration-300 hover:border-cyan/50 hover:bg-cyan/5 hover:text-cyan hover:-translate-y-1"
+                className="group inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3 sm:py-4 rounded-xl glass-card text-foreground font-semibold text-xs sm:text-sm transition-all duration-300 hover:border-cyan/50 hover:bg-cyan/5 hover:text-cyan hover:-translate-y-1 flex-1 sm:flex-initial text-center whitespace-nowrap"
               >
                 Learn More
               </a>

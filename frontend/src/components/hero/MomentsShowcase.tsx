@@ -65,8 +65,8 @@ export default function MomentsShowcase() {
 
   if (!hasMounted) {
     return (
-      <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center pt-8">
-        <div className="w-[360px] h-[360px] rounded-2xl glass-card border border-glass-border/30 animate-pulse" />
+      <div className="relative w-full max-w-[310px] sm:max-w-[360px] mx-auto aspect-square flex items-center justify-center pt-6 sm:pt-8">
+        <div className="w-full h-full rounded-2xl glass-card border border-glass-border/30 animate-pulse" />
       </div>
     );
   }
@@ -74,18 +74,18 @@ export default function MomentsShowcase() {
   const currentImage = MOMENT_IMAGES[currentIndex];
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-square flex flex-col items-center justify-center pt-8">
+    <div className="relative w-full max-w-[310px] sm:max-w-[360px] mx-auto flex flex-col items-center justify-center pt-6 sm:pt-8">
       
       {/* Floating Badge */}
       <motion.div 
         initial={{ y: 10, opacity: 0 }}
-        animate={{ y: -20, opacity: 1 }}
+        animate={{ y: -16, opacity: 1 }}
         transition={{ delay: 1, type: "spring" }}
         className="absolute top-0 z-20"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan/10 border border-cyan/30 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-cyan/10 border border-cyan/30 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
           <div className="w-2 h-2 rounded-full bg-cyan animate-pulse" />
-          <span className="text-[10px] font-bold text-cyan tracking-widest uppercase">Live Moments</span>
+          <span className="text-[9px] sm:text-[10px] font-bold text-cyan tracking-widest uppercase">Live Moments</span>
         </div>
       </motion.div>
 
@@ -105,7 +105,7 @@ export default function MomentsShowcase() {
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative w-[360px] h-[360px] rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(108,63,255,0.3)] group z-10"
+        className="relative w-full aspect-square rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(108,63,255,0.3)] group z-10"
       >
         {/* Holographic Border Effect on Hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-primary via-cyan to-primary pointer-events-none p-[1px] -z-10">
@@ -113,7 +113,7 @@ export default function MomentsShowcase() {
         </div>
 
         {/* Carousel image slide viewport */}
-        <div className="relative w-full h-[280px] rounded-xl overflow-hidden bg-[#050507]">
+        <div className="relative w-full h-[220px] sm:h-[280px] rounded-xl overflow-hidden bg-[#050507]">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
