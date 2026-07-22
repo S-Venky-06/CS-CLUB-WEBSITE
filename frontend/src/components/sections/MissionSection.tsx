@@ -145,8 +145,8 @@ export default function MissionSection() {
             />
           </div>
           
-          <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
-            Driven by <span className="gradient-text">Purpose</span>
+          <h2 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
+            Driven by <span className="gradient-text inline-block">Purpose</span>
           </h2>
           <p className="text-muted text-lg sm:text-xl max-w-2xl mx-auto font-medium">
             We bridge the gap between academic learning and real-world

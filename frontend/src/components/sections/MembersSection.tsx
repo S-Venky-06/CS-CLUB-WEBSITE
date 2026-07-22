@@ -219,7 +219,7 @@ function MemberCard({
       {/* Card Content block */}
       <div className="p-5 flex flex-col flex-grow text-left relative z-20 bg-[#0B0B12]/80 backdrop-blur-md">
         {member.role && (
-          <span className={`inline-block w-max px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest mb-3 bg-gradient-to-r ${gradientClass} text-white shadow-md`}>
+          <span className={`inline-block max-w-full px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider mb-3 bg-gradient-to-r ${gradientClass} text-white shadow-md leading-tight text-left`}>
             {member.role}
           </span>
         )}

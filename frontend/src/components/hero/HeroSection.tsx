@@ -174,10 +174,10 @@ export default function HeroSection() {
 
             {/* Stats strip */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.8, duration: 1 }}
-              className="flex items-center gap-12 mt-16 justify-center lg:justify-start"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="flex items-center gap-6 sm:gap-12 mt-10 sm:mt-16 justify-center lg:justify-start max-w-xs sm:max-w-none mx-auto lg:mx-0"
             >
               <AnimatedCounter value={12} label="Members" href="/members" delay={1.8} />
               <AnimatedCounter value={3} label="Major Events" href="/events" delay={2.0} />

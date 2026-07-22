@@ -311,7 +311,7 @@ export default function Navbar() {
             {loading ? (
               <div className="hidden md:block w-24 h-9 bg-surface/50 animate-pulse rounded-xl border border-glass-border" />
             ) : !user ? (
-              <div className="hidden md:block scale-95 origin-right">
+              <div className="hidden md:block scale-95 origin-right rounded-lg overflow-hidden bg-[#13131A] border border-white/10 shadow-md [&>div]:!bg-[#13131A] [&_iframe]:!bg-[#13131A]">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
                     if (credentialResponse.credential) {
@@ -459,7 +459,7 @@ export default function Navbar() {
               {loading ? (
                 <div className="w-full h-12 bg-surface/50 animate-pulse rounded-xl border border-glass-border mt-4" />
               ) : !user ? (
-                <div className="flex justify-center mt-6 scale-95 origin-center bg-surface/30 p-2 rounded-xl border border-glass-border">
+                <div className="mt-6 pt-6 border-t border-white/10 flex justify-center rounded-lg overflow-hidden bg-[#13131A] [&>div]:!bg-[#13131A] [&_iframe]:!bg-[#13131A]">
                   <GoogleLogin
                     onSuccess={async (credentialResponse) => {
                       if (credentialResponse.credential) {
