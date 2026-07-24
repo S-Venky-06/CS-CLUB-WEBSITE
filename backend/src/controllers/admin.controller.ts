@@ -481,8 +481,13 @@ export const deleteAdminAnnouncement = asyncHandler(
  */
 export const getPublicAnnouncements = asyncHandler(
   async (_req: Request, res: Response): Promise<void> => {
-    const items = await findActiveAnnouncements();
-    sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", items);
+    try {
+      const items = await findActiveAnnouncements();
+      sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", items);
+    } catch (err: any) {
+      console.warn("[ANNOUNCEMENTS] Failed to fetch public announcements, returning empty roster:", err.message || err);
+      sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", []);
+    }
   },
 );
 

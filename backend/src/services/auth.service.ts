@@ -47,6 +47,7 @@ export async function verifyGoogleToken(idToken: string): Promise<GoogleUser> {
       email_verified: !!email_verified,
     };
   } catch (error) {
+    console.error("[GOOGLE AUTH ERROR]", (error as Error).message || error);
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       HttpStatus.UNAUTHORIZED,
