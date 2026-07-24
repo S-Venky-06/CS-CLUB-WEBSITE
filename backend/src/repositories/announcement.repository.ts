@@ -3,7 +3,9 @@ import { env } from "../config/index.js";
 
 export interface Announcement {
   announcementId: string;
+  title: string;
   message: string;
+  type: "info" | "warning" | "urgent";
   active: boolean;
   createdAt: string;
 }
@@ -13,7 +15,7 @@ export async function findActiveAnnouncements(): Promise<Announcement[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-      range: "Announcements!A2:D1000",
+      range: "Announcements!A2:F1000",
     });
 
     const rows = response.data.values;
@@ -22,18 +24,25 @@ export async function findActiveAnnouncements(): Promise<Announcement[]> {
     }
 
     const items: Announcement[] = rows
-      .map((row: any) => ({
-        announcementId: row[0] || "",
-        message: row[1] || "",
-        active: row[2] === "TRUE",
-        createdAt: row[3] || "",
-      }))
+      .map((row: any) => {
+        // Support both old 4-column schema [id, msg, active, createdAt] 
+        // and new 6-column schema [id, title, msg, type, active, createdAt]
+        const has6Cols = row.length >= 6 || (row[3] === "info" || row[3] === "warning" || row[3] === "urgent");
+        return {
+          announcementId: row[0] || "",
+          title: has6Cols ? (row[1] || "Announcement") : "Announcement",
+          message: has6Cols ? (row[2] || "") : (row[1] || ""),
+          type: (has6Cols ? row[3] : "info") as "info" | "warning" | "urgent",
+          active: (has6Cols ? row[4] : row[2]) === "TRUE",
+          createdAt: (has6Cols ? row[5] : row[3]) || "",
+        };
+      })
       .filter((item: Announcement) => item.announcementId && item.active);
 
     // Sort newest first
     return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch (error: any) {
-    console.warn("Failed to fetch active announcements (tab probably missing):", error.message || error);
+    console.warn("Failed to fetch active announcements:", error.message || error);
     return [];
   }
 }
@@ -43,7 +52,7 @@ export async function findAllAnnouncements(): Promise<Announcement[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-      range: "Announcements!A2:D1000",
+      range: "Announcements!A2:F1000",
     });
 
     const rows = response.data.values;
@@ -52,32 +61,42 @@ export async function findAllAnnouncements(): Promise<Announcement[]> {
     }
 
     const items: Announcement[] = rows
-      .map((row: any) => ({
-        announcementId: row[0] || "",
-        message: row[1] || "",
-        active: row[2] === "TRUE",
-        createdAt: row[3] || "",
-      }))
+      .map((row: any) => {
+        const has6Cols = row.length >= 6 || (row[3] === "info" || row[3] === "warning" || row[3] === "urgent");
+        return {
+          announcementId: row[0] || "",
+          title: has6Cols ? (row[1] || "Announcement") : "Announcement",
+          message: has6Cols ? (row[2] || "") : (row[1] || ""),
+          type: (has6Cols ? row[3] : "info") as "info" | "warning" | "urgent",
+          active: (has6Cols ? row[4] : row[2]) === "TRUE",
+          createdAt: (has6Cols ? row[5] : row[3]) || "",
+        };
+      })
       .filter((item: Announcement) => item.announcementId);
 
     // Sort newest first
     return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch (error: any) {
-    console.warn("Failed to fetch all announcements (tab probably missing):", error.message || error);
+    console.warn("Failed to fetch all announcements:", error.message || error);
     return [];
   }
 }
 
-export async function createAnnouncement(message: string): Promise<Announcement> {
+export async function createAnnouncement(
+  title: string,
+  message: string,
+  type: "info" | "warning" | "urgent" = "info"
+): Promise<Announcement> {
   const sheets = getSheetsClient();
   const id = `ANN-${Date.now()}`;
   const timestamp = new Date().toISOString();
+  const cleanTitle = title.trim() || "Announcement";
 
   // 1. Verify / bootstrap Announcements sheet tab if missing
   try {
     await sheets.spreadsheets.values.get({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-      range: "Announcements!A2:D2",
+      range: "Announcements!A1:F1",
     });
   } catch (err: any) {
     console.log("Announcements tab missing. Attempting to bootstrap Announcements worksheet...");
@@ -96,13 +115,13 @@ export async function createAnnouncement(message: string): Promise<Announcement>
           ],
         },
       });
-      // Write headers
+      // Write 6 headers
       await sheets.spreadsheets.values.update({
         spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-        range: "Announcements!A1:D1",
+        range: "Announcements!A1:F1",
         valueInputOption: "RAW",
         requestBody: {
-          values: [["announcementId", "message", "active", "createdAt"]],
+          values: [["announcementId", "title", "message", "type", "active", "createdAt"]],
         },
       });
     } catch (bootstrapErr: any) {
@@ -111,11 +130,25 @@ export async function createAnnouncement(message: string): Promise<Announcement>
     }
   }
 
+  // Ensure header is updated to 6 columns if it was 4
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
+      range: "Announcements!A1:F1",
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [["announcementId", "title", "message", "type", "active", "createdAt"]],
+      },
+    });
+  } catch {
+    // Ignore header update errors
+  }
+
   // 2. Append new announcement row
-  const values = [[id, message, "TRUE", timestamp]];
+  const values = [[id, cleanTitle, message, type, "TRUE", timestamp]];
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Announcements!A2:D2",
+    range: "Announcements!A2:F2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -124,7 +157,9 @@ export async function createAnnouncement(message: string): Promise<Announcement>
 
   return {
     announcementId: id,
+    title: cleanTitle,
     message,
+    type,
     active: true,
     createdAt: timestamp,
   };
@@ -135,7 +170,7 @@ export async function toggleAnnouncementActive(id: string, active: boolean): Pro
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Announcements!A2:A1000",
+    range: "Announcements!A2:F1000",
   });
 
   const rows = response.data.values || [];
@@ -143,9 +178,13 @@ export async function toggleAnnouncementActive(id: string, active: boolean): Pro
 
   if (index !== -1) {
     const rowNumber = index + 2;
+    const row = rows[index];
+    const has6Cols = row.length >= 6 || (row[3] === "info" || row[3] === "warning" || row[3] === "urgent");
+    const activeColumn = has6Cols ? "E" : "C";
+
     await sheets.spreadsheets.values.update({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-      range: `Announcements!C${rowNumber}`,
+      range: `Announcements!${activeColumn}${rowNumber}`,
       valueInputOption: "RAW",
       requestBody: {
         values: [[active ? "TRUE" : "FALSE"]],
@@ -159,7 +198,7 @@ export async function deleteAnnouncement(id: string): Promise<void> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Announcements!A2:A1000",
+    range: "Announcements!A2:F1000",
   });
 
   const rows = response.data.values || [];
@@ -170,7 +209,7 @@ export async function deleteAnnouncement(id: string): Promise<void> {
     // Clear values of the matching row
     await sheets.spreadsheets.values.clear({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-      range: `Announcements!A${rowNumber}:D${rowNumber}`,
+      range: `Announcements!A${rowNumber}:F${rowNumber}`,
     });
   }
 }

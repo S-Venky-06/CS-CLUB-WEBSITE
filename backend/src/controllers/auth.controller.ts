@@ -39,9 +39,13 @@ export async function googleLogin(
       } else if (env.ADMIN_EMAILS.includes(email)) {
         role = "admin";
       } else {
-        const member = await findMemberByEmail(email);
-        if (member) {
-          role = member.role;
+        try {
+          const member = await findMemberByEmail(email);
+          if (member) {
+            role = member.role;
+          }
+        } catch (err) {
+          console.warn("[AUTH] Google Sheets not configured or query failed, defaulting to 'member' role:", (err as Error).message);
         }
       }
 

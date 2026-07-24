@@ -50,8 +50,9 @@ export default function Navbar() {
           
           const mapped = activeItems.map((item: any) => ({
             id: item.announcementId,
-            title: "Announcement",
+            title: item.title || "Announcement",
             description: item.message,
+            type: item.type || "info",
             time: new Date(item.createdAt).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
@@ -274,32 +275,51 @@ export default function Navbar() {
                             No new notifications.
                           </div>
                         ) : (
-                          notifications.map((notif) => (
-                            <div
-                              key={notif.id}
-                              className={`p-4 rounded-xl border transition-all duration-300 ${
-                                notif.unread
-                                  ? "bg-[#141226] border-primary/40 shadow-inner"
-                                  : "bg-[#111118] border-white/10 hover:border-white/20"
-                              }`}
-                            >
-                              <div className="flex justify-between items-start gap-2 mb-1.5">
-                                <h4 className={`font-heading text-xs font-bold ${notif.unread ? "text-cyan" : "text-white"}`}>
-                                  {notif.title}
-                                </h4>
-                                {notif.unread && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_5px_rgba(0,240,255,0.8)] flex-shrink-0 mt-1 animate-pulse" />
-                                )}
+                          notifications.map((notif: any) => {
+                            const isUrgent = notif.type === "warning" || notif.type === "urgent";
+                            const isTip = notif.type === "urgent";
+                            return (
+                              <div
+                                key={notif.id}
+                                className={`p-4 rounded-xl border transition-all duration-300 ${
+                                  notif.unread
+                                    ? isUrgent
+                                      ? "bg-[#1F1216] border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                                      : isTip
+                                      ? "bg-[#1A1226] border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                                      : "bg-[#121826] border-cyan/40 shadow-[0_0_15px_rgba(0,240,255,0.15)]"
+                                    : "bg-[#111118] border-white/10 hover:border-white/20"
+                                }`}
+                              >
+                                <div className="flex justify-between items-start gap-2 mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                                      isUrgent 
+                                        ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                        : isTip
+                                        ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
+                                        : "bg-cyan/20 text-cyan border-cyan/30"
+                                    }`}>
+                                      {isUrgent ? "Urgent" : isTip ? "Pro Tip" : "Notice"}
+                                    </span>
+                                    <h4 className="font-heading text-xs font-bold text-white truncate">
+                                      {notif.title}
+                                    </h4>
+                                  </div>
+                                  {notif.unread && (
+                                    <span className="w-2 h-2 rounded-full bg-cyan shadow-[0_0_8px_rgba(0,240,255,0.8)] flex-shrink-0 mt-1 animate-pulse" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted/90 leading-relaxed mb-3 whitespace-pre-line font-medium">
+                                  {notif.description}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-[10px] text-muted font-semibold uppercase tracking-wider border-t border-white/10 pt-2">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{notif.time}</span>
+                                </div>
                               </div>
-                              <p className="text-xs text-muted/90 leading-relaxed mb-3 whitespace-pre-line font-medium">
-                                {notif.description}
-                              </p>
-                              <div className="flex items-center gap-1.5 text-[10px] text-muted font-semibold uppercase tracking-wider">
-                                <Clock className="w-3 h-3" />
-                                <span>{notif.time}</span>
-                              </div>
-                            </div>
-                          ))
+                            );
+                          })
                         )}
                       </div>
                     </motion.div>

@@ -33,18 +33,18 @@ export async function findRegistration(
     email: match[2],
     name: match[3] || "",
     registeredAt: match[4] || "",
-    attended: match[5] === "TRUE",
-    motivation: match[6] || "",
-    phone: match[7] || "",
-    year: match[8] || "",
-    section: match[9] || "",
-    branch: match[10] || "",
-    rollNumber: match[11] || "",
-    projects: match[12] || "",
-    linkedin: match[13] || "",
-    tryhackme: match[14] || "",
-    hackthebox: match[15] || "",
-    otherComments: match[16] || "",
+    motivation: match[5] || "",
+    phone: match[6] || "",
+    year: match[7] || "",
+    section: match[8] || "",
+    branch: match[9] || "",
+    rollNumber: match[10] || "",
+    projects: match[11] || "",
+    linkedin: match[12] || "",
+    tryhackme: match[13] || "",
+    hackthebox: match[14] || "",
+    otherComments: match[15] || "",
+    attended: match[16] === "TRUE",
   };
 }
 
@@ -63,7 +63,6 @@ export async function createRegistration(
       registration.email,
       registration.name,
       registration.registeredAt,
-      "FALSE", // Attended defaults to false
       registration.motivation,
       registration.phone || "",
       registration.year || "",
@@ -75,6 +74,7 @@ export async function createRegistration(
       registration.tryhackme || "",
       registration.hackthebox || "",
       registration.otherComments || "",
+      "FALSE", // Attended is column Q (index 16), defaults to false
     ],
   ];
 
@@ -128,18 +128,18 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       email: row[2],
       name: row[3] || "",
       registeredAt: row[4] || "",
-      attended: row[5] === "TRUE",
-      motivation: row[6] || "",
-      phone: row[7] || "",
-      year: row[8] || "",
-      section: row[9] || "",
-      branch: row[10] || "",
-      rollNumber: row[11] || "",
-      projects: row[12] || "",
-      linkedin: row[13] || "",
-      tryhackme: row[14] || "",
-      hackthebox: row[15] || "",
-      otherComments: row[16] || "",
+      motivation: row[5] || "",
+      phone: row[6] || "",
+      year: row[7] || "",
+      section: row[8] || "",
+      branch: row[9] || "",
+      rollNumber: row[10] || "",
+      projects: row[11] || "",
+      linkedin: row[12] || "",
+      tryhackme: row[13] || "",
+      hackthebox: row[14] || "",
+      otherComments: row[15] || "",
+      attended: row[16] === "TRUE",
     }));
 }
 
@@ -165,23 +165,24 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       email: row[2],
       name: row[3] || "",
       registeredAt: row[4] || "",
-      attended: row[5] === "TRUE",
-      motivation: row[6] || "",
-      phone: row[7] || "",
-      year: row[8] || "",
-      section: row[9] || "",
-      branch: row[10] || "",
-      rollNumber: row[11] || "",
-      projects: row[12] || "",
-      linkedin: row[13] || "",
-      tryhackme: row[14] || "",
-      hackthebox: row[15] || "",
-      otherComments: row[16] || "",
+      motivation: row[5] || "",
+      phone: row[6] || "",
+      year: row[7] || "",
+      section: row[8] || "",
+      branch: row[9] || "",
+      rollNumber: row[10] || "",
+      projects: row[11] || "",
+      linkedin: row[12] || "",
+      tryhackme: row[13] || "",
+      hackthebox: row[14] || "",
+      otherComments: row[15] || "",
+      attended: row[16] === "TRUE",
     }));
 }
 
 /**
  * Updates the attendance status cell for a specific registration.
+ * Column Q is 'attended'.
  */
 export async function updateAttendance(
   registrationId: string,
@@ -207,10 +208,10 @@ export async function updateAttendance(
 
   const rowIndex = index + 2; // Range A2 starts at index 0, so target row is index + 2
 
-  // 2. Write TRUE/FALSE back to Column F of that row
+  // 2. Write TRUE/FALSE back to Column Q of that row
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: `Registrations!F${rowIndex}`,
+    range: `Registrations!Q${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
       values: [[attended ? "TRUE" : "FALSE"]],

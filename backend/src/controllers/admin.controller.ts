@@ -424,13 +424,14 @@ export const getAdminAnnouncements = asyncHandler(
  */
 export const postAdminAnnouncement = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { message } = req.body;
+    const { title, message, type } = req.body;
     if (!message || !message.trim()) {
       throw new ApiError(HttpStatus.BAD_REQUEST, "message is required.");
     }
 
-    const item = await createAnnouncement(message.trim());
-    await logActivity(req.session.user!.email, "CREATE_ANNOUNCEMENT", `Published broadcast banner: "${message.trim()}"`);
+    const cleanType = (type === "warning" || type === "urgent") ? type : "info";
+    const item = await createAnnouncement(title || "Announcement", message.trim(), cleanType);
+    await logActivity(req.session.user!.email, "CREATE_ANNOUNCEMENT", `Published announcement: "${title || message.trim()}"`);
 
     sendResponse(res, HttpStatus.CREATED, "Announcement published successfully.", item);
   },
