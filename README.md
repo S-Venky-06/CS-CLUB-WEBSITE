@@ -42,7 +42,7 @@ npm run dev
 # → http://localhost:3000
 ```
 
-### Backend (not yet implemented)
+### Backend
 
 ```bash
 cd backend
