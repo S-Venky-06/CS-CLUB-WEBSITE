@@ -5,6 +5,7 @@ import HeroSection from "@/components/hero/HeroSection";
 import MissionSection from "@/components/sections/MissionSection";
 import Footer from "@/components/layout/Footer";
 import ActiveEventPopup from "@/components/layout/ActiveEventPopup";
+import GoogleAuthNoticeModal from "@/components/layout/GoogleAuthNoticeModal";
 import PageTransition from "@/components/transitions/PageTransition";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function HomePage() {
         </PageTransition>
       </main>
       <ActiveEventPopup />
+      <GoogleAuthNoticeModal />
       <Footer />
     </>
   );

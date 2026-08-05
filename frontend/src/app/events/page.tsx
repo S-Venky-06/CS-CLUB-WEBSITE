@@ -5,6 +5,7 @@ import FeaturedEvent from "@/components/sections/FeaturedEvent";
 import GalleryPreview from "@/components/sections/GalleryPreview";
 import Footer from "@/components/layout/Footer";
 import ActiveEventPopup from "@/components/layout/ActiveEventPopup";
+import GoogleAuthNoticeModal from "@/components/layout/GoogleAuthNoticeModal";
 import PageTransition from "@/components/transitions/PageTransition";
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function EventsPage() {
         </PageTransition>
       </main>
       <ActiveEventPopup />
+      <GoogleAuthNoticeModal />
       <Footer />
     </>
   );

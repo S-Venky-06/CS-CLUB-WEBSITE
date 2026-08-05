@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X, ArrowRight, Radio } from "lucide-react";
 
@@ -16,6 +17,8 @@ export default function ActiveEventPopup({
   registerTargetId = "featured-event",
 }: ActiveEventPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Check if dismissed in this session
@@ -36,9 +39,13 @@ export default function ActiveEventPopup({
 
   const handleRegisterClick = () => {
     handleDismiss();
-    const element = document.getElementById(registerTargetId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (pathname === "/events") {
+      const element = document.getElementById(registerTargetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      router.push("/events");
     }
   };
 

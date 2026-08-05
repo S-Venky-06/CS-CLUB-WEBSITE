@@ -175,7 +175,7 @@ export default function FeaturedEvent() {
         setHackthebox("");
         setOtherComments("");
         setIsModalOpen(false);
-        setTimeout(() => setSuccessMessage(""), 5000);
+        // Keep success message visible so the user can read the email check notice comfortably
       } else {
         setErrorMessage(json.message || "Registration failed. Please try again.");
         setTimeout(() => setErrorMessage(""), 5000);
@@ -375,14 +375,28 @@ export default function FeaturedEvent() {
               )}
 
               {successMessage && (
-                <div className="mt-5 flex flex-col gap-2 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-semibold">{successMessage}</span>
+                <div className="mt-5 relative flex flex-col gap-2 p-4 sm:p-5 rounded-2xl bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-300 shadow-[0_0_25px_rgba(16,185,129,0.25)]">
+                  <button
+                    onClick={() => setSuccessMessage("")}
+                    className="absolute top-3 right-3 text-emerald-400/60 hover:text-white p-1 transition-colors cursor-pointer"
+                    aria-label="Close message"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                      <Check className="w-4 h-4" />
+                    </div>
+                    <span className="font-heading text-sm font-bold text-white pr-6">{successMessage}</span>
                   </div>
-                  <p className="text-emerald-400/70 text-[10px] mt-1 border-t border-emerald-500/20 pt-2">
-                    📧 Please check your registered Google email inbox (and spam folder) for the confirmation details.
-                  </p>
+                  <div className="mt-2 pt-3 border-t border-emerald-500/25 text-xs text-emerald-200/90 font-medium space-y-1">
+                    <p className="flex items-center gap-1.5 font-bold text-emerald-300">
+                      📧 Check your registered Google email inbox (and spam folder) for confirmation details & next steps!
+                    </p>
+                    <p className="text-[10px] text-emerald-300/70 font-mono">
+                      STATUS: REGISTRATION VERIFIED & RECORDED
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
