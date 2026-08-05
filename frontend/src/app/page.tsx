@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/hero/HeroSection";
 import MissionSection from "@/components/sections/MissionSection";
 import Footer from "@/components/layout/Footer";
+import ActiveEventPopup from "@/components/layout/ActiveEventPopup";
 import PageTransition from "@/components/transitions/PageTransition";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function HomePage() {
           <MissionSection />
         </PageTransition>
       </main>
+      <ActiveEventPopup />
       <Footer />
     </>
   );

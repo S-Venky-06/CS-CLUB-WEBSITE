@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import FeaturedEvent from "@/components/sections/FeaturedEvent";
 import GalleryPreview from "@/components/sections/GalleryPreview";
 import Footer from "@/components/layout/Footer";
+import ActiveEventPopup from "@/components/layout/ActiveEventPopup";
 import PageTransition from "@/components/transitions/PageTransition";
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     "CTF GCET",
     "Cyber Congress",
     "Shastra",
-    "Chrakuvyh",
+    "Chakravyuh",
   ],
   openGraph: {
     title: "Events | Cybersecurity Club | Geethanjali College",
@@ -44,6 +45,7 @@ export default function EventsPage() {
           <GalleryPreview />
         </PageTransition>
       </main>
+      <ActiveEventPopup />
       <Footer />
     </>
   );

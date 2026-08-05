@@ -226,7 +226,7 @@ export default function NotificationsManagement() {
                     onClick={() => setTypeInput("info")}
                     className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       typeInput === "info"
-                        ? "bg-cyan/20 text-cyan border-cyan shadow-[0_0_10px_rgba(0,240,255,0.3)]"
+                        ? "bg-cyan/20 text-cyan border-cyan shadow-[0_0_10px_rgba(178,58,135,0.3)]"
                         : "bg-surface/50 text-muted border-glass-border hover:border-glass-border-hover"
                     }`}
                   >
@@ -273,7 +273,7 @@ export default function NotificationsManagement() {
                   value={titleInput}
                   onChange={(e) => setTitleInput(e.target.value)}
                   placeholder="E.g., CTF Round 1 Live!"
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-cyan transition-colors placeholder:text-muted/50 font-semibold"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-[#F47820] transition-colors placeholder:text-muted/50 font-semibold"
                 />
               </div>
 
@@ -289,7 +289,7 @@ export default function NotificationsManagement() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   placeholder="Type message here..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-cyan transition-colors resize-none placeholder:text-muted/50 custom-scrollbar"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-[#F47820] transition-colors resize-none placeholder:text-muted/50 custom-scrollbar"
                 />
                 <div className="flex justify-end text-[10px] text-muted mt-1 font-semibold">
                   {messageInput.length} / 500 characters

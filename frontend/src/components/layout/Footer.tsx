@@ -12,17 +12,17 @@ const quickLinks = [
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/cyber438", label: "GitHub", hoverColor: "hover:text-white hover:border-white hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]" },
-  { icon: Linkedin, href: "https://www.linkedin.com/in/cyber-security-club-gcet-72572a378/", label: "LinkedIn", hoverColor: "hover:text-cyan hover:border-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]" },
-  { icon: Instagram, href: "https://www.instagram.com/cybersecurity_club_gcet/", label: "Instagram", hoverColor: "hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(255,85,0,0.4)]" },
+  { icon: Linkedin, href: "https://www.linkedin.com/in/cyber-security-club-gcet-72572a378/", label: "LinkedIn", hoverColor: "hover:text-cyan hover:border-cyan hover:shadow-[0_0_15px_rgba(178,58,135,0.4)]" },
+  { icon: Instagram, href: "https://www.instagram.com/cybersecurity_club_gcet/", label: "Instagram", hoverColor: "hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(244,120,32,0.4)]" },
 ];
 
 export default function Footer() {
   return (
     <footer className="relative mt-20 pt-20 pb-10 overflow-hidden bg-background">
       {/* Top Glowing Divider */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent opacity-50" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-cyan to-transparent blur-sm opacity-50" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-cyan/10 blur-[100px] pointer-events-none rounded-full" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F47820] to-transparent opacity-50" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#F47820] to-transparent blur-sm opacity-50" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#F47820]/15 blur-[100px] pointer-events-none rounded-full" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
@@ -32,7 +32,7 @@ export default function Footer() {
             <div className="flex items-center gap-4 mb-6 group">
               <div className="relative">
                 {/* Spinning Neon Halo */}
-                <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-primary via-cyan to-accent opacity-70 blur group-hover:animate-spin-slow transition-all duration-700 pointer-events-none" />
+                <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] opacity-70 blur group-hover:animate-spin-slow transition-all duration-700 pointer-events-none" />
                 <div className="relative w-12 h-12 rounded-xl bg-white overflow-hidden flex items-center justify-center border-2 border-white/10 z-10">
                   <Image
                     src="/club-logo.png"

@@ -10,24 +10,24 @@ const cards = [
     title: "Our Mission",
     description:
       "To cultivate a culture of cybersecurity awareness and expertise within our institution, empowering students with practical skills in ethical hacking, digital forensics, and secure software development.",
-    gradient: "from-primary via-cyan to-primary",
-    shadowColor: "rgba(108,63,255,0.2)",
+    gradient: "from-primary via-[#B23A87] to-primary",
+    shadowColor: "rgba(84,39,106,0.25)",
   },
   {
     icon: Eye,
     title: "Our Vision",
     description:
       "To become a nationally recognized student cybersecurity organization that produces industry-ready professionals and contributes to a safer digital ecosystem through innovation and collaboration.",
-    gradient: "from-cyan via-primary to-cyan",
-    shadowColor: "rgba(0,240,255,0.2)",
+    gradient: "from-[#B23A87] via-[#7A1D5C] to-[#F47820]",
+    shadowColor: "rgba(178,58,135,0.25)",
   },
   {
     icon: Users,
     title: "Who We Are",
     description:
       "A passionate community of aspiring cybersecurity professionals, united by our curiosity for technology and commitment to defending the digital world. From beginners to advanced practitioners, everyone has a place here.",
-    gradient: "from-accent via-primary to-accent",
-    shadowColor: "rgba(255,85,0,0.2)",
+    gradient: "from-[#F47820] via-[#FFA24A] to-[#7A1D5C]",
+    shadowColor: "rgba(244,120,32,0.25)",
   },
 ];
 
@@ -133,7 +133,7 @@ export default function MissionSection() {
           className="text-center mb-20 relative"
         >
           <div className="inline-block relative mb-4">
-            <span className="text-sm font-bold tracking-[0.2em] uppercase text-cyan block relative z-10">
+            <span className="text-sm font-bold tracking-[0.2em] uppercase text-[#F47820] block relative z-10">
               About the Club
             </span>
             {/* Animated underline sweep */}
@@ -141,7 +141,7 @@ export default function MissionSection() {
               initial={{ scaleX: 0 }}
               animate={isInView ? { scaleX: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
-              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent origin-left"
+              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F47820] to-transparent origin-left"
             />
           </div>
           

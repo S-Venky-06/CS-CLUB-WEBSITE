@@ -70,7 +70,7 @@ Divided the single-page layout into a clean multi-page Next.js project to organi
 - Modified the gradient preview cards to list your actual past club events:
   1. **Cyber Congress 25**
   2. **Shastra 25**
-  3. **Chrakuvyh 24**
+  3. **Chakravyuh 24**
 
 ### 👥 Members List ([MembersSection.tsx](file:///d:/CS-CLUB/src/components/sections/MembersSection.tsx))
 - Implemented the full command layout showing:

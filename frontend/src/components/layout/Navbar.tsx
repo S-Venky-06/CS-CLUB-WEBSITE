@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Bell, Clock, LogOut, Shield, User, Sun, Moon } from "lucide-react";
+import { Menu, X, Bell, Clock, LogOut, Shield, User, Sun, Moon, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -156,7 +156,7 @@ export default function Navbar() {
               href="https://www.gcet.edu.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center border border-white/20 hover:border-cyan/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all duration-300 relative group"
+              className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center border border-white/20 hover:border-cyan/50 hover:shadow-[0_0_15px_rgba(178,58,135,0.35)] transition-all duration-300 relative group"
               aria-label="College Website"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -173,7 +173,7 @@ export default function Navbar() {
             {/* Club Logo */}
             <div className="flex items-center gap-2 group cursor-pointer">
               <div
-                className="relative w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center border border-white/20 group-hover:border-accent/50 group-hover:shadow-[0_0_15px_rgba(255,85,0,0.3)] transition-all duration-300"
+                className="relative w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center border border-white/20 group-hover:border-accent/50 group-hover:shadow-[0_0_15px_rgba(244,120,32,0.35)] transition-all duration-300"
                 aria-label="Cybersecurity Club Logo"
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -208,7 +208,7 @@ export default function Navbar() {
                 {activeLink === link.label && (
                   <motion.div
                     layoutId="activeNavBackground"
-                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/80 to-cyan/80 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] shadow-[0_0_20px_rgba(244,120,32,0.5)]"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -219,20 +219,31 @@ export default function Navbar() {
 
           {/* Right — CTA + Mobile Toggle */}
           <div className="flex items-center gap-3">
+            {/* DDMM CTF Direct Link */}
+            <a
+              href="https://teamddmm.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F47820]/15 border border-[#F47820]/40 text-xs font-bold text-[#F47820] hover:bg-[#F47820] hover:text-black transition-all duration-300 shadow-[0_0_10px_rgba(244,120,32,0.2)] hover:shadow-[0_0_15px_rgba(244,120,32,0.5)] cursor-pointer"
+            >
+              <span>DDMM CTF</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+
             {/* Notifications Bell */}
             <div className="relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
                 className={`relative p-2 rounded-xl transition-all duration-300 cursor-pointer border ${
                   isNotifOpen || notifications.some(n => n.unread)
-                    ? "bg-cyan/10 border-cyan/30 text-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)]"
+                    ? "bg-[#F47820]/15 border-[#F47820]/40 text-[#F47820] shadow-[0_0_10px_rgba(244,120,32,0.3)]"
                     : "bg-surface/30 border-glass-border text-muted hover:text-white hover:bg-surface/60 hover:border-glass-border-hover"
                 }`}
                 aria-label="View notifications"
               >
                 <Bell className={`w-4 h-4 ${notifications.some(n => n.unread) ? "animate-pulse-soft" : ""}`} />
                 {notifications.some(n => n.unread) && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan shadow-[0_0_5px_rgba(0,240,255,0.8)]" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#F47820] shadow-[0_0_8px_rgba(244,120,32,0.9)]" />
                 )}
               </button>
 
@@ -287,7 +298,7 @@ export default function Navbar() {
                                       ? "bg-[#1F1216] border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
                                       : isTip
                                       ? "bg-[#1A1226] border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
-                                      : "bg-[#121826] border-cyan/40 shadow-[0_0_15px_rgba(0,240,255,0.15)]"
+                                      : "bg-[#1E1530] border-cyan/40 shadow-[0_0_15px_rgba(178,58,135,0.15)]"
                                     : "bg-[#111118] border-white/10 hover:border-white/20"
                                 }`}
                               >
@@ -307,7 +318,7 @@ export default function Navbar() {
                                     </h4>
                                   </div>
                                   {notif.unread && (
-                                    <span className="w-2 h-2 rounded-full bg-cyan shadow-[0_0_8px_rgba(0,240,255,0.8)] flex-shrink-0 mt-1 animate-pulse" />
+                                    <span className="w-2 h-2 rounded-full bg-cyan shadow-[0_0_8px_rgba(178,58,135,0.8)] flex-shrink-0 mt-1 animate-pulse" />
                                   )}
                                 </div>
                                 <p className="text-xs text-muted/90 leading-relaxed mb-3 whitespace-pre-line font-medium">
@@ -331,7 +342,7 @@ export default function Navbar() {
             {loading ? (
               <div className="hidden md:block w-24 h-9 bg-surface/50 animate-pulse rounded-xl border border-glass-border" />
             ) : !user ? (
-              <div className="hidden md:inline-flex rounded-full overflow-hidden bg-[#0A0A10] p-0.5 shadow-md [&_iframe]:!bg-transparent [&>div]:!bg-transparent">
+              <div className="hidden md:inline-flex rounded-full overflow-hidden bg-[#0A0710] p-0.5 shadow-md [&_iframe]:!bg-transparent [&>div]:!bg-transparent">
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
                     if (credentialResponse.credential) {
@@ -351,7 +362,7 @@ export default function Navbar() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className={`flex items-center gap-2 p-1 rounded-full border transition-all duration-300 cursor-pointer overflow-hidden ${
                     isProfileOpen 
-                      ? "border-accent shadow-[0_0_10px_rgba(255,85,0,0.3)] bg-accent/10" 
+                      ? "border-accent shadow-[0_0_10px_rgba(244,120,32,0.35)] bg-accent/10" 
                       : "border-glass-border hover:border-accent/50 bg-surface/30 hover:bg-surface/60"
                   }`}
                   aria-label="View user profile"
@@ -381,12 +392,12 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 15, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 mt-3.5 w-64 rounded-2xl bg-[#09090E] border border-glass-border-hover z-50 p-5 shadow-[0_10px_50px_rgba(0,0,0,0.95)] overflow-hidden"
+                        className="absolute right-0 mt-3.5 w-64 rounded-2xl bg-[#150F1F] border border-glass-border-hover z-50 p-5 shadow-[0_10px_50px_rgba(0,0,0,0.95)] overflow-hidden"
                       >
                         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-primary to-cyan" />
 
                         <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-accent/40 shadow-[0_0_10px_rgba(255,85,0,0.2)]">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-accent/40 shadow-[0_0_10px_rgba(244,120,32,0.25)]">
                             <Image
                               src={user.picture}
                               alt={user.name}
@@ -453,7 +464,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-[#0B0B12]/95 backdrop-blur-xl border-t border-glass-border overflow-hidden shadow-2xl"
+            className="md:hidden bg-[#150F1F]/95 backdrop-blur-xl border-t border-glass-border overflow-hidden shadow-2xl"
           >
             <div className="px-4 py-6 space-y-2">
               {visibleLinks.map((link, i) => (
@@ -469,7 +480,7 @@ export default function Navbar() {
                   }}
                   className={`block px-5 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                     activeLink === link.label
-                      ? "bg-gradient-to-r from-primary/30 to-cyan/30 text-white border border-cyan/30 shadow-inner"
+                      ? "bg-gradient-to-r from-[#7A1D5C]/40 to-[#F47820]/40 text-[#EDEAF2] border border-[#F47820]/40 shadow-inner"
                       : "text-muted hover:text-white hover:bg-surface/50 border border-transparent"
                   }`}
                 >
@@ -499,7 +510,7 @@ export default function Navbar() {
               ) : (
                 <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
                   <div className="flex items-center gap-4 px-2">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-accent/40 shadow-[0_0_10px_rgba(255,85,0,0.2)]">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-accent/40 shadow-[0_0_10px_rgba(244,120,32,0.25)]">
                       <Image
                         src={user.picture}
                         alt={user.name}

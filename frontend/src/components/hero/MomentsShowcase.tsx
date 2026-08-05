@@ -83,9 +83,9 @@ export default function MomentsShowcase() {
         transition={{ delay: 1, type: "spring" }}
         className="absolute top-0 z-20"
       >
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-cyan/10 border border-cyan/30 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-          <div className="w-2 h-2 rounded-full bg-cyan animate-pulse" />
-          <span className="text-[9px] sm:text-[10px] font-bold text-cyan tracking-widest uppercase">Live Moments</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#F47820]/15 border border-[#F47820]/40 backdrop-blur-md shadow-[0_0_15px_rgba(244,120,32,0.3)]">
+          <div className="w-2 h-2 rounded-full bg-[#F47820] animate-pulse" />
+          <span className="text-[9px] sm:text-[10px] font-bold text-[#F47820] tracking-widest uppercase">Live Moments</span>
         </div>
       </motion.div>
 
@@ -96,7 +96,7 @@ export default function MomentsShowcase() {
         }`}
         style={{
           background:
-            "radial-gradient(circle, rgba(108,63,255,0.3) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(84,39,106,0.3) 0%, transparent 70%)",
         }}
         aria-hidden="true"
       />
@@ -105,7 +105,7 @@ export default function MomentsShowcase() {
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative w-full aspect-square rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(108,63,255,0.3)] group z-10"
+        className="relative w-full aspect-square rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(84,39,106,0.35)] group z-10"
       >
         {/* Holographic Border Effect on Hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-primary via-cyan to-primary pointer-events-none p-[1px] -z-10">
@@ -113,7 +113,7 @@ export default function MomentsShowcase() {
         </div>
 
         {/* Carousel image slide viewport */}
-        <div className="relative w-full h-[220px] sm:h-[280px] rounded-xl overflow-hidden bg-[#050507]">
+        <div className="relative w-full h-[220px] sm:h-[280px] rounded-xl overflow-hidden bg-[#0A0710]">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -150,7 +150,7 @@ export default function MomentsShowcase() {
               onClick={() => setCurrentIndex(index)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer relative overflow-hidden ${
                 index === currentIndex
-                  ? "bg-cyan w-6 shadow-[0_0_8px_rgba(0,240,255,0.8)]"
+                  ? "bg-[#F47820] w-6 shadow-[0_0_12px_rgba(244,120,32,0.9)]"
                   : "bg-muted/30 w-1.5 hover:bg-muted/60 hover:w-3"
               }`}
               aria-label={`Go to slide ${index + 1}`}

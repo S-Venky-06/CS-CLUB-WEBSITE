@@ -45,7 +45,7 @@ export default function NotFound() {
               <h1 className="font-heading text-7xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-400 to-red-600 tracking-widest select-none drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
                 404
               </h1>
-              <h1 className="absolute inset-0 font-heading text-7xl sm:text-9xl font-black text-cyan opacity-50 mix-blend-screen -translate-x-[2px] translate-y-[2px] animate-glitch-1 pointer-events-none select-none tracking-widest">
+              <h1 className="absolute inset-0 font-heading text-7xl sm:text-9xl font-black text-[#B23A87] opacity-50 mix-blend-screen -translate-x-[2px] translate-y-[2px] animate-glitch-1 pointer-events-none select-none tracking-widest">
                 404
               </h1>
               <h1 className="absolute inset-0 font-heading text-7xl sm:text-9xl font-black text-accent opacity-50 mix-blend-screen translate-x-[2px] -translate-y-[2px] animate-glitch-2 pointer-events-none select-none tracking-widest">

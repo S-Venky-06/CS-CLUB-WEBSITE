@@ -9,22 +9,22 @@ const galleryItems = [
     id: 1,
     title: "Cyber Congress",
     description: "The Cyber Congress focuses on building awareness and skills in cybersecurity. The program introduces core threat vectors, digital hygiene practices, and industry career pathways, progressing into advanced security concepts like machine learning, threat intelligence, and defensive architectures, concluding with practical hands-on laboratories using Wireshark and Burp Suite.",
-    gradient: "from-primary via-cyan to-accent",
-    glowColor: "rgba(108,63,255,0.3)",
+    gradient: "from-primary via-[#B23A87] to-accent",
+    glowColor: "rgba(84,39,106,0.3)",
   },
   {
     id: 2,
     title: "Shastra",
     description: "A fun, one-day event showcasing cybersecurity topics through interactive games.",
-    gradient: "from-cyan via-primary to-accent",
-    glowColor: "rgba(0,240,255,0.3)",
+    gradient: "from-[#B23A87] via-primary to-accent",
+    glowColor: "rgba(178,58,135,0.3)",
   },
   {
     id: 3,
-    title: "Chrakuvyh",
+    title: "Chakravyuh",
     description: "A signature capture-the-flag (CTF) competition designed to challenge participants across multiple disciplines of information security. Challenges span cryptography, reverse engineering, web exploitation, network forensics, and binary analysis.",
-    gradient: "from-accent via-cyan to-primary",
-    glowColor: "rgba(255,85,0,0.3)",
+    gradient: "from-accent via-[#B23A87] to-primary",
+    glowColor: "rgba(244,120,32,0.3)",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function GalleryPreview() {
           className="text-center mb-16 relative"
         >
           <div className="inline-block relative mb-4">
-            <span className="text-sm font-bold tracking-[0.2em] uppercase text-cyan block relative z-10">
+            <span className="text-sm font-bold tracking-[0.2em] uppercase text-[#F47820] block relative z-10">
               Memories
             </span>
             {/* Animated underline sweep */}
@@ -63,7 +63,7 @@ export default function GalleryPreview() {
               initial={{ scaleX: 0 }}
               animate={isInView ? { scaleX: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
-              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent origin-left"
+              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F47820] to-transparent origin-left"
             />
           </div>
           <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
@@ -84,7 +84,7 @@ export default function GalleryPreview() {
               animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.1 * i, type: "spring", stiffness: 100 }}
               onClick={() => setLightbox(item.id)}
-              className="group relative flex items-center justify-between p-5 sm:p-6 rounded-2xl glass-card border border-glass-border bg-surface/30 hover:bg-surface/60 transition-all duration-500 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-cyan overflow-hidden transform-gpu hover:-translate-y-2 hover:scale-[1.03] shadow-lg hover:shadow-2xl"
+              className="group relative flex items-center justify-between p-5 sm:p-6 rounded-2xl glass-card border border-glass-border bg-surface/30 hover:bg-surface/60 transition-all duration-500 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-[#B23A87] overflow-hidden transform-gpu hover:-translate-y-2 hover:scale-[1.03] shadow-lg hover:shadow-2xl"
               style={{ transformStyle: 'preserve-3d' }}
               aria-label={`View details for ${item.title}`}
             >
@@ -100,14 +100,14 @@ export default function GalleryPreview() {
               <div className="flex items-center gap-4 relative z-10">
                 {/* Visual indicator tag */}
                 <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${item.gradient} flex-shrink-0 shadow-[0_0_10px_rgba(255,255,255,0.5)] group-hover:animate-pulse`} />
-                <span className="font-heading text-lg font-bold text-foreground group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-cyan transition-all duration-300">
+                <span className="font-heading text-lg font-bold text-foreground group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#F47820] transition-all duration-300">
                   {item.title}
                 </span>
               </div>
 
               {/* Arrow indicator */}
-              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-cyan group-hover:border-cyan transition-all duration-300 relative z-10 overflow-hidden">
-                <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-[#050507] transition-all duration-300 group-hover:scale-110" />
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#F47820] group-hover:border-[#F47820] transition-all duration-300 relative z-10 overflow-hidden">
+                <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-[#0A0710] transition-all duration-300 group-hover:scale-110" />
               </div>
             </motion.button>
           ))}
@@ -115,7 +115,7 @@ export default function GalleryPreview() {
       </div>
 
       {/* Background decorations */}
-      <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-cyan/5 blur-[120px] rounded-full pointer-events-none -translate-x-1/2" />
+      <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-[#B23A87]/5 blur-[120px] rounded-full pointer-events-none -translate-x-1/2" />
 
       {/* Lightbox */}
       <AnimatePresence>
@@ -125,7 +125,7 @@ export default function GalleryPreview() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 bg-[#050507]/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8"
+            className="fixed inset-0 z-50 bg-[#0A0710]/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8"
             onClick={() => setLightbox(null)}
             role="dialog"
             aria-label="Gallery lightbox"
@@ -133,49 +133,38 @@ export default function GalleryPreview() {
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-6 right-6 sm:top-8 sm:right-8 p-3 rounded-full glass-card hover:bg-white/10 text-muted hover:text-white transition-all hover:rotate-90 z-50 shadow-lg"
-              aria-label="Close lightbox"
+              aria-label="Close modal"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
 
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="w-full max-w-3xl glass-prominent border border-glass-border-hover rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row gap-8"
+              className="relative max-w-2xl w-full glass-prominent rounded-3xl p-6 sm:p-10 border border-glass-border-hover overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
-                const item = galleryItems.find((g) => g.id === lightbox);
+                const item = galleryItems.find((i) => i.id === lightbox);
                 if (!item) return null;
+
                 return (
                   <>
-                    {/* Left Column - Mini visual badge */}
-                    <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-square rounded-2xl overflow-hidden relative border border-white/10 flex-shrink-0 shadow-inner group">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-80 group-hover:opacity-100 transition-opacity duration-700`} />
-                      <div className="absolute inset-0 bg-grid opacity-30 mix-blend-overlay" />
-                      
-                      {/* Animated Mesh Gradient background instead of SVG pattern */}
-                      <div className="absolute inset-0 opacity-40 mix-blend-screen" style={{ background: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.4) 0%, transparent 50%)` }} />
-                      
-                      <div className="absolute inset-0 flex items-center justify-center p-6 backdrop-blur-sm">
-                        <p className="font-heading text-3xl font-bold text-white text-center text-glow drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
-                          {item.title}
-                        </p>
-                      </div>
-                    </div>
+                    {/* Top gradient bar */}
+                    <div className={`h-1.5 w-full bg-gradient-to-r ${item.gradient} absolute top-0 left-0 right-0`} />
 
-                    {/* Right Column - Text Details */}
-                    <div className="flex-1 flex flex-col justify-center space-y-5">
+                    <div className="space-y-6 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#F47820] px-3 py-1 rounded-full bg-[#F47820]/15 border border-[#F47820]/30">
+                          Event Spotlight #{item.id}
+                        </span>
+                        <span className="text-xs text-muted font-mono">GCET Cybersecurity</span>
+                      </div>
+
                       <div>
-                        <div className="inline-flex items-center gap-2 mb-2">
-                          <span className="w-2 h-2 rounded-full bg-cyan animate-pulse" />
-                          <span className="text-xs font-bold text-cyan uppercase tracking-widest">
-                            Event Archive
-                          </span>
-                        </div>
-                        <h3 className="font-heading text-3xl font-bold text-foreground">
+                        <h3 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
                           {item.title}
                         </h3>
                       </div>
@@ -186,7 +175,7 @@ export default function GalleryPreview() {
                       <div className="pt-4 flex justify-end">
                         <button
                           onClick={() => setLightbox(null)}
-                          className="px-6 py-3 rounded-xl bg-surface/50 hover:bg-surface border border-glass-border hover:border-cyan text-sm text-foreground font-semibold transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+                          className="px-6 py-3 rounded-xl bg-surface/50 hover:bg-surface border border-glass-border hover:border-[#F47820] text-sm text-foreground font-semibold transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(244,120,32,0.3)]"
                         >
                           Close Details
                         </button>

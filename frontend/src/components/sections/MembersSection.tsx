@@ -2,8 +2,9 @@
 
 import { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Instagram, Linkedin, Shield, Award, Users } from "lucide-react";
+import { Instagram, Linkedin, Shield, Award, Users, Trophy } from "lucide-react";
 import Image from "next/image";
+import TeamDDMMShowcase from "./TeamDDMMShowcase";
 
 interface Member {
   name: string;
@@ -13,6 +14,7 @@ interface Member {
   image: string;
   linkedin?: string;
   instagram?: string;
+  isDDMM?: boolean;
 }
 
 // Leadership Team data
@@ -25,6 +27,7 @@ const leadership: Member[] = [
     image: "/members/president.png",
     linkedin: "https://www.linkedin.com/in/dhanush3105/",
     instagram: "https://www.instagram.com/dhanush_reddy_31",
+    isDDMM: true,
   },
   {
     name: "Shreyas Behara",
@@ -56,6 +59,7 @@ const leads: Member[] = [
     image: "/members/lead_tech.png",
     linkedin: "https://www.linkedin.com/in/s-s-s-venkatesh-ab0859291/",
     instagram: "https://www.instagram.com/venkysama333/",
+    isDDMM: true,
   },
   {
     name: "Vaishnavi Pratha",
@@ -104,6 +108,7 @@ const coreTeam: Member[] = [
     image: "/members/core1.png",
     linkedin: "https://www.linkedin.com/in/kakumanu-harshith-subrahmanyam-56455a255/",
     instagram: "https://www.instagram.com/suubbbuu/",
+    isDDMM: true,
   },
   {
     name: "V.Padmavathi Pranathi",
@@ -163,7 +168,7 @@ function MemberCard({
   priority?: boolean;
 }) {
   const [imageError, setImageError] = useState(false);
-  const glowColor = isLeadership ? "rgba(255,85,0,0.4)" : "rgba(0,240,255,0.4)";
+  const glowColor = isLeadership ? "rgba(244,120,32,0.4)" : "rgba(178,58,135,0.4)";
   const gradientClass = isLeadership ? "from-accent to-primary" : "from-cyan to-primary";
 
   return (
@@ -171,7 +176,7 @@ function MemberCard({
       
       {/* Holographic Border Effect on Hover */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-br from-primary via-cyan to-accent pointer-events-none p-[1.5px] -z-10">
-         <div className="w-full h-full bg-[#0B0B12] rounded-2xl" />
+         <div className="w-full h-full bg-[#150F1F] rounded-2xl" />
       </div>
 
       {/* Ambient glow behind card */}
@@ -203,6 +208,16 @@ function MemberCard({
               }`}
             >
               {member.initials}
+            </span>
+          </div>
+        )}
+
+        {/* Team DDMM CTF Badge */}
+        {member.isDDMM && (
+          <div className="absolute top-3 left-3 z-30">
+            <span className="px-2.5 py-1 rounded-full bg-[#F47820] text-black font-extrabold text-[10px] uppercase tracking-wider shadow-[0_0_12px_rgba(244,120,32,0.8)] border border-[#FFA24A] flex items-center gap-1">
+              <Trophy className="w-3 h-3 text-black" />
+              Team DDMM
             </span>
           </div>
         )}
@@ -240,7 +255,7 @@ function MemberCard({
             {member.linkedin && member.linkedin !== "#" && (
               <a
                 href={member.linkedin}
-                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-cyan hover:border-cyan hover:shadow-[0_0_10px_rgba(0,240,255,0.4)] hover:-translate-y-1 transition-all duration-300"
+                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-cyan hover:border-cyan hover:shadow-[0_0_10px_theme(colors.cyan.DEFAULT)] hover:-translate-y-1 transition-all duration-300"
                 aria-label={`${member.name}'s LinkedIn`}
               >
                 <Linkedin className="w-3.5 h-3.5" />
@@ -249,7 +264,7 @@ function MemberCard({
             {member.instagram && member.instagram !== "#" && (
               <a
                 href={member.instagram}
-                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-accent hover:border-accent hover:shadow-[0_0_10px_rgba(255,85,0,0.4)] hover:-translate-y-1 transition-all duration-300"
+                className="w-8 h-8 rounded-lg bg-surface/50 border border-glass-border flex items-center justify-center text-muted hover:text-accent hover:border-accent hover:shadow-[0_0_10px_theme(colors.accent.DEFAULT)] hover:-translate-y-1 transition-all duration-300"
                 aria-label={`${member.name}'s Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
@@ -265,12 +280,13 @@ function MemberCard({
 export default function MembersSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [activeTab, setActiveTab] = useState<"leadership" | "leads" | "core">("leadership");
+  const [activeTab, setActiveTab] = useState<"leadership" | "leads" | "core" | "ddmm">("leadership");
 
   const tabs = [
-    { id: "leadership", label: "Leadership", icon: Shield, color: "text-accent" },
-    { id: "leads", label: "Team Leads", icon: Award, color: "text-cyan" },
-    { id: "core", label: "Core Members", icon: Users, color: "text-primary" },
+    { id: "leadership", label: "Leadership", icon: Shield, color: "text-[#F47820]" },
+    { id: "leads", label: "Team Leads", icon: Award, color: "text-[#B23A87]" },
+    { id: "core", label: "Core Members", icon: Users, color: "text-[#EDEAF2]" },
+    { id: "ddmm", label: "Team DDMM (CTF)", icon: Trophy, color: "text-[#F47820]" },
   ] as const;
 
   return (
@@ -285,14 +301,14 @@ export default function MembersSection() {
           className="text-center mb-16 relative"
         >
           <div className="inline-block relative mb-4">
-            <span className="text-sm font-bold tracking-[0.2em] uppercase text-cyan block relative z-10">
+            <span className="text-sm font-bold tracking-[0.2em] uppercase text-[#F47820] block relative z-10">
               Command Structure
             </span>
             <motion.div 
               initial={{ scaleX: 0 }}
               animate={isInView ? { scaleX: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
-              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan to-transparent origin-left"
+              className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F47820] to-transparent origin-left"
             />
           </div>
           <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
@@ -317,7 +333,7 @@ export default function MembersSection() {
               {activeTab === tab.id && (
                 <motion.div
                   layoutId="activeTabIndicator"
-                  className="absolute inset-0 rounded-full bg-surface border border-glass-border-hover shadow-[0_0_15px_rgba(108,63,255,0.2)]"
+                  className="absolute inset-0 rounded-full bg-surface border border-glass-border-hover shadow-[0_0_15px_rgba(84,39,106,0.25)]"
                   initial={false}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
@@ -373,6 +389,18 @@ export default function MembersSection() {
                 {coreTeam.map((member, i) => (
                   <MemberCard key={member.name} member={member} isLeadership={false} priority={false} />
                 ))}
+              </motion.div>
+            )}
+
+            {activeTab === "ddmm" && (
+              <motion.div
+                key="ddmm"
+                initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
+                transition={{ duration: 0.4 }}
+              >
+                <TeamDDMMShowcase />
               </motion.div>
             )}
           </AnimatePresence>

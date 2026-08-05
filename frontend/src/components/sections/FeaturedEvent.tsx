@@ -202,13 +202,13 @@ export default function FeaturedEvent() {
         onChange={onChange}
         maxLength={maxLength}
         placeholder={placeholder}
-        className={`peer w-full px-4 pt-6 pb-2 rounded-xl bg-[#0D0D15] border transition-all duration-300 text-white font-medium text-sm focus:outline-none focus:bg-[#12121D] ${
-          error ? "border-red-500 focus:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "border-white/20 focus:border-cyan shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+        className={`peer w-full px-4 pt-6 pb-2 rounded-xl bg-[#150F1F] border transition-all duration-300 text-white font-medium text-sm focus:outline-none focus:bg-[#1E1530] ${
+          error ? "border-red-500 focus:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "border-white/20 focus:border-[#F47820] shadow-[0_0_15px_rgba(244,120,32,0.25)]"
         }`}
       />
       <label
         htmlFor={id}
-        className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-semibold text-cyan transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-cyan pointer-events-none"
+        className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-semibold text-[#F47820] transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-[#F47820] pointer-events-none"
       >
         {label}
       </label>
@@ -226,9 +226,9 @@ export default function FeaturedEvent() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-20"
         >
-          <span className="inline-block px-4 py-1.5 rounded-full bg-cyan/10 border border-cyan/20 text-xs font-semibold tracking-widest uppercase text-cyan mb-6 relative overflow-hidden group">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-[#F47820]/15 border border-[#F47820]/30 text-xs font-bold tracking-widest uppercase text-[#F47820] mb-6 relative overflow-hidden group">
             <span className="relative z-10">Upcoming Event</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#F47820]/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
           </span>
           <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
             Featured <span className="gradient-text">Event</span>
@@ -247,17 +247,17 @@ export default function FeaturedEvent() {
           className="max-w-4xl mx-auto relative group"
         >
           {/* Animated gradient border for card */}
-          <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-br from-primary via-cyan to-accent opacity-30 group-hover:opacity-70 transition-opacity duration-500 blur-[2px]" />
+          <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-br from-[#7A1D5C] via-[#B23A87] to-[#F47820] opacity-40 group-hover:opacity-80 transition-opacity duration-500 blur-[2px]" />
           
           <div className="relative glass-prominent overflow-hidden rounded-2xl flex flex-col md:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             
             {/* Left/Top side: Visual Banner */}
             <div className="relative md:w-2/5 h-56 md:h-auto overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/60 via-[#1a0f30] to-accent/20 z-10 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#54276A]/80 via-[#2E1740] to-[#F47820]/30 z-10 mix-blend-multiply" />
               <div className="absolute inset-0 bg-grid opacity-50 z-10" />
               
               <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
-                <span className="px-3 py-1.5 rounded-full bg-accent text-white text-[10px] font-bold tracking-widest uppercase shadow-[0_0_15px_rgba(255,85,0,0.4)] flex items-center gap-1.5 animate-pulse-soft">
+                <span className="px-3 py-1.5 rounded-full bg-accent text-white text-[10px] font-bold tracking-widest uppercase shadow-[0_0_15px_rgba(244,120,32,0.4)] flex items-center gap-1.5 animate-pulse-soft">
                   <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                   Live Event
                 </span>
@@ -338,7 +338,7 @@ export default function FeaturedEvent() {
                 ) : (
                   <div className="relative group/btn w-full sm:w-auto inline-block">
                     {/* Glowing pulse ring behind button */}
-                    <div className="absolute -inset-1 rounded-xl bg-cyan blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
+                    <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
                     <button
                       onClick={() => {
                         if (!user) {
@@ -349,11 +349,11 @@ export default function FeaturedEvent() {
                         }
                       }}
                       disabled={isRegistering}
-                      className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#00F0FF] text-black font-extrabold text-sm hover:bg-white hover:text-black border-2 border-cyan shadow-[0_0_25px_rgba(0,240,255,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
+                      className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#F47820] text-white font-extrabold text-sm hover:bg-[#FFA24A] hover:text-white border-2 border-accent shadow-[0_0_25px_rgba(244,120,32,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
                     >
                       {isRegistering ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin text-black" />
+                          <Loader2 className="w-4 h-4 animate-spin text-white" />
                           Registering...
                         </>
                       ) : (
@@ -399,7 +399,7 @@ export default function FeaturedEvent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsTipModalOpen(false)}
-              className="absolute inset-0 bg-[#050507]/90 backdrop-blur-md cursor-default"
+              className="absolute inset-0 bg-[#0A0710]/90 backdrop-blur-md cursor-default"
             />
 
             <motion.div
@@ -413,7 +413,7 @@ export default function FeaturedEvent() {
 
               <div className="flex items-center gap-4 border-b border-white/10 pb-5 mb-6">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/20 border-2 border-primary/40 shadow-[0_0_15px_rgba(108,63,255,0.3)]">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/20 border-2 border-primary/40 shadow-[0_0_15px_rgba(84,39,106,0.35)]">
                     <img 
                       src="/members/president.png" 
                       alt="Dhanush Reddy" 
@@ -464,10 +464,10 @@ export default function FeaturedEvent() {
                     setIsTipModalOpen(false);
                     setIsModalOpen(true);
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00F0FF] text-black font-extrabold text-xs sm:text-sm hover:bg-white border-2 border-cyan shadow-[0_0_20px_rgba(0,240,255,0.7)] transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F47820] text-white font-extrabold text-xs sm:text-sm hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.7)] transition-all cursor-pointer"
                 >
                   Continue to Form
-                  <ArrowRight className="w-4 h-4 text-black" />
+                  <ArrowRight className="w-4 h-4 text-white" />
                 </button>
               </div>
             </motion.div>
@@ -482,7 +482,7 @@ export default function FeaturedEvent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-[#050507]/90 backdrop-blur-md cursor-default"
+              className="absolute inset-0 bg-[#0A0710]/90 backdrop-blur-md cursor-default"
             />
 
             <motion.div
@@ -524,7 +524,7 @@ export default function FeaturedEvent() {
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
                   />
                   {!isValidName && userName.length > 0 && (
                     <span className="text-[10px] text-red-400 mt-1 block font-bold">Required</span>
@@ -541,7 +541,7 @@ export default function FeaturedEvent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
                     placeholder="Enter 10-digit number"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                   {!isValidPhone && phone.length > 0 && (
                     <span className="text-[10px] text-red-400 mt-1 block font-bold">Must be 10 digits</span>
@@ -558,7 +558,7 @@ export default function FeaturedEvent() {
                     value={rollNumber}
                     onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
                     placeholder="e.g. 23R11A6236"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                 </div>
 
@@ -572,7 +572,7 @@ export default function FeaturedEvent() {
                     value={section}
                     onChange={(e) => setSection(e.target.value.toUpperCase())}
                     placeholder="e.g. A, B, C"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                 </div>
 
@@ -597,7 +597,7 @@ export default function FeaturedEvent() {
                   <select
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-cyan transition-all cursor-pointer"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
                   >
                     <option value="CSE">CSE</option>
                     <option value="CSE (AIML)">CSE (AIML)</option>
@@ -622,7 +622,7 @@ export default function FeaturedEvent() {
                     value={linkedin}
                     onChange={(e) => setLinkedin(e.target.value)}
                     placeholder="https://linkedin.com/in/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                 </div>
 
@@ -636,7 +636,7 @@ export default function FeaturedEvent() {
                     value={tryhackme}
                     onChange={(e) => setTryhackme(e.target.value)}
                     placeholder="https://tryhackme.com/p/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                 </div>
 
@@ -650,7 +650,7 @@ export default function FeaturedEvent() {
                     value={hackthebox}
                     onChange={(e) => setHackthebox(e.target.value)}
                     placeholder="https://app.hackthebox.com/profile/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
                   />
                 </div>
 
@@ -668,7 +668,7 @@ export default function FeaturedEvent() {
                     onChange={(e) => setMotivationText(e.target.value)}
                     placeholder="Describe your interest in cybersecurity..."
                     className={`w-full px-4 py-3 rounded-xl bg-[#0B0B13] border text-white text-sm placeholder:text-gray-600 focus:outline-none resize-none custom-scrollbar transition-all ${
-                      wordCount > 0 && wordCount < 10 ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-cyan"
+                      wordCount > 0 && wordCount < 10 ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-[#F47820]"
                     }`}
                   />
                 </div>
@@ -683,7 +683,7 @@ export default function FeaturedEvent() {
                     value={projects}
                     onChange={(e) => setProjects(e.target.value)}
                     placeholder="Mention any cybersecurity or programming projects you have worked on..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan resize-none custom-scrollbar transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
                   />
                 </div>
 
@@ -696,8 +696,8 @@ export default function FeaturedEvent() {
                     rows={2}
                     value={otherComments}
                     onChange={(e) => setOtherComments(e.target.value)}
-                    placeholder="Any questions or extra info..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan resize-none custom-scrollbar transition-all"
+                    placeholder="Tell us what excites you about cybersecurity or why you want to attend..."
+                    className="w-full px-4 py-3 rounded-xl bg-[#150F1F] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
                   />
                 </div>
               </div>
@@ -713,17 +713,17 @@ export default function FeaturedEvent() {
                 <button
                   onClick={handleRegister}
                   disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone || !isValidRoll || !isValidSection}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 disabled:shadow-none disabled:cursor-not-allowed bg-[#00F0FF] text-black hover:bg-white border-2 border-cyan shadow-[0_0_20px_rgba(0,240,255,0.6)]"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 disabled:shadow-none disabled:cursor-not-allowed bg-[#F47820] text-white hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.6)]"
                 >
                   {isRegistering ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
                       Registering...
                     </>
                   ) : (
                     <>
                       Confirm & Register
-                      <Check className="w-5 h-5 text-black" />
+                      <Check className="w-5 h-5 text-white" />
                     </>
                   )}
                 </button>
