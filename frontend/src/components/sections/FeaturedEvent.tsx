@@ -20,6 +20,7 @@ export default function FeaturedEvent() {
   const [year, setYear] = useState("2nd Year");
   const [section, setSection] = useState("");
   const [branch, setBranch] = useState("CSE");
+  const [domain, setDomain] = useState("Logistics");
   const [rollNumber, setRollNumber] = useState("");
   const [projects, setProjects] = useState("");
   const [linkedin, setLinkedin] = useState("");
@@ -150,6 +151,7 @@ export default function FeaturedEvent() {
           year,
           section,
           branch,
+          domain,
           rollNumber,
           projects,
           linkedin,
@@ -168,6 +170,7 @@ export default function FeaturedEvent() {
         setMotivationText("");
         setPhone("");
         setSection("");
+        setDomain("Logistics");
         setRollNumber("");
         setProjects("");
         setLinkedin("");
@@ -623,6 +626,24 @@ export default function FeaturedEvent() {
                     <option value="MECH">MECH</option>
                     <option value="CIVIL">CIVIL</option>
                     <option value="Others">Others</option>
+                  </select>
+                </div>
+
+                {/* 8. Which domain do you want to choose */}
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                    Which domain do you want to choose? *
+                  </label>
+                  <select
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer font-medium"
+                  >
+                    <option value="Logistics">Logistics</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Network & Outreach">Network & Outreach</option>
+                    <option value="Designing">Designing</option>
+                    <option value="Technical">Technical</option>
                   </select>
                 </div>
 

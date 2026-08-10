@@ -21,6 +21,7 @@ export interface Registration {
   year: string;
   section: string;
   branch: string;
+  domain?: string;
   rollNumber: string;
   projects?: string;
   linkedin?: string;

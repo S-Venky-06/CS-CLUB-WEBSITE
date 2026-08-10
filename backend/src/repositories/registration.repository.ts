@@ -14,7 +14,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;
@@ -45,6 +45,7 @@ export async function findRegistration(
     hackthebox: match[14] || "",
     otherComments: match[15] || "",
     attended: match[16] === "TRUE",
+    domain: match[17] || "",
   };
 }
 
@@ -75,12 +76,13 @@ export async function createRegistration(
       registration.hackthebox || "",
       registration.otherComments || "",
       "FALSE", // Attended is column Q (index 16), defaults to false
+      registration.domain || "", // Domain is column R (index 17)
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q2",
+    range: "Registrations!A2:R2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -114,7 +116,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;
@@ -140,6 +142,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       hackthebox: row[14] || "",
       otherComments: row[15] || "",
       attended: row[16] === "TRUE",
+      domain: row[17] || "",
     }));
 }
 
@@ -151,7 +154,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;
@@ -177,6 +180,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       hackthebox: row[14] || "",
       otherComments: row[15] || "",
       attended: row[16] === "TRUE",
+      domain: row[17] || "",
     }));
 }
 

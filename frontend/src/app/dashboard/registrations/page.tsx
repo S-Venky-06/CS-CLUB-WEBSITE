@@ -30,6 +30,7 @@ interface Registration {
   year?: string;
   section?: string;
   branch?: string;
+  domain?: string;
   rollNumber?: string;
   projects?: string;
   linkedin?: string;
@@ -551,6 +552,12 @@ export default function RegistrationsManagement() {
                         <span className="text-[11px] text-muted block">Section</span>
                         <span className="text-xs font-semibold text-foreground">{selectedReg.section || "N/A"}</span>
                       </div>
+                    </div>
+                    <div className="pt-1">
+                      <span className="text-[11px] text-muted block mb-0.5">Chosen Domain</span>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#F47820]/15 border border-[#F47820]/30 text-xs font-bold text-[#F47820]">
+                        {selectedReg.domain || "N/A"}
+                      </span>
                     </div>
                   </div>
 

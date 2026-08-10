@@ -54,6 +54,7 @@ const requiredSheets = [
       "hackthebox",
       "otherComments",
       "attended",
+      "domain",
     ],
   },
   {

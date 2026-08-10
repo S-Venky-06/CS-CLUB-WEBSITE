@@ -65,6 +65,12 @@ export const eventRegistrationSchema = z.object({
     })
     .min(1, "branch cannot be empty.")
     .max(20, "branch cannot exceed 20 characters."),
+  domain: z
+    .string({
+      invalid_type_error: "domain must be a string.",
+    })
+    .max(50, "domain cannot exceed 50 characters.")
+    .optional(),
   rollNumber: z
     .string({
       required_error: "rollNumber is required.",
