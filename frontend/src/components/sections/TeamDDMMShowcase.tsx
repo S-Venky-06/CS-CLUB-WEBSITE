@@ -56,8 +56,8 @@ export default function TeamDDMMShowcase() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F47820]/15 border border-[#F47820]/30 text-xs font-mono font-bold text-[#F47820] shadow-[0_0_15px_rgba(244,120,32,0.2)]">
-              <span className="w-2 h-2 rounded-full bg-[#F47820] animate-pulse" />
-              <span>STATUS: ACTIVE &bull; TARGET: NFSU BHOPAL CTF (APR 11, 2026)</span>
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span>🏆 STATUS: MISSION ACCOMPLISHED &bull; NFSU BHOPAL CTF CONQUERED</span>
             </div>
 
             <h3 className="font-heading text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
@@ -70,7 +70,7 @@ export default function TeamDDMMShowcase() {
           </div>
 
           <a
-            href="https://teamddmm.netlify.app/"
+            href="https://ddmm-ctf.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
             className="group relative inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] text-[#EDEAF2] font-bold text-sm shadow-lg shadow-[#F47820]/30 hover:shadow-[#F47820]/60 transition-all duration-300 hover:-translate-y-1 whitespace-nowrap cursor-pointer"
@@ -104,34 +104,36 @@ export default function TeamDDMMShowcase() {
           </h4>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {hallOfFame.map((item, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className={`relative glass-card p-6 sm:p-8 rounded-2xl border ${item.borderColor} shadow-xl overflow-hidden group`}
+              className={`relative glass-card p-6 sm:p-8 rounded-2xl border ${item.borderColor} shadow-xl overflow-hidden group flex flex-col justify-between`}
             >
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.gradient}`} />
               
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <span className="text-xs font-mono font-bold tracking-widest text-[#F47820] uppercase">
-                    Verified Result
+              <div>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold tracking-widest text-[#F47820] uppercase">
+                      Verified Result
+                    </span>
+                    <h5 className="font-heading text-2xl font-bold text-foreground mt-1">
+                      {item.title}
+                    </h5>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#F47820]/15 border border-[#F47820]/40 text-xs font-extrabold text-[#F47820] shadow-md">
+                    {item.rank}
                   </span>
-                  <h5 className="font-heading text-2xl font-bold text-foreground mt-1">
-                    {item.title}
-                  </h5>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-[#F47820]/15 border border-[#F47820]/40 text-xs font-extrabold text-[#F47820] shadow-md">
-                  {item.rank}
-                </span>
-              </div>
 
-              <p className="text-sm text-[#8B8496] leading-relaxed mb-6 font-medium">
-                {item.description}
-              </p>
+                <p className="text-sm text-[#8B8496] leading-relaxed mb-6 font-medium">
+                  {item.description}
+                </p>
+              </div>
 
               <div className="pt-4 border-t border-white/10 space-y-2">
                 <p className="text-[11px] font-mono uppercase tracking-wider text-[#EDEAF2]/70 font-semibold">
@@ -148,6 +150,48 @@ export default function TeamDDMMShowcase() {
               </div>
             </motion.div>
           ))}
+
+          {/* 3rd Card: More Achievements & Official DDMM Website Redirect */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="relative glass-prominent p-6 sm:p-8 rounded-2xl border-2 border-[#F47820]/60 shadow-[0_0_30px_rgba(244,120,32,0.2)] overflow-hidden group flex flex-col justify-between bg-gradient-to-b from-[#150F1F] via-[#1E1530] to-[#0A0710]"
+          >
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#F47820] via-[#FFA24A] to-[#B23A87]" />
+
+            <div>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <span className="text-xs font-mono font-bold tracking-widest text-[#F47820] uppercase">
+                    More Accomplishments
+                  </span>
+                  <h5 className="font-heading text-2xl font-bold text-foreground mt-1">
+                    Explore Full CTF History
+                  </h5>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-[#F47820]/20 border border-[#F47820]/50 text-xs font-extrabold text-[#FFA24A] shadow-md animate-pulse">
+                  15+ Events 🏆
+                </span>
+              </div>
+
+              <p className="text-sm text-[#EDEAF2]/90 leading-relaxed mb-6 font-medium">
+                View our complete timeline of national & global CTF victories, detailed challenge writeups, live scoreboard rankings, and offensive vectors.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-white/10">
+              <a
+                href="https://ddmm-ctf.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] text-white font-extrabold text-sm shadow-lg shadow-[#F47820]/30 hover:shadow-[#F47820]/60 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <span>Visit Official DDMM Website</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+          </motion.div>
         </div>
       </div>
 

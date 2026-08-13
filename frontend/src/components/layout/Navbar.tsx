@@ -221,7 +221,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {/* DDMM CTF Direct Link */}
             <a
-              href="https://teamddmm.netlify.app/"
+              href="https://ddmm-ctf.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F47820]/15 border border-[#F47820]/40 text-xs font-bold text-[#F47820] hover:bg-[#F47820] hover:text-black transition-all duration-300 shadow-[0_0_10px_rgba(244,120,32,0.2)] hover:shadow-[0_0_15px_rgba(244,120,32,0.5)] cursor-pointer"
