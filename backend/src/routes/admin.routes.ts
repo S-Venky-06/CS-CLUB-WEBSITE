@@ -19,6 +19,16 @@ import {
   patchAdminAnnouncementActive,
   deleteAdminAnnouncement
 } from "../controllers/admin.controller.js";
+import {
+  getGDResultsController,
+  getRound2ShortlistController,
+  postRandomizeGDTeamsController,
+  postClearGDTeamsController,
+  postAssignSupervisorsController,
+  postGDEvaluationController,
+  postShortlistRound2Controller,
+  postUnshortlistRound2Controller,
+} from "../controllers/index.js";
 
 const router = Router();
 
@@ -54,5 +64,15 @@ router.get("/announcements", getAdminAnnouncements);
 router.post("/announcements", postAdminAnnouncement);
 router.patch("/announcements/:id/active", patchAdminAnnouncementActive);
 router.delete("/announcements/:id", deleteAdminAnnouncement);
+
+// Group Discussion (GD) Recruitment Panel Routes
+router.get("/gd/results", getGDResultsController);
+router.get("/gd/shortlist-round2", getRound2ShortlistController);
+router.post("/gd/randomize", requireRole("super_admin"), postRandomizeGDTeamsController);
+router.post("/gd/clear", requireRole("super_admin"), postClearGDTeamsController);
+router.post("/gd/assign-supervisors", requireRole("super_admin"), postAssignSupervisorsController);
+router.post("/gd/evaluate", postGDEvaluationController);
+router.post("/gd/shortlist-round2", postShortlistRound2Controller);
+router.post("/gd/unshortlist-round2", postUnshortlistRound2Controller);
 
 export default router;

@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Bell, Clock, LogOut, Shield, User, Sun, Moon, ExternalLink } from "lucide-react";
+import { Menu, X, Bell, Clock, LogOut, Shield, User, Users, Sun, Moon, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -421,6 +422,17 @@ export default function Navbar() {
                             <Shield className="w-3.5 h-3.5 text-accent" />
                             <span className="text-white">Role:</span> {user.role}
                           </div>
+
+                          {(user.role === "admin" || user.role === "super_admin") && (
+                            <Link
+                              href="/dashboard/gd-management"
+                              onClick={() => setIsProfileOpen(false)}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#F47820] hover:text-white bg-[#F47820]/10 hover:bg-[#F47820]/30 border border-[#F47820]/30 transition-all duration-300 cursor-pointer"
+                            >
+                              <Users className="w-3.5 h-3.5" />
+                              <span>GD Recruitment Panel</span>
+                            </Link>
+                          )}
 
                           <button
                             onClick={() => {

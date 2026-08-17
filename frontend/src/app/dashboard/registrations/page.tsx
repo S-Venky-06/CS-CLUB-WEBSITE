@@ -55,6 +55,7 @@ export default function RegistrationsManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState("");
   const [attendanceFilter, setAttendanceFilter] = useState<"all" | "present" | "absent">("all");
+  const [selectedBranch, setSelectedBranch] = useState("");
 
   // Modal State
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
@@ -93,6 +94,11 @@ export default function RegistrationsManagement() {
     fetchData();
   }, []);
 
+  // Extract unique branches dynamically from registrations dataset
+  const uniqueBranches = Array.from(
+    new Set(registrations.map((r) => r.branch).filter((b): b is string => Boolean(b)))
+  ).sort();
+
   // Filter logic
   const filteredRegistrations = registrations.filter((reg) => {
     const matchesSearch = 
@@ -104,7 +110,8 @@ export default function RegistrationsManagement() {
       attendanceFilter === "all" ||
       (attendanceFilter === "present" && reg.attended) ||
       (attendanceFilter === "absent" && !reg.attended);
-    return matchesSearch && matchesEvent && matchesAttendance;
+    const matchesBranch = selectedBranch === "" || reg.branch === selectedBranch;
+    return matchesSearch && matchesEvent && matchesAttendance && matchesBranch;
   });
 
   // Stats calculation (based on selected event, independent of search and attendance status filters)
@@ -202,7 +209,9 @@ export default function RegistrationsManagement() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    const filename = `registrations_${selectedEventId || "all"}_export.csv`;
+    const branchTag = selectedBranch ? selectedBranch.replace(/[^a-zA-Z0-9]/g, "_") : "All_Branches";
+    const statusTag = attendanceFilter;
+    const filename = `registrations_${selectedEventId || "all"}_${branchTag}_${statusTag}.csv`;
     link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
@@ -219,20 +228,27 @@ export default function RegistrationsManagement() {
     const doc = new jsPDF();
     const currentEvent = events.find(e => e.eventId === selectedEventId);
     const eventTitle = currentEvent ? currentEvent.title : "All Events";
+    const branchLabel = selectedBranch || "All Branches";
+    const statusLabel = 
+      attendanceFilter === "present"
+        ? "Present (Attended)"
+        : attendanceFilter === "absent"
+        ? "Absent"
+        : "All Statuses";
     const timestamp = new Date().toLocaleString();
 
     // Set title and subtitle
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(15);
     doc.setTextColor(20, 20, 30);
-    doc.text("Cybersecurity Club — Registrations Report", 14, 20);
+    doc.text("Cybersecurity Club — Attendance & Registrations Report", 14, 20);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(110, 110, 110);
-    doc.text(`Event Filter: ${eventTitle}`, 14, 27);
+    doc.text(`Event: ${eventTitle} | Branch: ${branchLabel} | Status: ${statusLabel}`, 14, 27);
     doc.text(`Generated At: ${timestamp}`, 14, 33);
-    doc.text(`Total Count: ${totalCount} | Checked In: ${attendedCount} | Attendance Rate: ${checkInRate}%`, 14, 39);
+    doc.text(`Total Exported Records: ${filteredRegistrations.length}`, 14, 39);
 
     // Map table content
     const tableColumns = ["Reg ID", "Student Name", "Roll Number", "Mobile Number", "Year/Branch/Sec", "Attendance Status"];
@@ -268,7 +284,9 @@ export default function RegistrationsManagement() {
       },
     });
 
-    const filename = `registrations_${selectedEventId || "all"}_export.pdf`;
+    const branchTag = selectedBranch ? selectedBranch.replace(/[^a-zA-Z0-9]/g, "_") : "All_Branches";
+    const statusTag = attendanceFilter;
+    const filename = `registrations_${selectedEventId || "all"}_${branchTag}_${statusTag}.pdf`;
     doc.save(filename);
 
     setSuccessMessage("PDF report exported successfully!");
@@ -350,7 +368,7 @@ export default function RegistrationsManagement() {
       </div>
 
       {/* ─── Filter Control Bar ───────────────────────── */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -358,7 +376,7 @@ export default function RegistrationsManagement() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search name, email, or registration ID..."
+            placeholder="Search name, email, or reg ID..."
             className="w-full pl-10 pr-4.5 py-2.5 rounded-xl bg-[#13131A] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
           />
         </div>
@@ -375,6 +393,23 @@ export default function RegistrationsManagement() {
             {events.map((evt) => (
               <option key={evt.eventId} value={evt.eventId}>
                 {evt.title} ({evt.eventId})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Branch Filter */}
+        <div className="relative">
+          <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <select
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            className="w-full pl-10 pr-4.5 py-2.5 rounded-xl bg-[#13131A] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+          >
+            <option value="">All Branches (Filter)</option>
+            {uniqueBranches.map((b) => (
+              <option key={b} value={b}>
+                {b}
               </option>
             ))}
           </select>

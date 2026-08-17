@@ -7,3 +7,14 @@ export {
   findRegistrationsByUser,
   findAllRegistrations,
 } from "./registration.repository.js";
+export {
+  ensureGDWorksheetsExist,
+  findAllGDResults,
+  findAllRound2Shortlist,
+  randomizeAndSaveGDTeams,
+  clearAllGDTeams,
+  assignSupervisorsToGDTeam,
+  submitGDEvaluation,
+  shortlistCandidateForRound2,
+  unshortlistCandidateFromRound2,
+} from "./gd.repository.js";

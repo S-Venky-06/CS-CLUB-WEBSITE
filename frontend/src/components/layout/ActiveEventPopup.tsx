@@ -17,20 +17,47 @@ export default function ActiveEventPopup({
   registerTargetId = "featured-event",
 }: ActiveEventPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [dynamicTitle, setDynamicTitle] = useState(eventTitle);
+  const [dynamicCategory, setDynamicCategory] = useState(eventCategory);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     // Check if dismissed in this session
     const isDismissed = sessionStorage.getItem("active_event_popup_dismissed");
-    if (!isDismissed) {
-      // Delay entrance slightly for smoother UX
-      const timer = setTimeout(() => {
+    if (isDismissed) return;
+
+    // Fetch live event status from API
+    const checkEventStatus = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/featured`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const eventData = json.data;
+            // Only show popup if event status is strictly "active"
+            if (eventData.status === "active") {
+              if (eventData.title) setDynamicTitle(eventData.title);
+              if (eventData.location) setDynamicCategory(eventData.location);
+              setIsVisible(true);
+            } else {
+              // Event is completed/cancelled (Event is over) - DO NOT SHOW POPUP
+              setIsVisible(false);
+            }
+          }
+        }
+      } catch (err) {
+        // Fallback if API unreachable
         setIsVisible(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      checkEventStatus();
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [eventTitle, eventCategory]);
 
   const handleDismiss = () => {
     setIsVisible(false);
@@ -86,10 +113,10 @@ export default function ActiveEventPopup({
             {/* Main Content */}
             <div className="space-y-1.5 mb-4">
               <span className="text-[10px] uppercase font-mono tracking-widest text-[#B23A87] font-bold block">
-                {eventCategory}
+                {dynamicCategory}
               </span>
               <h4 className="font-heading text-base sm:text-lg font-bold text-[#EDEAF2] leading-snug">
-                {eventTitle}
+                {dynamicTitle}
               </h4>
               <p className="text-xs text-[#8B8496] font-medium leading-relaxed">
                 Registrations are officially open! Secure your spot in the Cybersecurity Club before slots fill up.
