@@ -2,9 +2,40 @@ import type { CorsOptions } from "cors";
 import type { Options as RateLimitOptions } from "express-rate-limit";
 import { env, isProduction } from "./environment.js";
 
+/** Parse allowed origins from FRONTEND_URL */
+const getAllowedOrigins = (): string[] => {
+  const list = (env.FRONTEND_URL || "")
+    .split(",")
+    .map((u) => u.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
+  if (!isProduction) {
+    if (!list.includes("http://localhost:3000")) list.push("http://localhost:3000");
+    if (!list.includes("http://127.0.0.1:3000")) list.push("http://127.0.0.1:3000");
+  }
+  return list;
+};
+
 /** CORS configuration */
 export const corsOptions: CorsOptions = {
-  origin: isProduction ? env.FRONTEND_URL : [env.FRONTEND_URL, "http://localhost:3000"],
+  origin: (origin, callback) => {
+    // Allow non-browser or same-origin requests
+    if (!origin) return callback(null, true);
+
+    const cleanOrigin = origin.replace(/\/$/, "");
+    const allowed = getAllowedOrigins();
+
+    const isMatch =
+      allowed.includes(cleanOrigin) ||
+      (!isProduction && cleanOrigin.startsWith("http://localhost:")) ||
+      (env.FRONTEND_URL.includes("vercel.app") && cleanOrigin.endsWith(".vercel.app"));
+
+    if (isMatch) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -25,3 +56,4 @@ export const rateLimitOptions: Partial<RateLimitOptions> = {
 
 /** Morgan logging format */
 export const morganFormat = isProduction ? "combined" : "dev";
+
