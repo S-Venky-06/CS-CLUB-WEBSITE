@@ -25,6 +25,8 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
   const [isAwake, setIsAwake] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [showSkip, setShowSkip] = useState(false);
   const [dotCount, setDotCount] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [pingFailedCount, setPingFailedCount] = useState(0);
@@ -76,19 +78,29 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
 
     let isSubscribed = true;
     let timeoutId: NodeJS.Timeout;
+    let skipTimerId: NodeJS.Timeout;
 
     const startWakeupProcess = async () => {
+      setProgress(10);
       addLog("Initializing secure handshake protocols...", "info");
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 300));
 
+      setProgress(30);
       addLog("Verifying integrity signatures... [OK]", "success");
-      await new Promise((r) => setTimeout(r, 650));
+      await new Promise((r) => setTimeout(r, 350));
 
+      setProgress(50);
       addLog("Initializing local sandbox modules... [OK]", "success");
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 250));
 
+      setProgress(75);
       addLog("Establishing secure uplink connection...", "info");
       setIsConnecting(true);
+
+      // Show skip button after 4 seconds
+      skipTimerId = setTimeout(() => {
+        if (isSubscribed) setShowSkip(true);
+      }, 4000);
 
       const checkHealth = async () => {
         if (!isSubscribed) return;
@@ -106,6 +118,7 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
           clearTimeout(timeout);
 
           if (res.ok) {
+            setProgress(100);
             setIsConnecting(false);
             addLog("Secure handshake verified. Connection established.", "success");
             await new Promise((r) => setTimeout(r, 500));
@@ -152,8 +165,9 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
     return () => {
       isSubscribed = false;
       clearTimeout(timeoutId);
+      clearTimeout(skipTimerId);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <BackendWakeupContext.Provider value={{ isAwake }}>
@@ -165,6 +179,16 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="fixed inset-0 z-[9999] flex flex-col bg-[#0B0B0F] text-emerald-400 font-mono p-6 sm:p-12 overflow-hidden select-none"
           >
+            {/* Top progress bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-[#0A0A0E]">
+              <motion.div 
+                className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                initial={{ width: "0%" }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+
             {/* CRT monitor scanlines overlay */}
             <div
               className="absolute inset-0 pointer-events-none z-10 opacity-[0.18]"
@@ -246,9 +270,23 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
               <div>
                 STATUS: {isAwake ? "ESTABLISHED (SECURE)" : "INITIALIZING STAGE"}
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span>LISTENING ON PORT 443 / HTTPS</span>
+              <div className="flex items-center gap-4">
+                {showSkip && !isAwake && (
+                  <button 
+                    onClick={() => {
+                      sessionStorage.setItem("backend_was_woken", "true");
+                      setIsAwake(true);
+                      setShowOverlay(false);
+                    }}
+                    className="px-3 py-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer active:scale-95"
+                  >
+                    SKIP INITIALIZATION
+                  </button>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>LISTENING ON PORT 443 / HTTPS</span>
+                </div>
               </div>
             </div>
           </motion.div>

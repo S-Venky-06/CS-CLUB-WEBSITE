@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -8,6 +8,28 @@ import { useAuth } from "@/components/providers/AuthProvider";
 export default function FeaturedEvent() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  // Parallax state
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  
+  const layer1X = useTransform(springX, [0, 1], [-15, 15]);
+  const layer1Y = useTransform(springY, [0, 1], [-15, 15]);
+  const layer2X = useTransform(springX, [0, 1], [15, -15]);
+  const layer2Y = useTransform(springY, [0, 1], [15, -15]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width);
+    mouseY.set((e.clientY - rect.top) / rect.height);
+  };
+  
+  const handleMouseLeave = () => {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  };
 
   const { user } = useAuth();
   const [isRegistered, setIsRegistered] = useState(false);
@@ -219,6 +241,38 @@ export default function FeaturedEvent() {
     </div>
   );
 
+  const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
+    const btnRef = useRef<HTMLDivElement>(null);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const mSpringX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
+    const mSpringY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
+
+    const handleBtnMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      const { clientX, clientY } = e;
+      const { height, width, left, top } = btnRef.current!.getBoundingClientRect();
+      x.set((clientX - (left + width / 2)) * 0.3);
+      y.set((clientY - (top + height / 2)) * 0.3);
+    };
+
+    const handleBtnLeave = () => {
+      x.set(0);
+      y.set(0);
+    };
+
+    return (
+      <motion.div
+        ref={btnRef}
+        onMouseMove={handleBtnMove}
+        onMouseLeave={handleBtnLeave}
+        style={{ x: mSpringX, y: mSpringY }}
+        className="w-full sm:w-auto inline-block z-10"
+      >
+        {children}
+      </motion.div>
+    );
+  };
+
   return (
     <section id="events" className="relative py-28 sm:py-36 overflow-hidden" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -252,11 +306,15 @@ export default function FeaturedEvent() {
           {/* Animated gradient border for card */}
           <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-br from-[#7A1D5C] via-[#B23A87] to-[#F47820] opacity-40 group-hover:opacity-80 transition-opacity duration-500 blur-[2px]" />
           
-          <div className="relative glass-prominent overflow-hidden rounded-2xl flex flex-col md:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div 
+            className="relative glass-prominent overflow-hidden rounded-2xl flex flex-col md:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
             
             {/* Left/Top side: Visual Banner */}
-            <div className="relative md:w-2/5 h-56 md:h-auto overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#54276A]/80 via-[#2E1740] to-[#F47820]/30 z-10 mix-blend-multiply" />
+            <div className="relative md:w-2/5 h-56 md:h-auto overflow-hidden perspective-[1000px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#54276A]/80 via-[#2E1740] to-[#F47820]/30 z-10 mix-blend-multiply pointer-events-none" />
               <div className="absolute inset-0 bg-grid opacity-50 z-10" />
               
               <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
@@ -267,8 +325,9 @@ export default function FeaturedEvent() {
               </div>
               
               {/* Decorative geometric */}
-              <svg
-                className="absolute right-0 bottom-0 w-40 h-40 opacity-30 z-20 group-hover:scale-110 transition-transform duration-700"
+              <motion.svg
+                style={{ x: layer1X, y: layer1Y }}
+                className="absolute right-0 bottom-0 w-40 h-40 opacity-30 z-20 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
                 viewBox="0 0 120 120"
                 fill="none"
               >
@@ -282,14 +341,17 @@ export default function FeaturedEvent() {
                   stroke="rgba(255, 85, 0, 0.5)"
                   strokeWidth="1"
                 />
-              </svg>
+              </motion.svg>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-20 p-6 text-center">
+              <motion.div 
+                style={{ x: layer2X, y: layer2Y }}
+                className="absolute inset-0 flex flex-col items-center justify-center z-20 p-6 text-center pointer-events-none"
+              >
                 <Sparkles className="w-8 h-8 text-cyan mb-3 opacity-80" />
                 <p className="font-heading text-2xl sm:text-3xl font-bold text-white text-glow leading-tight">
                   Junior<br/>Registrations
                 </p>
-              </div>
+              </motion.div>
             </div>
 
             {/* Right/Bottom side: Details & Action */}
@@ -339,34 +401,36 @@ export default function FeaturedEvent() {
                     You're Registered!
                   </button>
                 ) : (
-                  <div className="relative group/btn w-full sm:w-auto inline-block">
-                    {/* Glowing pulse ring behind button */}
-                    <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          setErrorMessage("Please sign in with Google in the top navigation menu to register.");
-                          setTimeout(() => setErrorMessage(""), 5000);
-                        } else {
-                          setIsTipModalOpen(true);
-                        }
-                      }}
-                      disabled={isRegistering}
-                      className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#F47820] text-white font-extrabold text-sm hover:bg-[#FFA24A] hover:text-white border-2 border-accent shadow-[0_0_25px_rgba(244,120,32,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
-                    >
-                      {isRegistering ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin text-white" />
-                          Registering...
-                        </>
-                      ) : (
-                        <>
-                          Register Now
-                          <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <MagneticButtonWrapper>
+                    <div className="relative group/btn w-full sm:w-auto inline-block">
+                      {/* Glowing pulse ring behind button */}
+                      <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            setErrorMessage("Please sign in with Google in the top navigation menu to register.");
+                            setTimeout(() => setErrorMessage(""), 5000);
+                          } else {
+                            setIsTipModalOpen(true);
+                          }
+                        }}
+                        disabled={isRegistering}
+                        className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#F47820] text-white font-extrabold text-sm hover:bg-[#FFA24A] hover:text-white border-2 border-accent shadow-[0_0_25px_rgba(244,120,32,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
+                      >
+                        {isRegistering ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            Registering...
+                          </>
+                        ) : (
+                          <>
+                            Register Now
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </MagneticButtonWrapper>
                 )}
               </div>
 

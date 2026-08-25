@@ -1,10 +1,37 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, Terminal } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import MomentsShowcase from "./MomentsShowcase";
+
+// Magnetic Button Wrapper
+function MagneticWrapper({ children, className }: { children: React.ReactNode, className?: string }) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = e;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const x = (clientX - (left + width / 2)) * 0.15;
+    const y = (clientY - (top + height / 2)) * 0.15;
+    setPosition({ x, y });
+  };
+  
+  const handleMouseLeave = () => setPosition({ x: 0, y: 0 });
+
+  return (
+    <motion.div
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 // Animated counter component for the stats
 function AnimatedCounter({ value, label, href, delay }: { value: number; label: string; href: string; delay: number }) {
@@ -86,6 +113,9 @@ const typewriterVariant = {
 export default function HeroSection() {
   const title1 = "CYBERSECURITY".split("");
   const title2 = "CLUB OF GCET".split("");
+  
+  const { scrollY } = useScroll();
+  const yStats = useTransform(scrollY, [0, 500], [0, 50]);
 
   return (
     <section
@@ -116,28 +146,48 @@ export default function HeroSection() {
 
             {/* Heading */}
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
               className="font-heading text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight mb-6"
             >
-              <span className="block text-[#EDEAF2] drop-shadow-[0_0_20px_rgba(178,58,135,0.4)]">
-                CYBERSECURITY
-              </span>
-              <span className="block gradient-text mt-1">
+              <motion.span 
+                variants={letterContainer}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-wrap justify-center lg:justify-start text-[#EDEAF2] drop-shadow-[0_0_20px_rgba(178,58,135,0.4)]"
+              >
+                {title1.map((letter, index) => (
+                  <motion.span key={index} variants={letterVariant}>
+                    {letter}
+                  </motion.span>
+                ))}
+              </motion.span>
+              <motion.span 
+                initial={{ opacity: 0, filter: "blur(10px)", y: 10 }}
+                animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="block gradient-text mt-1"
+              >
                 CLUB OF GCET
-              </span>
+              </motion.span>
             </motion.h1>
 
             {/* Tagline */}
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="font-heading text-base sm:text-lg lg:text-xl text-[#F47820] font-bold tracking-[0.25em] uppercase mb-6 drop-shadow-[0_0_15px_rgba(244,120,32,0.4)]"
-            >
-              Learn &bull; Secure &bull; Innovate
-            </motion.p>
+            <div className="flex justify-center lg:justify-start mb-6">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={typewriterVariant}
+                className="font-heading text-base sm:text-lg lg:text-xl text-[#F47820] font-bold tracking-[0.25em] uppercase drop-shadow-[0_0_15px_rgba(244,120,32,0.4)] overflow-hidden whitespace-nowrap border-r-2 border-[#F47820] pr-2"
+                style={{ animation: "blink 1s step-end infinite" }}
+              >
+                Learn &bull; Secure &bull; Innovate
+              </motion.div>
+            </div>
+            
+            <style jsx>{`
+              @keyframes blink {
+                50% { border-color: transparent; }
+              }
+            `}</style>
 
             {/* Description */}
             <motion.p
@@ -158,21 +208,25 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-row items-center gap-3 sm:gap-5 justify-center lg:justify-start w-full max-w-sm sm:max-w-none mx-auto lg:mx-0"
             >
-              <Link
-                href="/events"
-                className="group relative inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] text-[#EDEAF2] font-bold text-xs sm:text-sm shadow-lg shadow-[#F47820]/30 overflow-hidden transition-all duration-300 hover:shadow-[#F47820]/60 hover:-translate-y-1 flex-1 sm:flex-initial text-center uppercase tracking-wider"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                <span className="relative z-10 whitespace-nowrap">Explore Events</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+              <MagneticWrapper className="flex-1 sm:flex-initial">
+                <Link
+                  href="/events"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] text-[#EDEAF2] font-bold text-xs sm:text-sm shadow-lg shadow-[#F47820]/30 overflow-hidden transition-all duration-300 hover:shadow-[#F47820]/60 hover:-translate-y-1 w-full text-center uppercase tracking-wider"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 whitespace-nowrap">Explore Events</span>
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </MagneticWrapper>
               
-              <a
-                href="#about"
-                className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl glass-card text-[#EDEAF2] font-bold text-xs sm:text-sm transition-all duration-300 hover:border-[#F47820]/60 hover:bg-[#F47820]/10 hover:text-[#F47820] hover:-translate-y-1 flex-1 sm:flex-initial text-center whitespace-nowrap uppercase tracking-wider"
-              >
-                Learn More
-              </a>
+              <MagneticWrapper className="flex-1 sm:flex-initial">
+                <a
+                  href="#about"
+                  className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl glass-card text-[#EDEAF2] font-bold text-xs sm:text-sm transition-all duration-300 hover:border-[#F47820]/60 hover:bg-[#F47820]/10 hover:text-[#F47820] hover:-translate-y-1 w-full text-center whitespace-nowrap uppercase tracking-wider"
+                >
+                  Learn More
+                </a>
+              </MagneticWrapper>
             </motion.div>
 
             {/* Stats strip */}
@@ -180,10 +234,15 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="flex items-center gap-6 sm:gap-12 mt-10 sm:mt-16 justify-center lg:justify-start max-w-xs sm:max-w-none mx-auto lg:mx-0"
+              className="mt-10 sm:mt-16"
             >
-              <AnimatedCounter value={14} label="Members" href="/members" delay={1.8} />
-              <AnimatedCounter value={3} label="Major Events" href="/events" delay={2.0} />
+              <motion.div 
+                style={{ y: yStats }}
+                className="flex items-center gap-6 sm:gap-12 justify-center lg:justify-start max-w-xs sm:max-w-none mx-auto lg:mx-0"
+              >
+                <AnimatedCounter value={14} label="Members" href="/members" delay={1.8} />
+                <AnimatedCounter value={3} label="Major Events" href="/events" delay={2.0} />
+              </motion.div>
             </motion.div>
           </div>
 

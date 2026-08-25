@@ -53,6 +53,14 @@ app.use(compression());
 app.use(morgan(morganFormat));
 
 // ─── Routes ──────────────────────────────────────
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "CS-CLUB Backend API is online and running.",
+    healthCheck: "/api/v1/health",
+  });
+});
+
 app.use("/api", apiRoutes);
 
 // ─── Error Handling ──────────────────────────────

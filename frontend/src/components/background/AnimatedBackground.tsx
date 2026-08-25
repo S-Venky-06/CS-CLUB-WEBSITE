@@ -44,9 +44,14 @@ export default function AnimatedBackground() {
       canvas.height = window.innerHeight;
     };
 
+    let mouseMoveRaf: number | null = null;
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
+      if (mouseMoveRaf) return;
+      mouseMoveRaf = requestAnimationFrame(() => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouseMoveRaf = null;
+      });
     };
     
     const handleMouseLeave = () => {
@@ -56,10 +61,10 @@ export default function AnimatedBackground() {
 
     const createParticles = () => {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
-      // Adjust density based on screen size
-      const density = isMobile ? 25000 : 15000;
+      // Drastically reduce density on mobile for performance
+      const density = isMobile ? 35000 : 15000;
       const count = Math.floor((canvas.width * canvas.height) / density);
-      const maxCount = isMobile ? 40 : 100;
+      const maxCount = isMobile ? 25 : 100;
       const finalCount = Math.min(count, maxCount);
 
       particles = Array.from({ length: finalCount }, () => {
@@ -87,28 +92,73 @@ export default function AnimatedBackground() {
     };
 
     const drawConnections = () => {
+      const isMobile = window.innerWidth <= 768;
+      // Skip drawing connections on mobile completely to boost FPS
+      if (isMobile) return;
+
       const maxDist = 180;
       
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+      // Spatial hashing optimization for connections
+      const cellSize = maxDist;
+      const grid: { [key: string]: Particle[] } = {};
+      
+      // Populate grid
+      particles.forEach(p => {
+        const cellX = Math.floor(p.x / cellSize);
+        const cellY = Math.floor(p.y / cellSize);
+        const key = `${cellX},${cellY}`;
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(p);
+      });
 
-          if (dist < maxDist) {
-            const opacity = (1 - dist / maxDist) * 0.15;
+      // Draw connections using grid
+      const drawnPairs = new Set<string>();
+
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        const cellX = Math.floor(p1.x / cellSize);
+        const cellY = Math.floor(p1.y / cellSize);
+
+        // Check current and adjacent cells
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            const neighborKey = `${cellX + dx},${cellY + dy}`;
+            const neighbors = grid[neighborKey];
             
-            // Create a gradient for the line between the two particles' colors
-            const grad = ctx.createLinearGradient(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
-            grad.addColorStop(0, `rgba(${particles[i].color}, ${opacity})`);
-            grad.addColorStop(1, `rgba(${particles[j].color}, ${opacity})`);
-            
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
+            if (neighbors) {
+              for (let j = 0; j < neighbors.length; j++) {
+                const p2 = neighbors[j];
+                
+                // Prevent duplicate lines and self-connections
+                if (p1 === p2) continue;
+                
+                // Create a unique id for the pair to avoid drawing twice
+                // use object references or coordinates to identify pair
+                const pairId = p1.x < p2.x ? `${p1.x}-${p2.x}` : `${p2.x}-${p1.x}`;
+                if (drawnPairs.has(pairId)) continue;
+                drawnPairs.add(pairId);
+
+                const distX = p1.x - p2.x;
+                const distY = p1.y - p2.y;
+                const distSq = distX * distX + distY * distY;
+
+                if (distSq < maxDist * maxDist) {
+                  const dist = Math.sqrt(distSq);
+                  const opacity = (1 - dist / maxDist) * 0.15;
+                  
+                  const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                  grad.addColorStop(0, `rgba(${p1.color}, ${opacity})`);
+                  grad.addColorStop(1, `rgba(${p2.color}, ${opacity})`);
+                  
+                  ctx.beginPath();
+                  ctx.moveTo(p1.x, p1.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  ctx.strokeStyle = grad;
+                  ctx.lineWidth = 0.8;
+                  ctx.stroke();
+                }
+              }
+            }
           }
         }
       }
@@ -164,12 +214,13 @@ export default function AnimatedBackground() {
     window.addEventListener("resize", () => {
       resize();
       createParticles();
-    });
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
+    }, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
 
     return () => {
       cancelAnimationFrame(animationId);
+      if (mouseMoveRaf) cancelAnimationFrame(mouseMoveRaf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);

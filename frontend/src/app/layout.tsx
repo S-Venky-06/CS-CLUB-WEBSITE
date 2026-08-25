@@ -70,6 +70,20 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                window.addEventListener('mousemove', function(e) {
+                  document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+                  document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+                }, { passive: true });
+              }
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
         <a
           href="#main-content"

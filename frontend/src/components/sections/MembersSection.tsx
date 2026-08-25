@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Instagram, Linkedin, Shield, Award, Users, Trophy } from "lucide-react";
+import { Instagram, Linkedin, Shield, Award, Users, Trophy, Sparkles } from "lucide-react";
 import Image from "next/image";
 import TeamDDMMShowcase from "./TeamDDMMShowcase";
 
@@ -157,6 +157,55 @@ const coreTeam: Member[] = [
   },
 ];
 
+// Fresh Talent data
+const freshTalent: Member[] = [
+  {
+    name: "Dhanush",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "D",
+    image: "/members/talent1.jpg",
+    linkedin: "https://www.linkedin.com/in/velaga-dhanush-093280381?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    instagram: "https://www.instagram.com/velaga_dhanush?igsi=MWt4M3Zyemk1aWRrZQ==",
+  },
+  {
+    name: "Aaanniya Jupelly",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "AJ",
+    image: "/members/talent2.jpg",
+    linkedin: "https://www.linkedin.com/in/aaniya-jupelly",
+    instagram: "https://www.instagram.com/aaniya._.06?igsi=eXFoZzFkYzJuNXd",
+  },
+  {
+    name: "K Sreeraajita",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "KS",
+    image: "/members/talent3.jpg",
+    linkedin: "https://www.linkedin.com/in/sreeraajita-k-400357381?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    instagram: "https://www.instagram.com/ksreeraajita?igsi=NjVhN2JuaDJpMWNn",
+  },
+  {
+    name: "Mayank Pandey",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "MP",
+    image: "/members/talent4.jpg",
+    linkedin: "https://www.linkedin.com/in/mayankpandey-security-researcher?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    instagram: "https://www.instagram.com/mayank.pandey06?igsi=MTZldW9zZml1OGRhcA==",
+  },
+  {
+    name: "Ram Sai Reddy",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "RS",
+    image: "/members/talent5.jpg",
+    linkedin: "https://www.linkedin.com/in/ram-sai-reddy-r-964076381",
+    instagram: "https://www.instagram.com/ram_silo08?utm_source=qr&igsi=MXE3bnNpbTV3ZTRjbA==",
+  },
+];
+
 // Refactored Sub-Component to handle state and render cards uniformly
 function MemberCard({
   member,
@@ -172,16 +221,16 @@ function MemberCard({
   const gradientClass = isLeadership ? "from-accent to-primary" : "from-cyan to-primary";
 
   return (
-    <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border hover:border-transparent transition-all duration-500 rounded-2xl shadow-lg transform-gpu hover:-translate-y-2">
-      
+    <article className="group relative glass-card flex flex-col overflow-hidden border border-glass-border hover:border-transparent transition-all duration-500 rounded-2xl shadow-lg transform-gpu hover:-translate-y-3 hover:shadow-2xl hover:shadow-primary/20">
+
       {/* Holographic Border Effect on Hover */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-br from-primary via-cyan to-accent pointer-events-none p-[1.5px] -z-10">
-         <div className="w-full h-full bg-[#150F1F] rounded-2xl" />
+        <div className="w-full h-full bg-[#150F1F] rounded-2xl" />
       </div>
 
       {/* Ambient glow behind card */}
-      <div 
-        className="absolute -inset-2 opacity-0 group-hover:opacity-60 blur-xl transition-opacity duration-500 -z-20"
+      <div
+        className="absolute -inset-2 opacity-0 group-hover:opacity-100 blur-2xl transition-all duration-500 -z-20 group-hover:scale-110"
         style={{ background: glowColor }}
       />
 
@@ -189,7 +238,7 @@ function MemberCard({
       <div
         className="relative w-full overflow-hidden bg-gradient-to-br from-surface to-background aspect-[3/4]"
       >
-        {!imageError ? (
+        {member.image && !imageError ? (
           <Image
             src={member.image}
             alt={`${member.name}'s portrait`}
@@ -203,9 +252,8 @@ function MemberCard({
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface to-[#13131A]">
             <span
-              className={`font-heading font-bold text-foreground tracking-widest ${
-                isLeadership ? "text-3xl" : "text-xl"
-              }`}
+              className={`font-heading font-bold text-foreground tracking-widest ${isLeadership ? "text-3xl" : "text-xl"
+                }`}
             >
               {member.initials}
             </span>
@@ -226,7 +274,7 @@ function MemberCard({
         <div className="absolute inset-0 border-[4px] border-[#0B0B12] opacity-50 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B12] via-transparent to-transparent opacity-80 z-10" />
         <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none z-10 mix-blend-overlay" />
-        
+
         {/* Animated Scanline */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan/20 to-transparent -translate-y-full group-hover:animate-[scan-line_2s_linear_infinite] z-20 pointer-events-none" />
       </div>
@@ -239,9 +287,8 @@ function MemberCard({
           </span>
         )}
         <h4
-          className={`font-heading font-bold text-foreground mb-1.5 transition-colors duration-300 group-hover:text-white ${
-            isLeadership ? "text-xl" : "text-base"
-          }`}
+          className={`font-heading font-bold text-foreground mb-1.5 transition-colors duration-300 group-hover:text-white ${isLeadership ? "text-xl" : "text-base"
+            }`}
         >
           {member.name}
         </h4>
@@ -280,12 +327,13 @@ function MemberCard({
 export default function MembersSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [activeTab, setActiveTab] = useState<"leadership" | "leads" | "core" | "ddmm">("leadership");
+  const [activeTab, setActiveTab] = useState<"leadership" | "leads" | "core" | "talent" | "ddmm">("leadership");
 
   const tabs = [
     { id: "leadership", label: "Leadership", icon: Shield, color: "text-[#F47820]" },
     { id: "leads", label: "Team Leads", icon: Award, color: "text-[#B23A87]" },
     { id: "core", label: "Core Members", icon: Users, color: "text-[#EDEAF2]" },
+    { id: "talent", label: "Fresh Talent", icon: Sparkles, color: "text-[#5CE1E6]" },
     { id: "ddmm", label: "Team DDMM (CTF)", icon: Trophy, color: "text-[#F47820]" },
   ] as const;
 
@@ -304,7 +352,7 @@ export default function MembersSection() {
             <span className="text-sm font-bold tracking-[0.2em] uppercase text-[#F47820] block relative z-10">
               Command Structure
             </span>
-            <motion.div 
+            <motion.div
               initial={{ scaleX: 0 }}
               animate={isInView ? { scaleX: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
@@ -326,9 +374,8 @@ export default function MembersSection() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
-                activeTab === tab.id ? "text-white" : "text-muted hover:text-foreground hover:bg-surface/50"
-              }`}
+              className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${activeTab === tab.id ? "text-white" : "text-muted hover:text-foreground hover:bg-surface/50"
+                }`}
             >
               {activeTab === tab.id && (
                 <motion.div
@@ -392,6 +439,21 @@ export default function MembersSection() {
               </motion.div>
             )}
 
+            {activeTab === "talent" && (
+              <motion.div
+                key="talent"
+                initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
+                transition={{ duration: 0.4 }}
+                className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6"
+              >
+                {freshTalent.map((member, i) => (
+                  <MemberCard key={member.name + i} member={member} isLeadership={false} priority={false} />
+                ))}
+              </motion.div>
+            )}
+
             {activeTab === "ddmm" && (
               <motion.div
                 key="ddmm"
@@ -407,7 +469,7 @@ export default function MembersSection() {
         </div>
 
       </div>
-      
+
       {/* Decorative Orbs */}
       <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 -left-1/4 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />

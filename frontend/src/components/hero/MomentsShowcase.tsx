@@ -35,12 +35,35 @@ export default function MomentsShowcase() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
 
   // Prevent server/client hydration mismatch by randomizing on mount
   useEffect(() => {
     setCurrentIndex(Math.floor(Math.random() * MOMENT_IMAGES.length));
     setHasMounted(true);
   }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsHovered(true);
+    const card = e.currentTarget;
+    const box = card.getBoundingClientRect();
+    const x = e.clientX - box.left;
+    const y = e.clientY - box.top;
+    
+    const centerX = box.width / 2;
+    const centerY = box.height / 2;
+    
+    // Max rotation 8 degrees
+    setRotateX(((y - centerY) / centerY) * -8);
+    setRotateY(((x - centerX) / centerX) * 8);
+  };
+  
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+  };
 
   // Auto-transition timer
   useEffect(() => {
@@ -102,10 +125,13 @@ export default function MomentsShowcase() {
       />
 
       {/* Glassmorphic card frame wrapper with holographic border */}
-      <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="relative w-full aspect-square rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(84,39,106,0.35)] group z-10"
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        animate={{ rotateX, rotateY }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        style={{ perspective: 1000, transformStyle: "preserve-3d" }}
+        className="relative w-full aspect-square rounded-2xl bg-surface/50 backdrop-blur-xl border border-glass-border shadow-2xl p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-shadow duration-500 hover:shadow-[0_0_50px_rgba(84,39,106,0.35)] group z-10"
       >
         {/* Holographic Border Effect on Hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-primary via-cyan to-primary pointer-events-none p-[1px] -z-10">
@@ -117,10 +143,10 @@ export default function MomentsShowcase() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, scale: 1.1, filter: "blur(4px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.95, filter: "blur(2px)" }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full"
             >
               <Image
@@ -142,31 +168,46 @@ export default function MomentsShowcase() {
           </AnimatePresence>
         </div>
 
-        {/* Small pagination dots */}
-        <div className="flex justify-center items-center gap-2 pt-2">
-          {MOMENT_IMAGES.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer relative overflow-hidden ${
-                index === currentIndex
-                  ? "bg-[#F47820] w-6 shadow-[0_0_12px_rgba(244,120,32,0.9)]"
-                  : "bg-muted/30 w-1.5 hover:bg-muted/60 hover:w-3"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            >
-              {index === currentIndex && (
-                <motion.div
-                  className="absolute inset-0 bg-white"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{ duration: 6, ease: "linear" }}
-                />
-              )}
-            </button>
-          ))}
+        {/* Small pagination dots with progress ring */}
+        <div className="flex justify-center items-center gap-3 pt-3">
+          {MOMENT_IMAGES.map((_, index) => {
+            const isActive = index === currentIndex;
+            return (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className="relative flex items-center justify-center w-6 h-6 focus:outline-none group cursor-pointer"
+                aria-label={`Go to slide ${index + 1}`}
+              >
+                {/* Background dot */}
+                <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isActive ? 'bg-[#F47820]' : 'bg-muted/30 group-hover:bg-muted/60'}`} />
+                
+                {/* SVG Progress Ring */}
+                {isActive && (
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle 
+                      cx="12" cy="12" r="10" 
+                      fill="none" 
+                      stroke="#F47820" 
+                      strokeWidth="1.5" 
+                      strokeDasharray="62.8"
+                      strokeDashoffset="62.8"
+                      className="animate-[circle-progress_6s_linear_forwards]"
+                    />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </motion.div>
+
+      <style jsx>{`
+        @keyframes circle-progress {
+          from { stroke-dashoffset: 62.8; }
+          to { stroke-dashoffset: 0; }
+        }
+      `}</style>
     </div>
   );
 }

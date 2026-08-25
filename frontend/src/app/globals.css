@@ -46,6 +46,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -56,25 +57,45 @@ body {
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Global Cursor Glow */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+    rgba(178, 58, 135, 0.05),
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
 /* ===== Scrollbar Styling ===== */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: #54276A;
+  background: linear-gradient(to bottom, #7A1D5C, #54276A);
   border-radius: 8px;
+  border: 2px solid var(--background);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #7A1D5C;
+  background: linear-gradient(to bottom, #B23A87, #7A1D5C);
 }
 
 /* ===== Selection ===== */
 ::selection {
-  background-color: rgba(244, 120, 32, 0.5);
+  background-color: rgba(244, 120, 32, 0.3);
   color: #FFFFFF;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
 /* ===== Glassmorphism Utilities ===== */
@@ -241,3 +262,34 @@ div[id^="gsi_"] {
   box-shadow: none !important;
 }
 
+/* ===== Performance & Accessibility ===== */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1000px;
+}
+
+.will-change-transform {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* New Keyframes */
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(244, 120, 32, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(244, 120, 32, 0.8); }
+}
+
+@keyframes shimmer-fast {
+  to { background-position: 200% center; }
+}

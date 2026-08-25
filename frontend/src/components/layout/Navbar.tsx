@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { Menu, X, Bell, Clock, LogOut, Shield, User, Users, Sun, Moon, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -34,6 +34,18 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 20);
+    const previous = scrollY.getPrevious() || 0;
+    if (latest > previous && latest > 150) {
+      setIsHidden(true);
+    } else {
+      setIsHidden(false);
+    }
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -117,13 +129,7 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Scroll handler replaced by useMotionValueEvent above
 
   // Close mobile menu on resize
   useEffect(() => {
@@ -137,11 +143,11 @@ export default function Navbar() {
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      animate={{ y: isHidden && !isMobileOpen ? -100 : 0, opacity: isHidden && !isMobileOpen ? 0 : 1 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-500 ${
         isScrolled || isMobileOpen
-          ? "bg-[#0B0B12]/70 backdrop-blur-xl border-b border-glass-border shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+          ? "bg-[#0B0B12]/75 backdrop-blur-3xl border-b border-glass-border shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
           : "bg-transparent border-b border-transparent"
       }`}
     >
@@ -210,7 +216,7 @@ export default function Navbar() {
                   <motion.div
                     layoutId="activeNavBackground"
                     className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#7A1D5C] via-[#B23A87] to-[#F47820] shadow-[0_0_20px_rgba(244,120,32,0.5)]"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
                   />
                 )}
                 <span className="relative z-10">{link.label}</span>
@@ -476,7 +482,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-[#150F1F]/95 backdrop-blur-xl border-t border-glass-border overflow-hidden shadow-2xl"
+            className="md:hidden bg-[#150F1F]/70 backdrop-blur-3xl border-t border-glass-border overflow-hidden shadow-2xl"
           >
             <div className="px-4 py-6 space-y-2">
               {visibleLinks.map((link, i) => (
@@ -485,7 +491,7 @@ export default function Navbar() {
                   href={getHref(link.href)}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: i * 0.08 }}
                   onClick={() => {
                     setActiveLink(link.label);
                     setIsMobileOpen(false);

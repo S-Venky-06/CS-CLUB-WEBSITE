@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useInView, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
 import { useRef } from "react";
 import { Target, Eye, Users } from "lucide-react";
 
@@ -36,6 +36,8 @@ function TiltCard({ card, index, isInView }: { card: typeof cards[0], index: num
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   const mouseXSpring = useSpring(x, { stiffness: 300, damping: 20 });
   const mouseYSpring = useSpring(y, { stiffness: 300, damping: 20 });
@@ -48,10 +50,14 @@ function TiltCard({ card, index, isInView }: { card: typeof cards[0], index: num
     const rect = ref.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
+    const clientX = e.clientX - rect.left;
+    const clientY = e.clientY - rect.top;
+    
+    mouseX.set(clientX);
+    mouseY.set(clientY);
+    
+    const xPct = clientX / width - 0.5;
+    const yPct = clientY / height - 0.5;
     x.set(xPct);
     y.set(yPct);
   };
@@ -71,7 +77,7 @@ function TiltCard({ card, index, isInView }: { card: typeof cards[0], index: num
       }}
       initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
       animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
-      transition={{ duration: 0.6, delay: 0.2 * index, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.6, delay: 0.15 * index, ease: [0.16, 1, 0.3, 1] }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className="group relative h-full perspective-[1000px]"
@@ -80,6 +86,20 @@ function TiltCard({ card, index, isInView }: { card: typeof cards[0], index: num
         className="glass-card p-8 h-full relative overflow-hidden transition-all duration-300"
         style={{ transform: "translateZ(0)" }}
       >
+        {/* Spotlight Effect */}
+        <motion.div
+          className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-10"
+          style={{
+            background: useMotionTemplate`
+              radial-gradient(
+                400px circle at ${mouseX}px ${mouseY}px,
+                rgba(255,255,255,0.08),
+                transparent 80%
+              )
+            `,
+          }}
+        />
+
         {/* Animated Gradient Border Overlay on Hover */}
         <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${card.gradient} p-[1px] rounded-2xl -z-10 pointer-events-none`}>
           <div className="w-full h-full bg-surface/90 rounded-2xl" />
@@ -98,14 +118,14 @@ function TiltCard({ card, index, isInView }: { card: typeof cards[0], index: num
 
         {/* Icon Container - Glassmorphic Circle */}
         <div 
-          className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 backdrop-blur-md shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:bg-white/10"
+          className="relative z-20 w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 backdrop-blur-md shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:bg-white/10"
           style={{ transform: "translateZ(30px)" }}
         >
           <card.icon className="w-7 h-7 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
         </div>
 
         {/* Content */}
-        <div style={{ transform: "translateZ(20px)" }}>
+        <div className="relative z-20" style={{ transform: "translateZ(20px)" }}>
           <h3 className="font-heading text-xl font-bold text-foreground mb-4 group-hover:text-glow transition-all duration-300">
             {card.title}
           </h3>

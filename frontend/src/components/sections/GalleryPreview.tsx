@@ -84,7 +84,7 @@ export default function GalleryPreview() {
               animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.1 * i, type: "spring", stiffness: 100 }}
               onClick={() => setLightbox(item.id)}
-              className="group relative flex items-center justify-between p-5 sm:p-6 rounded-2xl glass-card border border-glass-border bg-surface/30 hover:bg-surface/60 transition-all duration-500 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-[#B23A87] overflow-hidden transform-gpu hover:-translate-y-2 hover:scale-[1.03] shadow-lg hover:shadow-2xl"
+              className="group relative flex flex-col p-5 sm:p-6 rounded-2xl glass-card border border-glass-border bg-surface/30 hover:bg-surface/60 transition-all duration-500 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-[#B23A87] overflow-hidden transform-gpu hover:-translate-y-2 hover:scale-[1.03] shadow-lg hover:shadow-2xl"
               style={{ transformStyle: 'preserve-3d' }}
               aria-label={`View details for ${item.title}`}
             >
@@ -97,17 +97,27 @@ export default function GalleryPreview() {
                 style={{ background: item.glowColor }}
               />
 
-              <div className="flex items-center gap-4 relative z-10">
-                {/* Visual indicator tag */}
-                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${item.gradient} flex-shrink-0 shadow-[0_0_10px_rgba(255,255,255,0.5)] group-hover:animate-pulse`} />
-                <span className="font-heading text-lg font-bold text-foreground group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#F47820] transition-all duration-300">
-                  {item.title}
-                </span>
-              </div>
+              <div className="flex items-center justify-between w-full relative z-10">
+                <div className="flex items-center gap-4">
+                  {/* Visual indicator tag */}
+                  <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${item.gradient} flex-shrink-0 shadow-[0_0_10px_rgba(255,255,255,0.5)] group-hover:animate-pulse`} />
+                  <span className="font-heading text-lg font-bold text-foreground group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#F47820] transition-all duration-300">
+                    {item.title}
+                  </span>
+                </div>
 
-              {/* Arrow indicator */}
-              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#F47820] group-hover:border-[#F47820] transition-all duration-300 relative z-10 overflow-hidden">
-                <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-[#0A0710] transition-all duration-300 group-hover:scale-110" />
+                {/* Arrow indicator */}
+                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#F47820] group-hover:border-[#F47820] transition-all duration-300 relative overflow-hidden">
+                  <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-[#0A0710] transition-all duration-300 group-hover:scale-110" />
+                </div>
+              </div>
+              
+              <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out w-full relative z-10">
+                <div className="overflow-hidden">
+                  <p className="mt-4 text-sm text-muted line-clamp-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                    {item.description}
+                  </p>
+                </div>
               </div>
             </motion.button>
           ))}
@@ -139,9 +149,9 @@ export default function GalleryPreview() {
             </button>
 
             <motion.div
-              initial={{ scale: 0.9, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              initial={{ scale: 0.9, y: 20, opacity: 0, filter: "blur(10px)" }}
+              animate={{ scale: 1, y: 0, opacity: 1, filter: "blur(0px)" }}
+              exit={{ scale: 0.9, y: 20, opacity: 0, filter: "blur(10px)" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="relative max-w-2xl w-full glass-prominent rounded-3xl p-6 sm:p-10 border border-glass-border-hover overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}

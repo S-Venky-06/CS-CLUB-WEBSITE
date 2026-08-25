@@ -2,6 +2,8 @@
 
 import { Mail, Github, Linkedin, Instagram, Sparkles, Heart } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import SectionReveal from "@/components/transitions/SectionReveal";
 
 const quickLinks = [
   { label: "Home", href: "/#home" },
@@ -22,9 +24,15 @@ export default function Footer() {
       {/* Top Glowing Divider */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F47820] to-transparent opacity-50" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#F47820] to-transparent blur-sm opacity-50" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#F47820]/15 blur-[100px] pointer-events-none rounded-full" />
+      
+      {/* Floating Gradient Orb */}
+      <motion.div 
+        animate={{ y: [0, -30, 0], opacity: [0.15, 0.25, 0.15] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#F47820] blur-[100px] pointer-events-none rounded-full" 
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <SectionReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10" variant="fade-up">
         <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
           
           {/* Brand Column */}
@@ -130,14 +138,14 @@ export default function Footer() {
                 aria-label={social.label}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-10 h-10 rounded-xl bg-surface border border-glass-border flex items-center justify-center text-muted transition-all duration-300 cursor-pointer hover:-translate-y-1 ${social.hoverColor}`}
+                className={`w-10 h-10 rounded-xl bg-surface border border-glass-border flex items-center justify-center text-muted transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:scale-110 ${social.hoverColor}`}
               >
                 <social.icon className="w-4 h-4" />
               </a>
             ))}
           </div>
         </div>
-      </div>
+      </SectionReveal>
     </footer>
   );
 }
