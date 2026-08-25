@@ -24,7 +24,7 @@ const leadership: Member[] = [
     role: "Club President",
     specialty: "Team DDMM CTF Player & Winner",
     initials: "DR",
-    image: "/members/president.png",
+    image: "/members/president.jpg",
     linkedin: "https://www.linkedin.com/in/dhanush3105/",
     instagram: "https://www.instagram.com/dhanush_reddy_31",
     isDDMM: true,
@@ -203,6 +203,15 @@ const freshTalent: Member[] = [
     image: "/members/talent5.jpg",
     linkedin: "https://www.linkedin.com/in/ram-sai-reddy-r-964076381",
     instagram: "https://www.instagram.com/ram_silo08?utm_source=qr&igsi=MXE3bnNpbTV3ZTRjbA==",
+  },
+  {
+    name: "Hansika Vasagiri",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "HV",
+    image: "/members/talent6.jpg",
+    linkedin: "https://www.linkedin.com/in/hansika-vasagiri?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    instagram: "https://www.instagram.com/hansika.0709?igsi=bGlya3o5ODJ6ZTVy&utm_source=qr",
   },
 ];
 
@@ -446,7 +455,7 @@ export default function MembersSection() {
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6"
               >
                 {freshTalent.map((member, i) => (
                   <MemberCard key={member.name + i} member={member} isLeadership={false} priority={false} />
