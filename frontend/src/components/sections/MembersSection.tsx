@@ -169,7 +169,7 @@ const freshTalent: Member[] = [
     instagram: "https://www.instagram.com/velaga_dhanush?igsi=MWt4M3Zyemk1aWRrZQ==",
   },
   {
-    name: "Aaanniya Jupelly",
+    name: "Aaniya Jupelly",
     role: "Fresh Talent",
     specialty: "Cybersecurity Member",
     initials: "AJ",
