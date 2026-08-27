@@ -213,6 +213,15 @@ const freshTalent: Member[] = [
     linkedin: "https://www.linkedin.com/in/hansika-vasagiri?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
     instagram: "https://www.instagram.com/hansika.0709?igsi=bGlya3o5ODJ6ZTVy&utm_source=qr",
   },
+  {
+    name: "Chintham Keerthi Reddy",
+    role: "Fresh Talent",
+    specialty: "Cybersecurity Member",
+    initials: "CKR",
+    image: "/members/talent7.jpg",
+    linkedin: "https://www.linkedin.com/in/keerthii-reddy-chintham-14bb033b6?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    instagram: "https://www.instagram.com/keeerthyyyyy.0?igsi=MW4zYzJqcGZ2aTEwNQ==",
+  },
 ];
 
 // Refactored Sub-Component to handle state and render cards uniformly
