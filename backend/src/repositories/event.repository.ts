@@ -12,7 +12,7 @@ export async function findEventById(eventId: string): Promise<Event | null> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:H500",
+    range: "Events!A2:I500",
   });
 
   const rows = response.data.values;
@@ -30,6 +30,7 @@ export async function findEventById(eventId: string): Promise<Event | null> {
     deadline: match[5] || "",
     status: (match[6] || "active") as "active" | "cancelled" | "completed",
     location: match[7] || "",
+    price: parseInt(match[8] || "0", 10),
   };
 }
 
@@ -58,6 +59,7 @@ export async function findAllEvents(): Promise<Event[]> {
       deadline: row[5] || "",
       status: (row[6] || "active") as "active" | "cancelled" | "completed",
       location: row[7] || "",
+      price: parseInt(row[8] || "0", 10),
     }));
 }
 
@@ -77,12 +79,13 @@ export async function createEvent(event: Event): Promise<void> {
       event.deadline,
       event.status,
       event.location || "",
+      String(event.price || 0),
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:H2",
+    range: "Events!A2:I2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -128,12 +131,13 @@ export async function updateEvent(
     updates.deadline !== undefined ? updates.deadline : (match[5] || ""),
     updates.status !== undefined ? updates.status : (match[6] || "active"),
     updates.location !== undefined ? updates.location : (match[7] || ""),
+    updates.price !== undefined ? String(updates.price) : (match[8] || "0"),
   ];
 
   // 3. Write back to the targeted row
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: `Events!A${rowIndex}:H${rowIndex}`,
+    range: `Events!A${rowIndex}:I${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
       values: [updatedRow],

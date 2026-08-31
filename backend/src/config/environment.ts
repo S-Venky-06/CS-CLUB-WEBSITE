@@ -37,6 +37,10 @@ export const env = {
 
   /** Google Sheets target spreadsheet ID */
   GOOGLE_SPREADSHEET_ID: process.env.GOOGLE_SPREADSHEET_ID || "",
+
+  /** Razorpay credentials */
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
+  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || "",
 } as const;
 
 /** Whether the app is running in production */

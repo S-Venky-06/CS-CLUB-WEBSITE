@@ -27,6 +27,7 @@ interface Event {
   deadline: string;
   status: "active" | "cancelled" | "completed";
   location?: string;
+  price?: number;
 }
 
 export default function EventsManagement() {
@@ -49,6 +50,7 @@ export default function EventsManagement() {
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState<"active" | "cancelled" | "completed">("active");
   const [location, setLocation] = useState("");
+  const [price, setPrice] = useState("0");
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -86,6 +88,7 @@ export default function EventsManagement() {
     setDeadline("");
     setStatus("active");
     setLocation("");
+    setPrice("0");
     setErrorMessage("");
     setIsModalOpen(true);
   };
@@ -101,6 +104,7 @@ export default function EventsManagement() {
     setDeadline(new Date(event.deadline).toISOString().substring(0, 16));
     setStatus(event.status);
     setLocation(event.location || "");
+    setPrice(String(event.price || 0));
     setErrorMessage("");
     setIsModalOpen(true);
   };
@@ -120,6 +124,7 @@ export default function EventsManagement() {
       deadline: new Date(deadline).toISOString(),
       status,
       location: location.trim(),
+      price: parseFloat(price) || 0,
     };
 
     try {
@@ -447,20 +452,38 @@ export default function EventsManagement() {
                   </div>
                 </div>
 
-                {/* Capacity */}
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
-                    Student Capacity Seats
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={capacity}
-                    onChange={(e) => setCapacity(e.target.value)}
-                    placeholder="E.g., 50"
-                    className="w-full px-4.5 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Capacity */}
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Student Capacity Seats
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={capacity}
+                      onChange={(e) => setCapacity(e.target.value)}
+                      placeholder="E.g., 50"
+                      className="w-full px-4.5 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider font-semibold text-muted mb-1.5">
+                      Event Price (0 for Free)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="E.g., 0"
+                      className="w-full px-4.5 py-2.5 rounded-xl bg-[#181824] border border-glass-border text-foreground text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
                 </div>
 
                 {/* Location */}

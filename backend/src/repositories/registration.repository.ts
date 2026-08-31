@@ -14,7 +14,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:R10000",
+    range: "Registrations!A2:U10000",
   });
 
   const rows = response.data.values;
@@ -46,6 +46,9 @@ export async function findRegistration(
     otherComments: match[15] || "",
     attended: match[16] === "TRUE",
     domain: match[17] || "",
+    paymentStatus: match[18] || "",
+    razorpayPaymentId: match[19] || "",
+    razorpayOrderId: match[20] || "",
   };
 }
 
@@ -77,12 +80,15 @@ export async function createRegistration(
       registration.otherComments || "",
       "FALSE", // Attended is column Q (index 16), defaults to false
       registration.domain || "", // Domain is column R (index 17)
+      registration.paymentStatus || "", // Column S
+      registration.razorpayPaymentId || "", // Column T
+      registration.razorpayOrderId || "", // Column U
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:R2",
+    range: "Registrations!A2:U2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -143,6 +149,9 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       otherComments: row[15] || "",
       attended: row[16] === "TRUE",
       domain: row[17] || "",
+      paymentStatus: row[18] || "",
+      razorpayPaymentId: row[19] || "",
+      razorpayOrderId: row[20] || "",
     }));
 }
 
@@ -154,7 +163,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:R10000",
+    range: "Registrations!A2:U10000",
   });
 
   const rows = response.data.values;
@@ -181,6 +190,9 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       otherComments: row[15] || "",
       attended: row[16] === "TRUE",
       domain: row[17] || "",
+      paymentStatus: row[18] || "",
+      razorpayPaymentId: row[19] || "",
+      razorpayOrderId: row[20] || "",
     }));
 }
 

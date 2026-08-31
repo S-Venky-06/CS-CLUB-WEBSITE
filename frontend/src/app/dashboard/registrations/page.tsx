@@ -37,6 +37,9 @@ interface Registration {
   tryhackme?: string;
   hackthebox?: string;
   otherComments?: string;
+  paymentStatus?: string;
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
 }
 
 interface Event {
@@ -180,6 +183,9 @@ export default function RegistrationsManagement() {
       "Other Comments",
       "Registered At",
       "Attended Status",
+      "Payment Status",
+      "Razorpay Payment ID",
+      "Razorpay Order ID",
     ];
     const rows = filteredRegistrations.map((reg) => [
       reg.registrationId,
@@ -199,6 +205,9 @@ export default function RegistrationsManagement() {
       reg.otherComments || "",
       new Date(reg.registeredAt).toISOString(),
       reg.attended ? "TRUE" : "FALSE",
+      reg.paymentStatus || "N/A",
+      reg.razorpayPaymentId || "N/A",
+      reg.razorpayOrderId || "N/A",
     ]);
 
     // CSV compile
@@ -648,6 +657,31 @@ export default function RegistrationsManagement() {
                       )}
                     </div>
                   </div>
+
+                  {/* Payment Details */}
+                  {(selectedReg.paymentStatus || selectedReg.razorpayPaymentId) && (
+                    <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4 space-y-2">
+                      <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Payment Information</span>
+                      <div>
+                        <span className="text-[11px] text-muted block mb-1">Status</span>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                          selectedReg.paymentStatus === "SUCCESS" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                          selectedReg.paymentStatus === "FREE" ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
+                          "bg-surface text-muted border-glass-border"
+                        }`}>
+                          {selectedReg.paymentStatus || "N/A"}
+                        </span>
+                      </div>
+                      {selectedReg.razorpayPaymentId && (
+                        <div>
+                          <span className="text-[11px] text-muted block mt-2">Transaction ID</span>
+                          <span className="text-xs font-semibold text-foreground font-mono bg-surface px-2 py-1 rounded border border-glass-border">
+                            {selectedReg.razorpayPaymentId}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Motivation statement */}

@@ -31,7 +31,42 @@ const galleryItems = [
 export default function GalleryPreview() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<number | string | null>(null);
+  const [allGalleryItems, setAllGalleryItems] = useState<any[]>(galleryItems);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/past`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const dynamicEvents = json.data.map((evt: any, index: number) => {
+            // Pick a gradient styling dynamically based on index
+            const gradientPool = [
+              { gradient: "from-[#B23A87] via-primary to-accent", glowColor: "rgba(178,58,135,0.3)" },
+              { gradient: "from-accent via-[#B23A87] to-primary", glowColor: "rgba(244,120,32,0.3)" },
+              { gradient: "from-primary via-[#B23A87] to-accent", glowColor: "rgba(84,39,106,0.3)" }
+            ];
+            const theme = gradientPool[index % gradientPool.length];
+            return {
+              id: evt.eventId,
+              title: evt.title,
+              description: evt.description,
+              gradient: theme.gradient,
+              glowColor: theme.glowColor,
+            };
+          });
+
+          // Prevent appending duplicates if component remounts
+          setAllGalleryItems((prev) => {
+            const newEvents = dynamicEvents.filter(
+              (de: any) => !prev.some((pe) => pe.id === de.id)
+            );
+            return [...prev, ...newEvents];
+          });
+        }
+      })
+      .catch((err) => console.error("Failed to fetch past events:", err));
+  }, []);
 
   useEffect(() => {
     if (lightbox === null) return;
@@ -77,7 +112,7 @@ export default function GalleryPreview() {
 
         {/* Gallery Grid - Sleek Button style */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto perspective-[1000px]">
-          {galleryItems.map((item, i) => (
+          {allGalleryItems.map((item, i) => (
             <motion.button
               key={item.id}
               initial={{ opacity: 0, y: 40, rotateX: 20 }}
@@ -157,7 +192,7 @@ export default function GalleryPreview() {
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
-                const item = galleryItems.find((i) => i.id === lightbox);
+                const item = allGalleryItems.find((i) => i.id === lightbox);
                 if (!item) return null;
 
                 return (

@@ -7,6 +7,7 @@ export interface Event {
   deadline: string;
   status: "active" | "cancelled" | "completed";
   location?: string;
+  price: number;
 }
 
 export interface Registration {
@@ -28,6 +29,9 @@ export interface Registration {
   tryhackme?: string;
   hackthebox?: string;
   otherComments?: string;
+  paymentStatus?: string;
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
 }
 
 export interface Member {

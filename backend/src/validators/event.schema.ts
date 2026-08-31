@@ -57,6 +57,13 @@ export const eventSchema = z.object({
     .string()
     .max(100, "Location cannot exceed 100 characters.")
     .optional(),
+  price: z
+    .number({
+      required_error: "price is required.",
+      invalid_type_error: "price must be a number.",
+    })
+    .int("Price must be an integer.")
+    .nonnegative("Price must be zero or positive."),
 });
 
 export type EventInput = z.infer<typeof eventSchema>;

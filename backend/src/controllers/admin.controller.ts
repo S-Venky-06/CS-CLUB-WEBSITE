@@ -63,7 +63,7 @@ export const postAdminEvent = asyncHandler(
       );
     }
 
-    const { eventId, title, description, date, capacity, deadline, status } = parsed.data;
+    const { eventId, title, description, date, capacity, deadline, status, price } = parsed.data;
 
     // 2. Check duplicate Event ID
     const existing = await findEventById(eventId);
@@ -83,6 +83,7 @@ export const postAdminEvent = asyncHandler(
       capacity,
       deadline,
       status,
+      price,
     });
 
     await logActivity(req.session.user!.email, "CREATE_EVENT", `Created event: ${title} (${eventId})`);
@@ -497,11 +498,31 @@ export const getPublicAnnouncements = asyncHandler(
  */
 export const getFeaturedEvent = asyncHandler(
   async (_req: Request, res: Response): Promise<void> => {
-    const event = await findEventById("evt-01");
-    if (!event) {
-      throw new ApiError(HttpStatus.NOT_FOUND, "Featured event was not configured in Google Sheets.");
+    const allEvents = await findAllEvents();
+    const activeEvent = allEvents.find((e) => e.status === "active");
+    if (!activeEvent) {
+      throw new ApiError(HttpStatus.NOT_FOUND, "No active event is currently configured in Google Sheets.");
     }
-    sendResponse(res, HttpStatus.OK, "Featured event details retrieved successfully.", event);
+    sendResponse(res, HttpStatus.OK, "Featured event details retrieved successfully.", activeEvent);
+  },
+);
+
+/**
+ * GET /api/v1/events/past (Public)
+ * Retrieves events that are marked as completed or cancelled.
+ */
+export const getPastEvents = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const allEvents = await findAllEvents();
+      const pastEvents = allEvents.filter(
+        (e) => e.status === "completed" || e.status === "cancelled"
+      );
+      sendResponse(res, HttpStatus.OK, "Past events retrieved successfully.", pastEvents);
+    } catch (err: any) {
+      console.warn("[EVENTS] Failed to fetch past events:", err.message || err);
+      sendResponse(res, HttpStatus.OK, "Past events retrieved successfully.", []);
+    }
   },
 );
 

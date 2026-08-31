@@ -5,6 +5,24 @@ import { useRef, useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve(false);
+      return;
+    }
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function FeaturedEvent() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -57,12 +75,14 @@ export default function FeaturedEvent() {
   const isValidSection = section.trim().length > 0;
 
   const [eventDetails, setEventDetails] = useState({
-    title: "New Club Members Registration — For Juniors",
-    description: "Calling all juniors! Join the Cybersecurity Club of GCET to learn more about CTF, Cybersecurity and many more. No prior experience is required just curiosity and a passion for technology. Sign up!!!!",
-    dateLabel: "Open Now",
-    location: "Online Registration",
-    warningNote: "Note : Only 2nd Years Can Register.",
-    status: "active",
+    eventId: "loading",
+    title: "Loading Event...",
+    description: "Fetching the latest event details...",
+    dateLabel: "...",
+    location: "...",
+    warningNote: "",
+    status: "inactive",
+    price: 0,
   });
 
   const getWordCount = (text: string) => {
@@ -89,7 +109,7 @@ export default function FeaturedEvent() {
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data)) {
-            const registered = json.data.some((reg: any) => reg.eventId === "evt-01");
+            const registered = json.data.some((reg: any) => reg.eventId === eventDetails.eventId);
             setIsRegistered(registered);
           }
         }
@@ -99,7 +119,7 @@ export default function FeaturedEvent() {
     };
 
     checkRegistration();
-  }, [user]);
+  }, [user, eventDetails.eventId]);
 
   // Fetch featured event dynamic details
   useEffect(() => {
@@ -127,16 +147,39 @@ export default function FeaturedEvent() {
           }
 
           setEventDetails({
+            eventId: event.eventId,
             title: event.title,
             description: cleanDesc,
             dateLabel: formattedDate,
             location: event.location || "Online Registration",
             warningNote: note,
             status: event.status || "active",
+            price: event.price || 0,
+          });
+        } else {
+          setEventDetails({
+            eventId: "none",
+            title: "Stay Tuned for Upcoming Events!",
+            description: "We are currently planning our next exciting event. Keep an eye on this space and our social media channels for announcements soon!",
+            dateLabel: "TBA",
+            location: "To Be Announced",
+            warningNote: "",
+            status: "inactive",
+            price: 0,
           });
         }
       } catch (err) {
         console.warn("Failed to load featured event details, using fallbacks:", err);
+        setEventDetails({
+          eventId: "none",
+          title: "Stay Tuned for Upcoming Events!",
+          description: "We are currently planning our next exciting event. Keep an eye on this space and our social media channels for announcements soon!",
+          dateLabel: "TBA",
+          location: "To Be Announced",
+          warningNote: "",
+          status: "inactive",
+          price: 0,
+        });
       }
     };
 
@@ -158,52 +201,106 @@ export default function FeaturedEvent() {
     const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations`, {
+      const formPayload = {
+        eventId: eventDetails.eventId,
+        name: userName,
+        motivation: motivationText,
+        phone,
+        year,
+        section,
+        branch,
+        domain,
+        rollNumber,
+        projects,
+        linkedin,
+        tryhackme,
+        hackthebox,
+        otherComments,
+      };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
         signal: controller.signal,
-        body: JSON.stringify({
-          eventId: "evt-01",
-          name: userName,
-          motivation: motivationText,
-          phone,
-          year,
-          section,
-          branch,
-          domain,
-          rollNumber,
-          projects,
-          linkedin,
-          tryhackme,
-          hackthebox,
-          otherComments,
-        }),
+        body: JSON.stringify(formPayload),
       });
 
       clearTimeout(timeoutId);
       const json = await res.json();
 
-      if (res.status === 201 || res.status === 409) {
-        setIsRegistered(true);
-        setSuccessMessage("You are successfully registered for the Junior Registration!");
-        setMotivationText("");
-        setPhone("");
-        setSection("");
-        setDomain("Logistics");
-        setRollNumber("");
-        setProjects("");
-        setLinkedin("");
-        setTryhackme("");
-        setHackthebox("");
-        setOtherComments("");
-        setIsModalOpen(false);
-        // Keep success message visible so the user can read the email check notice comfortably
-      } else {
+      if (!res.ok) {
         setErrorMessage(json.message || "Registration failed. Please try again.");
         setTimeout(() => setErrorMessage(""), 5000);
+        return;
+      }
+
+      if (json.data?.paymentStatus === "FREE") {
+        // Free event registration success
+        setIsRegistered(true);
+        setSuccessMessage("You are successfully registered for the Junior Registration!");
+        resetForm();
+      } else if (json.data?.orderId) {
+        // Paid event - Load Razorpay
+        const isLoaded = await loadRazorpay();
+        if (!isLoaded) {
+          setErrorMessage("Failed to load payment gateway. Are you online?");
+          setTimeout(() => setErrorMessage(""), 5000);
+          return;
+        }
+
+        const options = {
+          key: json.data.keyId,
+          amount: json.data.amount,
+          currency: json.data.currency,
+          name: "Cybersecurity Club GCET",
+          description: "Event Registration",
+          order_id: json.data.orderId,
+          handler: async function (response: any) {
+            try {
+              const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  ...formPayload,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+              const verifyJson = await verifyRes.json();
+              if (verifyRes.ok) {
+                setIsRegistered(true);
+                setSuccessMessage("Payment successful! You are registered.");
+                resetForm();
+              } else {
+                setErrorMessage(verifyJson.message || "Payment verification failed.");
+                setTimeout(() => setErrorMessage(""), 5000);
+              }
+            } catch (err) {
+              setErrorMessage("Payment verification error.");
+              setTimeout(() => setErrorMessage(""), 5000);
+            }
+          },
+          prefill: {
+            name: json.data.prefill.name,
+            email: json.data.prefill.email,
+            contact: json.data.prefill.contact,
+          },
+          theme: {
+            color: "#F47820",
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on("payment.failed", function (response: any) {
+          setErrorMessage(response.error.description || "Payment failed.");
+          setTimeout(() => setErrorMessage(""), 5000);
+        });
+        rzp.open();
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
@@ -216,6 +313,20 @@ export default function FeaturedEvent() {
     } finally {
       setIsRegistering(false);
     }
+  };
+
+  const resetForm = () => {
+    setMotivationText("");
+    setPhone("");
+    setSection("");
+    setDomain("Logistics");
+    setRollNumber("");
+    setProjects("");
+    setLinkedin("");
+    setTryhackme("");
+    setHackthebox("");
+    setOtherComments("");
+    setIsModalOpen(false);
   };
 
   const FloatingInput = ({ id, type = "text", value, onChange, label, placeholder = " ", maxLength, error }: any) => (
@@ -390,7 +501,7 @@ export default function FeaturedEvent() {
                     disabled
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-surface/50 border border-glass-border text-muted font-semibold text-sm cursor-not-allowed"
                   >
-                    Registration Closed
+                    {eventDetails.status === "inactive" ? "Check Back Later" : "Registration Closed"}
                   </button>
                 ) : isRegistered ? (
                   <button
@@ -441,31 +552,7 @@ export default function FeaturedEvent() {
                 </div>
               )}
 
-              {successMessage && (
-                <div className="mt-5 relative flex flex-col gap-2 p-4 sm:p-5 rounded-2xl bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-300 shadow-[0_0_25px_rgba(16,185,129,0.25)]">
-                  <button
-                    onClick={() => setSuccessMessage("")}
-                    className="absolute top-3 right-3 text-emerald-400/60 hover:text-white p-1 transition-colors cursor-pointer"
-                    aria-label="Close message"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                      <Check className="w-4 h-4" />
-                    </div>
-                    <span className="font-heading text-sm font-bold text-white pr-6">{successMessage}</span>
-                  </div>
-                  <div className="mt-2 pt-3 border-t border-emerald-500/25 text-xs text-emerald-200/90 font-medium space-y-1">
-                    <p className="flex items-center gap-1.5 font-bold text-emerald-300">
-                      📧 Check your registered Google email inbox (and spam folder) for confirmation details & next steps!
-                    </p>
-                    <p className="text-[10px] text-emerald-300/70 font-mono">
-                      STATUS: REGISTRATION VERIFIED & RECORDED
-                    </p>
-                  </div>
-                </div>
-              )}
+
             </div>
           </div>
         </motion.article>
@@ -821,10 +908,63 @@ export default function FeaturedEvent() {
                     </>
                   ) : (
                     <>
-                      Confirm & Register
+                      {eventDetails.price > 0 ? `Confirm and Pay ₹${eventDetails.price}` : "Confirm & Register"}
                       <Check className="w-5 h-5 text-white" />
                     </>
                   )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+        {successMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSuccessMessage("")}
+              className="absolute inset-0 bg-[#0A0710]/90 backdrop-blur-md cursor-default"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-md flex flex-col gap-3 p-6 sm:p-8 rounded-2xl bg-[#091F15] border-2 border-emerald-500/40 text-emerald-300 shadow-[0_0_40px_rgba(16,185,129,0.25)] z-10 glass-prominent backdrop-blur-xl"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
+              
+              <button
+                onClick={() => setSuccessMessage("")}
+                className="absolute top-4 right-4 text-emerald-400/60 hover:text-white p-1 transition-colors cursor-pointer"
+                aria-label="Close message"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                  <Check className="w-5 h-5" />
+                </div>
+                <h4 className="font-heading text-lg sm:text-xl font-bold text-white pr-6">{successMessage}</h4>
+              </div>
+              <div className="mt-4 pt-5 border-t border-emerald-500/20 text-sm text-emerald-200/90 font-medium space-y-2">
+                <p className="flex items-start gap-2.5 font-bold text-emerald-300">
+                  <span className="text-xl leading-none">📧</span>
+                  <span className="leading-relaxed">Check your registered Google email inbox (and spam folder) for confirmation details & next steps!</span>
+                </p>
+                <p className="text-xs text-emerald-300/70 font-mono mt-5 pt-3 border-t border-emerald-500/10">
+                  STATUS: REGISTRATION VERIFIED & RECORDED
+                </p>
+              </div>
+              
+              <div className="mt-4 flex justify-end">
+                <button
+                   onClick={() => setSuccessMessage("")}
+                   className="px-5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-white font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  Awesome, thanks!
                 </button>
               </div>
             </motion.div>
