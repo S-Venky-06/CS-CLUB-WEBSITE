@@ -69,6 +69,7 @@ export default function FeaturedEvent() {
   const [otherComments, setOtherComments] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "failed">("idle");
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
   const isValidRoll = rollNumber.trim().length > 0;
@@ -260,6 +261,7 @@ export default function FeaturedEvent() {
           order_id: json.data.orderId,
           handler: async function (response: any) {
             try {
+              setPaymentState("verifying");
               const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -277,12 +279,12 @@ export default function FeaturedEvent() {
                 setSuccessMessage("Payment successful! You are registered.");
                 resetForm();
               } else {
+                setPaymentState("failed");
                 setErrorMessage(verifyJson.message || "Payment verification failed.");
-                setTimeout(() => setErrorMessage(""), 5000);
               }
             } catch (err) {
+              setPaymentState("failed");
               setErrorMessage("Payment verification error.");
-              setTimeout(() => setErrorMessage(""), 5000);
             }
           },
           prefill: {
@@ -297,8 +299,8 @@ export default function FeaturedEvent() {
 
         const rzp = new (window as any).Razorpay(options);
         rzp.on("payment.failed", function (response: any) {
+          setPaymentState("failed");
           setErrorMessage(response.error.description || "Payment failed.");
-          setTimeout(() => setErrorMessage(""), 5000);
         });
         rzp.open();
       }
@@ -327,6 +329,7 @@ export default function FeaturedEvent() {
     setHackthebox("");
     setOtherComments("");
     setIsModalOpen(false);
+    setPaymentState("idle");
   };
 
   const FloatingInput = ({ id, type = "text", value, onChange, label, placeholder = " ", maxLength, error }: any) => (
@@ -669,7 +672,9 @@ export default function FeaturedEvent() {
                 </button>
               </div>
 
-              <div className="overflow-y-auto pr-2 pb-4 space-y-5 custom-scrollbar flex-grow">
+              {paymentState === "idle" ? (
+                <>
+                  <div className="overflow-y-auto pr-2 pb-4 space-y-5 custom-scrollbar flex-grow">
                 {/* 1. Email */}
                 <div>
                   <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
@@ -914,6 +919,40 @@ export default function FeaturedEvent() {
                   )}
                 </button>
               </div>
+              </>
+              ) : paymentState === "verifying" ? (
+                <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-emerald-500/20 rounded-full"></div>
+                    <div className="w-16 h-16 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin absolute inset-0"></div>
+                  </div>
+                  <div>
+                    <h5 className="font-heading text-xl font-bold text-white mb-2">Verifying Payment</h5>
+                    <p className="text-sm text-gray-400">Please do not close this window...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 mb-2">
+                    <X className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h5 className="font-heading text-xl font-bold text-white mb-2">Payment Failed</h5>
+                    <p className="text-sm text-red-400/90 bg-red-500/10 py-2.5 px-5 rounded-lg inline-block border border-red-500/20 max-w-sm mt-1">
+                      {errorMessage || "The payment transaction could not be completed."}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPaymentState("idle");
+                      setErrorMessage("");
+                    }}
+                    className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-colors mt-2"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}
