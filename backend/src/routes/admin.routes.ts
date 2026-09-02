@@ -7,6 +7,7 @@ import {
   deleteAdminEvent,
   getAdminRegistrations,
   putAdminAttendance,
+  putAdminPaymentStatus,
   getAdminMembers,
   patchAdminMemberRole,
   patchAdminMemberDisplay,
@@ -19,16 +20,7 @@ import {
   patchAdminAnnouncementActive,
   deleteAdminAnnouncement
 } from "../controllers/admin.controller.js";
-import {
-  getGDResultsController,
-  getRound2ShortlistController,
-  postRandomizeGDTeamsController,
-  postClearGDTeamsController,
-  postAssignSupervisorsController,
-  postGDEvaluationController,
-  postShortlistRound2Controller,
-  postUnshortlistRound2Controller,
-} from "../controllers/index.js";
+
 
 const router = Router();
 
@@ -45,6 +37,7 @@ router.delete("/events/:eventId", deleteAdminEvent);
 // Registration routes
 router.get("/registrations", getAdminRegistrations);
 router.put("/registrations/:registrationId/attendance", putAdminAttendance);
+router.put("/registrations/:registrationId/payment-status", putAdminPaymentStatus);
 
 // Member Management routes (role editing is super_admin only)
 router.get("/members", getAdminMembers);
@@ -65,14 +58,5 @@ router.post("/announcements", postAdminAnnouncement);
 router.patch("/announcements/:id/active", patchAdminAnnouncementActive);
 router.delete("/announcements/:id", deleteAdminAnnouncement);
 
-// Group Discussion (GD) Recruitment Panel Routes
-router.get("/gd/results", getGDResultsController);
-router.get("/gd/shortlist-round2", getRound2ShortlistController);
-router.post("/gd/randomize", requireRole("super_admin"), postRandomizeGDTeamsController);
-router.post("/gd/clear", requireRole("super_admin"), postClearGDTeamsController);
-router.post("/gd/assign-supervisors", requireRole("super_admin"), postAssignSupervisorsController);
-router.post("/gd/evaluate", postGDEvaluationController);
-router.post("/gd/shortlist-round2", postShortlistRound2Controller);
-router.post("/gd/unshortlist-round2", postUnshortlistRound2Controller);
 
 export default router;

@@ -2,26 +2,8 @@
 
 import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles, UploadCloud } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const loadRazorpay = () => {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined") {
-      resolve(false);
-      return;
-    }
-    if ((window as any).Razorpay) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
 
 export default function FeaturedEvent() {
   const ref = useRef(null);
@@ -52,8 +34,13 @@ export default function FeaturedEvent() {
   const { user } = useAuth();
   const [isRegistered, setIsRegistered] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTipModalOpen, setIsTipModalOpen] = useState(false);
+
+  
+  // Modal flow state: "idle" -> "form" -> "payment"
+  const [modalStep, setModalStep] = useState<"idle" | "form" | "payment">("idle");
+  const [pendingRegistrationId, setPendingRegistrationId] = useState("");
+  
+  // Form fields
   const [userName, setUserName] = useState("");
   const [motivationText, setMotivationText] = useState("");
   const [phone, setPhone] = useState("");
@@ -69,7 +56,12 @@ export default function FeaturedEvent() {
   const [otherComments, setOtherComments] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "failed">("idle");
+
+  // Payment proof fields
+  const [utr, setUtr] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string>("");
+  const isValidUtr = utr.trim().length >= 8 && utr.trim().length <= 25;
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
   const isValidRoll = rollNumber.trim().length > 0;
@@ -122,7 +114,6 @@ export default function FeaturedEvent() {
     checkRegistration();
   }, [user, eventDetails.eventId]);
 
-  // Fetch featured event dynamic details
   useEffect(() => {
     const fetchFeaturedEvent = async () => {
       try {
@@ -199,7 +190,7 @@ export default function FeaturedEvent() {
     setSuccessMessage("");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     try {
       const formPayload = {
@@ -241,77 +232,95 @@ export default function FeaturedEvent() {
       if (json.data?.paymentStatus === "FREE") {
         // Free event registration success
         setIsRegistered(true);
-        setSuccessMessage("You are successfully registered for the Junior Registration!");
+        setSuccessMessage("You are successfully registered for the event!");
         resetForm();
-      } else if (json.data?.orderId) {
-        // Paid event - Load Razorpay
-        const isLoaded = await loadRazorpay();
-        if (!isLoaded) {
-          setErrorMessage("Failed to load payment gateway. Are you online?");
-          setTimeout(() => setErrorMessage(""), 5000);
-          return;
-        }
-
-        const options = {
-          key: json.data.keyId,
-          amount: json.data.amount,
-          currency: json.data.currency,
-          name: "Cybersecurity Club GCET",
-          description: "Event Registration",
-          order_id: json.data.orderId,
-          handler: async function (response: any) {
-            try {
-              setPaymentState("verifying");
-              const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                  ...formPayload,
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              });
-              const verifyJson = await verifyRes.json();
-              if (verifyRes.ok) {
-                setIsRegistered(true);
-                setSuccessMessage("Payment successful! You are registered.");
-                resetForm();
-              } else {
-                setPaymentState("failed");
-                setErrorMessage(verifyJson.message || "Payment verification failed.");
-              }
-            } catch (err) {
-              setPaymentState("failed");
-              setErrorMessage("Payment verification error.");
-            }
-          },
-          prefill: {
-            name: json.data.prefill.name,
-            email: json.data.prefill.email,
-            contact: json.data.prefill.contact,
-          },
-          theme: {
-            color: "#F47820",
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on("payment.failed", function (response: any) {
-          setPaymentState("failed");
-          setErrorMessage(response.error.description || "Payment failed.");
-        });
-        rzp.open();
+      } else if (json.data?.registrationId) {
+        // Paid event - Go to step 2
+        setPendingRegistrationId(json.data.registrationId);
+        setModalStep("payment");
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (err.name === "AbortError") {
-        setErrorMessage("Registration request timed out. Please check your internet connection or try again.");
+        setErrorMessage("Registration request timed out. Please check your internet connection.");
       } else {
         setErrorMessage("Could not connect to the server. Please try again later.");
       }
       setTimeout(() => setErrorMessage(""), 5000);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage("Screenshot must be less than 5MB");
+        return;
+      }
+      setScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setErrorMessage("");
+    }
+  };
+
+  const handleSubmitUtr = async () => {
+    setIsRegistering(true);
+    setErrorMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("registrationId", pendingRegistrationId);
+      formData.append("utr", utr);
+      
+      const formPayload = {
+        eventId: eventDetails.eventId,
+        name: userName,
+        motivation: motivationText,
+        phone,
+        year,
+        section,
+        branch,
+        domain,
+        rollNumber,
+        projects,
+        linkedin,
+        tryhackme,
+        hackthebox,
+        otherComments,
+      };
+
+      Object.entries(formPayload).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+
+      if (screenshotFile) {
+        formData.append("screenshot", screenshotFile);
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/submit-utr`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(json.message || "Failed to submit payment details.");
+        return;
+      }
+
+      setIsRegistered(true);
+      setSuccessMessage("Payment submitted! Your registration is pending verification.");
+      resetForm();
+    } catch (err) {
+      setErrorMessage("Could not connect to the server. Please try again.");
     } finally {
       setIsRegistering(false);
     }
@@ -328,32 +337,12 @@ export default function FeaturedEvent() {
     setTryhackme("");
     setHackthebox("");
     setOtherComments("");
-    setIsModalOpen(false);
-    setPaymentState("idle");
+    setUtr("");
+    setScreenshotFile(null);
+    setScreenshotPreview("");
+    setModalStep("idle");
+    setPendingRegistrationId("");
   };
-
-  const FloatingInput = ({ id, type = "text", value, onChange, label, placeholder = " ", maxLength, error }: any) => (
-    <div className="relative mb-2">
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        className={`peer w-full px-4 pt-6 pb-2 rounded-xl bg-[#150F1F] border transition-all duration-300 text-white font-medium text-sm focus:outline-none focus:bg-[#1E1530] ${
-          error ? "border-red-500 focus:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "border-white/20 focus:border-[#F47820] shadow-[0_0_15px_rgba(244,120,32,0.25)]"
-        }`}
-      />
-      <label
-        htmlFor={id}
-        className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-semibold text-[#F47820] transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-[#F47820] pointer-events-none"
-      >
-        {label}
-      </label>
-      {error && <span className="absolute -bottom-5 left-2 text-[10px] text-red-400 font-bold">{error}</span>}
-    </div>
-  );
 
   const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
     const btnRef = useRef<HTMLDivElement>(null);
@@ -417,7 +406,6 @@ export default function FeaturedEvent() {
           transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-4xl mx-auto relative group"
         >
-          {/* Animated gradient border for card */}
           <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-br from-[#7A1D5C] via-[#B23A87] to-[#F47820] opacity-40 group-hover:opacity-80 transition-opacity duration-500 blur-[2px]" />
           
           <div 
@@ -438,7 +426,6 @@ export default function FeaturedEvent() {
                 </span>
               </div>
               
-              {/* Decorative geometric */}
               <motion.svg
                 style={{ x: layer1X, y: layer1Y }}
                 className="absolute right-0 bottom-0 w-40 h-40 opacity-30 z-20 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
@@ -517,7 +504,6 @@ export default function FeaturedEvent() {
                 ) : (
                   <MagneticButtonWrapper>
                     <div className="relative group/btn w-full sm:w-auto inline-block">
-                      {/* Glowing pulse ring behind button */}
                       <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
                       <button
                         onClick={() => {
@@ -525,7 +511,7 @@ export default function FeaturedEvent() {
                             setErrorMessage("Please sign in with Google in the top navigation menu to register.");
                             setTimeout(() => setErrorMessage(""), 5000);
                           } else {
-                            setIsTipModalOpen(true);
+                            setModalStep("form");
                           }
                         }}
                         disabled={isRegistering}
@@ -554,8 +540,6 @@ export default function FeaturedEvent() {
                   <span>{errorMessage}</span>
                 </div>
               )}
-
-
             </div>
           </div>
         </motion.article>
@@ -563,96 +547,15 @@ export default function FeaturedEvent() {
 
       {/* Tip Modal */}
       <AnimatePresence>
-        {isTipModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsTipModalOpen(false)}
-              className="absolute inset-0 bg-[#0A0710]/90 backdrop-blur-md cursor-default"
-            />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md rounded-2xl glass-prominent border border-glass-border-hover p-6 sm:p-8 shadow-2xl overflow-hidden z-10"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-cyan to-accent" />
-
-              <div className="flex items-center gap-4 border-b border-white/10 pb-5 mb-6">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/20 border-2 border-primary/40 shadow-[0_0_15px_rgba(84,39,106,0.35)]">
-                    <img 
-                      src="/members/president.png" 
-                      alt="Dhanush Reddy" 
-                      className="object-cover w-full h-full"
-                      onError={(e) => {
-                        (e.target as any).style.display = 'none';
-                      }}
-                    />
-                  </div>
-                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#13131A] animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                </div>
-                <div>
-                  <h4 className="font-heading font-bold text-foreground text-base">
-                    Dhanush Reddy
-                  </h4>
-                  <p className="text-[10px] text-cyan font-bold tracking-[0.15em] uppercase mt-0.5">
-                    Club President • Incoming Message
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-8 text-sm leading-relaxed text-muted">
-                <div className="rounded-xl bg-surface/50 border border-glass-border p-5 relative shadow-inner">
-                  <div className="absolute top-5 -left-1.5 w-3 h-3 bg-surface border-l border-b border-glass-border rotate-45" />
-                  
-                  <p className="font-bold text-cyan mb-3 flex items-center gap-1.5 text-xs tracking-wide uppercase">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Pro Tip
-                  </p>
-                  <p className="text-sm text-foreground/90 leading-relaxed">
-                    Want to stand out? Make sure to provide your <strong className="text-cyan font-semibold">LinkedIn, Hack The Box, and TryHackMe profile links</strong> on the form!
-                  </p>
-                  <p className="text-sm text-foreground/90 mt-3 leading-relaxed">
-                    If you don't have HTB or TryHackMe links yet, don't worry! You can describe any <strong className="text-cyan font-semibold">cybersecurity project</strong> you have done in the comments. Good luck!
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setIsTipModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/10 text-white font-semibold text-xs transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setIsTipModalOpen(false);
-                    setIsModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F47820] text-white font-extrabold text-xs sm:text-sm hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.7)] transition-all cursor-pointer"
-                >
-                  Continue to Form
-                  <ArrowRight className="w-4 h-4 text-white" />
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Registration Form Modal */}
-        {isModalOpen && (
+        {/* Form & Payment Modals */}
+        {(modalStep === "form" || modalStep === "payment") && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => modalStep === "form" && resetForm()}
               className="absolute inset-0 bg-[#0A0710]/90 backdrop-blur-md cursor-default"
             />
 
@@ -665,297 +568,290 @@ export default function FeaturedEvent() {
             >
               <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                 <h4 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
-                  Confirm Event Registration
+                  {modalStep === "form" ? "Confirm Event Registration" : "Complete Payment"}
                 </h4>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors text-muted hover:text-foreground">
+                <button 
+                  onClick={resetForm} 
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors text-muted hover:text-foreground"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {paymentState === "idle" ? (
+              {modalStep === "form" ? (
                 <>
                   <div className="overflow-y-auto pr-2 pb-4 space-y-5 custom-scrollbar flex-grow">
-                {/* 1. Email */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Email Address (Google Account)
-                  </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={user?.email || ""}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-gray-300 text-sm cursor-not-allowed"
-                  />
-                </div>
-
-                {/* 2. Display Name */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Display Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                  {!isValidName && userName.length > 0 && (
-                    <span className="text-[10px] text-red-400 mt-1 block font-bold">Required</span>
-                  )}
-                </div>
-
-                {/* 3. Mobile Number */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Mobile Number *
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
-                    placeholder="Enter 10-digit number"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                  {!isValidPhone && phone.length > 0 && (
-                    <span className="text-[10px] text-red-400 mt-1 block font-bold">Must be 10 digits</span>
-                  )}
-                </div>
-
-                {/* 4. Roll Number */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Roll Number *
-                  </label>
-                  <input
-                    type="text"
-                    value={rollNumber}
-                    onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                    placeholder="e.g. 23R11A6236"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                </div>
-
-                {/* 5. Section */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Section *
-                  </label>
-                  <input
-                    type="text"
-                    value={section}
-                    onChange={(e) => setSection(e.target.value.toUpperCase())}
-                    placeholder="e.g. A, B, C"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                </div>
-
-                {/* 6. Academic Year */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Academic Year *
-                  </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="2nd Year"
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-gray-300 text-sm cursor-not-allowed"
-                  />
-                </div>
-
-                {/* 7. Branch */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Branch *
-                  </label>
-                  <select
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
-                  >
-                    <option value="CSE">CSE</option>
-                    <option value="CSE (AIML)">CSE (AIML)</option>
-                    <option value="CSE (DS)">CSE (DS)</option>
-                    <option value="CSE (CS)">CSE (CS)</option>
-                    <option value="IT">IT</option>
-                    <option value="ECE">ECE</option>
-                    <option value="EEE">EEE</option>
-                    <option value="MECH">MECH</option>
-                    <option value="CIVIL">CIVIL</option>
-                    <option value="Others">Others</option>
-                  </select>
-                </div>
-
-                {/* 8. Which domain do you want to choose */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Which domain do you want to choose? *
-                  </label>
-                  <select
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer font-medium"
-                  >
-                    <option value="Logistics">Logistics</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Network & Outreach">Network & Outreach</option>
-                    <option value="Designing">Designing</option>
-                    <option value="Technical">Technical</option>
-                  </select>
-                </div>
-
-                {/* 8. LinkedIn */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    LinkedIn URL (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder="https://linkedin.com/in/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                </div>
-
-                {/* 9. TryHackMe */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    TryHackMe URL (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={tryhackme}
-                    onChange={(e) => setTryhackme(e.target.value)}
-                    placeholder="https://tryhackme.com/p/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                </div>
-
-                {/* 10. Hack The Box */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Hack The Box URL (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={hackthebox}
-                    onChange={(e) => setHackthebox(e.target.value)}
-                    placeholder="https://app.hackthebox.com/profile/..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                  />
-                </div>
-
-                {/* 11. Motivation */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5 flex justify-between items-center">
-                    <span>Why do you want to join this club? *</span>
-                    <span className={`text-[10px] font-bold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
-                      {wordCount < 10 ? `Need ${10 - wordCount} more words` : `${wordCount}/2000`}
-                    </span>
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={motivationText}
-                    onChange={(e) => setMotivationText(e.target.value)}
-                    placeholder="Describe your interest in cybersecurity..."
-                    className={`w-full px-4 py-3 rounded-xl bg-[#0B0B13] border text-white text-sm placeholder:text-gray-600 focus:outline-none resize-none custom-scrollbar transition-all ${
-                      wordCount > 0 && wordCount < 10 ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-[#F47820]"
-                    }`}
-                  />
-                </div>
-
-                {/* 12. Projects */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Projects (Optional)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={projects}
-                    onChange={(e) => setProjects(e.target.value)}
-                    placeholder="Mention any cybersecurity or programming projects you have worked on..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
-                  />
-                </div>
-
-                {/* 13. Other Comments */}
-                <div>
-                  <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                    Other Comments (Optional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={otherComments}
-                    onChange={(e) => setOtherComments(e.target.value)}
-                    placeholder="Tell us what excites you about cybersecurity or why you want to attend..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#150F1F] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-2">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 text-white font-semibold text-sm transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRegister}
-                  disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone || !isValidRoll || !isValidSection}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 disabled:shadow-none disabled:cursor-not-allowed bg-[#F47820] text-white hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.6)]"
-                >
-                  {isRegistering ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      Registering...
-                    </>
-                  ) : (
-                    <>
-                      {eventDetails.price > 0 ? `Confirm and Pay ₹${eventDetails.price}` : "Confirm & Register"}
-                      <Check className="w-5 h-5 text-white" />
-                    </>
-                  )}
-                </button>
-              </div>
-              </>
-              ) : paymentState === "verifying" ? (
-                <div className="py-16 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="relative">
-                    <div className="w-16 h-16 border-4 border-emerald-500/20 rounded-full"></div>
-                    <div className="w-16 h-16 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin absolute inset-0"></div>
+                    {/* Form Fields... */}
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Email Address (Google Account)
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={user?.email || ""}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-gray-300 text-sm cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Display Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                      />
+                      {!isValidName && userName.length > 0 && (
+                        <span className="text-[10px] text-red-400 mt-1 block font-bold">Required</span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Mobile Number *
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
+                        placeholder="Enter 10-digit number"
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Roll Number *
+                      </label>
+                      <input
+                        type="text"
+                        value={rollNumber}
+                        onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
+                        placeholder="e.g. 23R11A6236"
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Section *
+                      </label>
+                      <input
+                        type="text"
+                        value={section}
+                        onChange={(e) => setSection(e.target.value.toUpperCase())}
+                        placeholder="e.g. A, B, C"
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Branch *
+                      </label>
+                      <select
+                        value={branch}
+                        onChange={(e) => setBranch(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
+                      >
+                        <option value="CSE">CSE</option>
+                        <option value="CSE (AIML)">CSE (AIML)</option>
+                        <option value="CSE (DS)">CSE (DS)</option>
+                        <option value="CSE (CS)">CSE (CS)</option>
+                        <option value="IT">IT</option>
+                        <option value="ECE">ECE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="MECH">MECH</option>
+                        <option value="CIVIL">CIVIL</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Which domain do you want to choose? *
+                      </label>
+                      <select
+                        value={domain}
+                        onChange={(e) => setDomain(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
+                      >
+                        <option value="Logistics">Logistics</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Network & Outreach">Network & Outreach</option>
+                        <option value="Designing">Designing</option>
+                        <option value="Technical">Technical</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        LinkedIn URL (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={linkedin}
+                        onChange={(e) => setLinkedin(e.target.value)}
+                        placeholder="https://linkedin.com/in/..."
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5 flex justify-between items-center">
+                        <span>Why do you want to join this club? *</span>
+                        <span className={`text-[10px] font-bold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
+                          {wordCount < 10 ? `Need ${10 - wordCount} more words` : `${wordCount}/2000`}
+                        </span>
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={motivationText}
+                        onChange={(e) => setMotivationText(e.target.value)}
+                        placeholder="Describe your interest..."
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <h5 className="font-heading text-xl font-bold text-white mb-2">Verifying Payment</h5>
-                    <p className="text-sm text-gray-400">Please do not close this window...</p>
+                  
+                  {errorMessage && (
+                    <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-4">
+                    <button
+                      onClick={resetForm}
+                      className="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/10 text-white font-semibold text-sm transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleRegister}
+                      disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone || !isValidRoll || !isValidSection}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#F47820] text-white hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.6)]"
+                    >
+                      {isRegistering ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+                        </>
+                      ) : (
+                        <>
+                          {eventDetails.price > 0 ? `Confirm and Pay ₹${eventDetails.price}` : "Confirm & Register"}
+                          <ArrowRight className="w-5 h-5" />
+                        </>
+                      )}
+                    </button>
                   </div>
-                </div>
+                </>
               ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 mb-2">
-                    <X className="w-8 h-8" />
+                <>
+                  {/* Step 2: Payment Screen */}
+                  <div className="overflow-y-auto pr-2 pb-4 space-y-6 custom-scrollbar flex-grow text-center">
+                    <div>
+                      <h3 className="font-heading text-3xl font-bold text-white mb-2">
+                        Pay ₹{eventDetails.price}
+                      </h3>
+                      <p className="text-sm text-gray-400 mb-6">
+                        Scan with GPay, PhonePe, or any UPI app.
+                      </p>
+                      
+                      <div className="mx-auto w-72 h-72 sm:w-80 sm:h-80 bg-white p-2 rounded-xl mb-6 shadow-[0_0_30px_rgba(244,120,32,0.3)]">
+                        <img 
+                          src="/payment-qr.png" 
+                          alt="Payment QR Code" 
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "https://via.placeholder.com/200?text=Missing+QR+Image";
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0B0B13] p-5 rounded-xl border border-white/10 text-left space-y-4">
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider font-bold text-[#F47820] mb-2">
+                          UTR / Transaction ID *
+                        </label>
+                        <input
+                          type="text"
+                          value={utr}
+                          onChange={(e) => setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").substring(0, 25))}
+                          placeholder="e.g. 312345678901 or TXN123..."
+                          className="w-full px-4 py-3 rounded-lg bg-[#1A1A24] border border-white/10 text-white font-mono tracking-widest text-lg focus:outline-none focus:border-[#F47820] transition-colors"
+                        />
+                        <p className="text-[10px] text-gray-500 mt-1.5">
+                          Enter the UPI reference number or Transaction ID from your successful payment.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider font-bold text-[#F47820] mb-2 mt-4">
+                          Payment Screenshot *
+                        </label>
+                        <div className="relative">
+                          <input 
+                            type="file" 
+                            accept="image/png, image/jpeg, image/jpg"
+                            onChange={handleFileChange}
+                            className="hidden" 
+                            id="screenshot-upload"
+                          />
+                          <label 
+                            htmlFor="screenshot-upload"
+                            className="flex items-center justify-center gap-3 w-full px-4 py-4 rounded-lg bg-[#1A1A24] border border-dashed border-white/20 hover:border-[#F47820] text-gray-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            <UploadCloud className="w-5 h-5" />
+                            <span className="text-sm font-medium">Click to upload screenshot</span>
+                          </label>
+                        </div>
+                        
+                        {screenshotPreview && (
+                          <div className="mt-3 relative w-24 h-32 rounded-lg border border-white/20 overflow-hidden mx-auto">
+                            <img src={screenshotPreview} alt="Preview" className="w-full h-full object-cover" />
+                            <button 
+                              onClick={() => {
+                                setScreenshotFile(null);
+                                setScreenshotPreview("");
+                              }}
+                              className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white hover:bg-red-500 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h5 className="font-heading text-xl font-bold text-white mb-2">Payment Failed</h5>
-                    <p className="text-sm text-red-400/90 bg-red-500/10 py-2.5 px-5 rounded-lg inline-block border border-red-500/20 max-w-sm mt-1">
-                      {errorMessage || "The payment transaction could not be completed."}
-                    </p>
+
+                  {errorMessage && (
+                    <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-4">
+                    <button
+                      onClick={handleSubmitUtr}
+                      disabled={isRegistering || !isValidUtr || !screenshotFile}
+                      className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                    >
+                      {isRegistering ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-5 h-5" /> Submit Payment Proof
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setPaymentState("idle");
-                      setErrorMessage("");
-                    }}
-                    className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-colors mt-2"
-                  >
-                    Try Again
-                  </button>
-                </div>
+                </>
               )}
             </motion.div>
           </div>
         )}
+
         {successMessage && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
@@ -990,11 +886,8 @@ export default function FeaturedEvent() {
               </div>
               <div className="mt-4 pt-5 border-t border-emerald-500/20 text-sm text-emerald-200/90 font-medium space-y-2">
                 <p className="flex items-start gap-2.5 font-bold text-emerald-300">
-                  <span className="text-xl leading-none">📧</span>
-                  <span className="leading-relaxed">Check your registered Google email inbox (and spam folder) for confirmation details & next steps!</span>
-                </p>
-                <p className="text-xs text-emerald-300/70 font-mono mt-5 pt-3 border-t border-emerald-500/10">
-                  STATUS: REGISTRATION VERIFIED & RECORDED
+                  <span className="text-xl leading-none">⏳</span>
+                  <span className="leading-relaxed">Your payment UTR is being verified by the team. Confirmation email will be sent once approved!</span>
                 </p>
               </div>
               

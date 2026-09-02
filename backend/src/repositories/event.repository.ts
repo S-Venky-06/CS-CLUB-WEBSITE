@@ -42,7 +42,7 @@ export async function findAllEvents(): Promise<Event[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:H500",
+    range: "Events!A2:I500",
   });
 
   const rows = response.data.values;
@@ -105,7 +105,7 @@ export async function updateEvent(
   // 1. Fetch current rows to locate row index
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Events!A2:H500",
+    range: "Events!A2:I500",
   });
 
   const rows = response.data.values;

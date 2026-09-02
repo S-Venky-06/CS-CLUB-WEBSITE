@@ -47,8 +47,8 @@ export async function findRegistration(
     attended: match[16] === "TRUE",
     domain: match[17] || "",
     paymentStatus: match[18] || "",
-    razorpayPaymentId: match[19] || "",
-    razorpayOrderId: match[20] || "",
+    utrNumber: match[19] || "",
+    screenshotUrl: match[20] || "",
   };
 }
 
@@ -81,8 +81,8 @@ export async function createRegistration(
       "FALSE", // Attended is column Q (index 16), defaults to false
       registration.domain || "", // Domain is column R (index 17)
       registration.paymentStatus || "", // Column S
-      registration.razorpayPaymentId || "", // Column T
-      registration.razorpayOrderId || "", // Column U
+      registration.utrNumber || "", // Column T
+      registration.screenshotUrl || "", // Column U
     ],
   ];
 
@@ -150,8 +150,8 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       attended: row[16] === "TRUE",
       domain: row[17] || "",
       paymentStatus: row[18] || "",
-      razorpayPaymentId: row[19] || "",
-      razorpayOrderId: row[20] || "",
+      utrNumber: row[19] || "",
+      screenshotUrl: row[20] || "",
     }));
 }
 
@@ -191,8 +191,8 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       attended: row[16] === "TRUE",
       domain: row[17] || "",
       paymentStatus: row[18] || "",
-      razorpayPaymentId: row[19] || "",
-      razorpayOrderId: row[20] || "",
+      utrNumber: row[19] || "",
+      screenshotUrl: row[20] || "",
     }));
 }
 
@@ -234,3 +234,41 @@ export async function updateAttendance(
     },
   });
 }
+
+/**
+ * Updates the payment status cell for a specific registration.
+ * Column S is 'paymentStatus'.
+ */
+export async function updatePaymentStatus(
+  registrationId: string,
+  status: string,
+): Promise<void> {
+  const sheets = getSheetsClient();
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
+    range: "Registrations!A2:S10000",
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    throw new Error("Registration not found.");
+  }
+
+  const index = rows.findIndex((row: any[]) => row[0] === registrationId);
+  if (index === -1) {
+    throw new Error("Registration not found.");
+  }
+
+  const rowIndex = index + 2; 
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
+    range: `Registrations!S${rowIndex}`,
+    valueInputOption: "RAW",
+    requestBody: {
+      values: [[status]],
+    },
+  });
+}
+

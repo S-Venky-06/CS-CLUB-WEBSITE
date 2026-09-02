@@ -1,26 +1,12 @@
 import { z } from "zod";
-import { eventRegistrationSchema } from "./registration.schema.js";
 
 /**
- * Validation schema for verifying a Razorpay payment and completing registration.
- * It extends the standard event registration schema with Razorpay signature fields.
+ * Validation schema for verifying a manual UPI payment and completing registration.
+ * It extends the standard event registration schema with UTR validation.
  */
-export const verifyPaymentSchema = eventRegistrationSchema.extend({
-  razorpay_order_id: z
-    .string({
-      required_error: "razorpay_order_id is required.",
-    })
-    .min(1, "razorpay_order_id cannot be empty."),
-  razorpay_payment_id: z
-    .string({
-      required_error: "razorpay_payment_id is required.",
-    })
-    .min(1, "razorpay_payment_id cannot be empty."),
-  razorpay_signature: z
-    .string({
-      required_error: "razorpay_signature is required.",
-    })
-    .min(1, "razorpay_signature cannot be empty."),
+export const verifyPaymentSchema = z.object({
+  registrationId: z.string().min(1, "Registration ID is required."),
+  utr: z.string().min(8, "UTR/Transaction ID must be at least 8 characters.").max(25, "UTR/Transaction ID cannot exceed 25 characters."),
 });
 
 export type VerifyPaymentInput = z.infer<typeof verifyPaymentSchema>;

@@ -8,7 +8,8 @@ import {
 } from "../repositories/event.repository.js";
 import {
   findAllRegistrations,
-  updateAttendance
+  updateAttendance,
+  updatePaymentStatus
 } from "../repositories/registration.repository.js";
 import { eventSchema } from "../validators/event.schema.js";
 import { sendResponse, asyncHandler, ApiError } from "../utils/index.js";
@@ -199,6 +200,30 @@ export const putAdminAttendance = asyncHandler(
     sendResponse(res, HttpStatus.OK, "Attendance updated successfully.", {
       registrationId,
       attended: !!attended,
+    });
+  },
+);
+
+/**
+ * PUT /api/v1/admin/registrations/:registrationId/payment-status
+ * Updates the payment status for a specific registration.
+ */
+export const putAdminPaymentStatus = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { registrationId } = req.params as { registrationId: string };
+    const { status } = req.body;
+
+    if (!registrationId || !status) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "registrationId and status are required.");
+    }
+
+    await updatePaymentStatus(registrationId, status);
+
+    await logActivity(req.session.user!.email, "UPDATE_PAYMENT", `Updated payment status to ${status} for registration ${registrationId}`);
+
+    sendResponse(res, HttpStatus.OK, "Payment status updated successfully.", {
+      registrationId,
+      status,
     });
   },
 );

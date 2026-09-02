@@ -26,7 +26,6 @@ const sidebarLinks = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "Events", href: "/dashboard/events", icon: Calendar },
   { label: "Registrations", href: "/dashboard/registrations", icon: ClipboardList },
-  { label: "GD Recruitment", href: "/dashboard/gd-management", icon: MessageSquare },
   { label: "Members", href: "/dashboard/members", icon: Users, superAdminOnly: true },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
   { label: "Activity Log", href: "/dashboard/activity", icon: ClipboardList },

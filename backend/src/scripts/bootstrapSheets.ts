@@ -69,40 +69,6 @@ const requiredSheets = [
     title: "Settings",
     headers: ["key", "value"],
   },
-  {
-    title: "Group Discussion Results",
-    headers: [
-      "registrationId",
-      "name",
-      "rollNumber",
-      "branch",
-      "domain",
-      "gdTeam",
-      "assignedSupervisors",
-      "commScore",
-      "knowledgeScore",
-      "confidenceScore",
-      "realtimeScore",
-      "attackScore",
-      "totalScore",
-      "supervisorComments",
-      "stageStatus",
-    ],
-  },
-  {
-    title: "Round 2 Shortlist",
-    headers: [
-      "registrationId",
-      "name",
-      "rollNumber",
-      "email",
-      "phone",
-      "domain",
-      "gdScore",
-      "supervisorComments",
-      "shortlistedAt",
-    ],
-  },
 ];
 
 async function bootstrap() {
