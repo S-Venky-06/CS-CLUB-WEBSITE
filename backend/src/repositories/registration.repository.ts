@@ -242,6 +242,7 @@ export async function updateAttendance(
 export async function updatePaymentStatus(
   registrationId: string,
   status: string,
+  utrNumber?: string
 ): Promise<void> {
   const sheets = getSheetsClient();
 
@@ -264,10 +265,10 @@ export async function updatePaymentStatus(
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: `Registrations!S${rowIndex}`,
+    range: utrNumber ? `Registrations!S${rowIndex}:T${rowIndex}` : `Registrations!S${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
-      values: [[status]],
+      values: utrNumber ? [[status, utrNumber]] : [[status]],
     },
   });
 }

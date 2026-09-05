@@ -40,6 +40,11 @@ export const env = {
 
   /** ImgBB API Key for screenshot uploads */
   IMGBB_API_KEY: process.env.IMGBB_API_KEY || "",
+
+  /** Cashfree Payment Gateway */
+  CASHFREE_APP_ID: process.env.CASHFREE_APP_ID || "",
+  CASHFREE_SECRET_KEY: process.env.CASHFREE_SECRET_KEY || "",
+  CASHFREE_ENVIRONMENT: process.env.CASHFREE_ENVIRONMENT || "SANDBOX",
 } as const;
 
 /** Whether the app is running in production */

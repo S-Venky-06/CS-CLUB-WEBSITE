@@ -6,4 +6,5 @@ export {
   countRegistrationsForEvent,
   findRegistrationsByUser,
   findAllRegistrations,
+  updatePaymentStatus,
 } from "./registration.repository.js";

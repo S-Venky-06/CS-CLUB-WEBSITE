@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTrans
 import { useRef, useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles, UploadCloud } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { load } from "@cashfreepayments/cashfree-js";
 
 export default function FeaturedEvent() {
   const ref = useRef(null);
@@ -36,8 +37,8 @@ export default function FeaturedEvent() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   
-  // Modal flow state: "idle" -> "form" -> "payment"
-  const [modalStep, setModalStep] = useState<"idle" | "form" | "payment">("idle");
+  // Modal flow state: "idle" -> "form"
+  const [modalStep, setModalStep] = useState<"idle" | "form">("idle");
   const [pendingRegistrationId, setPendingRegistrationId] = useState("");
   
   // Form fields
@@ -56,12 +57,6 @@ export default function FeaturedEvent() {
   const [otherComments, setOtherComments] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  // Payment proof fields
-  const [utr, setUtr] = useState("");
-  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
-  const [screenshotPreview, setScreenshotPreview] = useState<string>("");
-  const isValidUtr = utr.trim().length >= 8 && utr.trim().length <= 25;
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
   const isValidRoll = rollNumber.trim().length > 0;
@@ -102,7 +97,10 @@ export default function FeaturedEvent() {
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data)) {
-            const registered = json.data.some((reg: any) => reg.eventId === eventDetails.eventId);
+            const registered = json.data.some((reg: any) => 
+              reg.eventId === eventDetails.eventId && 
+              (reg.paymentStatus === "CONFIRMED" || reg.paymentStatus === "FREE" || reg.paymentStatus === "SUCCESS")
+            );
             setIsRegistered(registered);
           }
         }
@@ -234,10 +232,52 @@ export default function FeaturedEvent() {
         setIsRegistered(true);
         setSuccessMessage("You are successfully registered for the event!");
         resetForm();
-      } else if (json.data?.registrationId) {
-        // Paid event - Go to step 2
-        setPendingRegistrationId(json.data.registrationId);
-        setModalStep("payment");
+      } else if (json.data?.paymentSessionId) {
+        // Paid event - Invoke Cashfree
+        const cashfree = await load({
+          mode: "sandbox", // Use "sandbox" for testing. Use "production" for live
+        });
+
+        if (!cashfree) {
+          throw new Error("Failed to load Cashfree SDK");
+        }
+
+        const result = await cashfree.checkout({
+          paymentSessionId: json.data.paymentSessionId,
+          redirectTarget: "_modal",
+        });
+
+        if (result.error) {
+          setErrorMessage("Payment was not completed.");
+          setTimeout(() => setErrorMessage(""), 5000);
+          return;
+        }
+
+        if (result.redirect) {
+          return; // Redirecting, stop here
+        }
+
+        if (result.paymentDetails) {
+          // Verify with backend
+          const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              orderId: json.data.orderId,
+              registrationId: json.data.registrationId
+            }),
+          });
+          const verifyJson = await verifyRes.json();
+          if (verifyJson.data?.orderStatus === "PAID") {
+            setIsRegistered(true);
+            setSuccessMessage("Payment successful! Your registration is confirmed.");
+            resetForm();
+          } else {
+            setErrorMessage(`Payment status is ${verifyJson.data?.orderStatus}. Please contact support if money was deducted.`);
+            setTimeout(() => setErrorMessage(""), 7000);
+          }
+        }
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
@@ -247,80 +287,6 @@ export default function FeaturedEvent() {
         setErrorMessage("Could not connect to the server. Please try again later.");
       }
       setTimeout(() => setErrorMessage(""), 5000);
-    } finally {
-      setIsRegistering(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage("Screenshot must be less than 5MB");
-        return;
-      }
-      setScreenshotFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setScreenshotPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setErrorMessage("");
-    }
-  };
-
-  const handleSubmitUtr = async () => {
-    setIsRegistering(true);
-    setErrorMessage("");
-
-    try {
-      const formData = new FormData();
-      formData.append("registrationId", pendingRegistrationId);
-      formData.append("utr", utr);
-      
-      const formPayload = {
-        eventId: eventDetails.eventId,
-        name: userName,
-        motivation: motivationText,
-        phone,
-        year,
-        section,
-        branch,
-        domain,
-        rollNumber,
-        projects,
-        linkedin,
-        tryhackme,
-        hackthebox,
-        otherComments,
-      };
-
-      Object.entries(formPayload).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
-
-      if (screenshotFile) {
-        formData.append("screenshot", screenshotFile);
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/submit-utr`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        setErrorMessage(json.message || "Failed to submit payment details.");
-        return;
-      }
-
-      setIsRegistered(true);
-      setSuccessMessage("Payment submitted! Your registration is pending verification.");
-      resetForm();
-    } catch (err) {
-      setErrorMessage("Could not connect to the server. Please try again.");
     } finally {
       setIsRegistering(false);
     }
@@ -337,9 +303,6 @@ export default function FeaturedEvent() {
     setTryhackme("");
     setHackthebox("");
     setOtherComments("");
-    setUtr("");
-    setScreenshotFile(null);
-    setScreenshotPreview("");
     setModalStep("idle");
     setPendingRegistrationId("");
   };
@@ -548,8 +511,8 @@ export default function FeaturedEvent() {
       {/* Tip Modal */}
       <AnimatePresence>
 
-        {/* Form & Payment Modals */}
-        {(modalStep === "form" || modalStep === "payment") && (
+        {/* Form Modal */}
+        {(modalStep === "form") && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -568,7 +531,7 @@ export default function FeaturedEvent() {
             >
               <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                 <h4 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
-                  {modalStep === "form" ? "Confirm Event Registration" : "Complete Payment"}
+                  Confirm Event Registration
                 </h4>
                 <button 
                   onClick={resetForm} 
@@ -578,7 +541,7 @@ export default function FeaturedEvent() {
                 </button>
               </div>
 
-              {modalStep === "form" ? (
+              {modalStep === "form" && (
                 <>
                   <div className="overflow-y-auto pr-2 pb-4 space-y-5 custom-scrollbar flex-grow">
                     {/* Form Fields... */}
@@ -741,112 +704,6 @@ export default function FeaturedEvent() {
                     </button>
                   </div>
                 </>
-              ) : (
-                <>
-                  {/* Step 2: Payment Screen */}
-                  <div className="overflow-y-auto pr-2 pb-4 space-y-6 custom-scrollbar flex-grow text-center">
-                    <div>
-                      <h3 className="font-heading text-3xl font-bold text-white mb-2">
-                        Pay ₹{eventDetails.price}
-                      </h3>
-                      <p className="text-sm text-gray-400 mb-6">
-                        Scan with GPay, PhonePe, or any UPI app.
-                      </p>
-                      
-                      <div className="mx-auto w-72 h-72 sm:w-80 sm:h-80 bg-white p-2 rounded-xl mb-6 shadow-[0_0_30px_rgba(244,120,32,0.3)]">
-                        <img 
-                          src="/payment-qr.png" 
-                          alt="Payment QR Code" 
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "https://via.placeholder.com/200?text=Missing+QR+Image";
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0B0B13] p-5 rounded-xl border border-white/10 text-left space-y-4">
-                      <div>
-                        <label className="block text-xs uppercase tracking-wider font-bold text-[#F47820] mb-2">
-                          UTR / Transaction ID *
-                        </label>
-                        <input
-                          type="text"
-                          value={utr}
-                          onChange={(e) => setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").substring(0, 25))}
-                          placeholder="e.g. 312345678901 or TXN123..."
-                          className="w-full px-4 py-3 rounded-lg bg-[#1A1A24] border border-white/10 text-white font-mono tracking-widest text-lg focus:outline-none focus:border-[#F47820] transition-colors"
-                        />
-                        <p className="text-[10px] text-gray-500 mt-1.5">
-                          Enter the UPI reference number or Transaction ID from your successful payment.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs uppercase tracking-wider font-bold text-[#F47820] mb-2 mt-4">
-                          Payment Screenshot *
-                        </label>
-                        <div className="relative">
-                          <input 
-                            type="file" 
-                            accept="image/png, image/jpeg, image/jpg"
-                            onChange={handleFileChange}
-                            className="hidden" 
-                            id="screenshot-upload"
-                          />
-                          <label 
-                            htmlFor="screenshot-upload"
-                            className="flex items-center justify-center gap-3 w-full px-4 py-4 rounded-lg bg-[#1A1A24] border border-dashed border-white/20 hover:border-[#F47820] text-gray-400 hover:text-white transition-colors cursor-pointer"
-                          >
-                            <UploadCloud className="w-5 h-5" />
-                            <span className="text-sm font-medium">Click to upload screenshot</span>
-                          </label>
-                        </div>
-                        
-                        {screenshotPreview && (
-                          <div className="mt-3 relative w-24 h-32 rounded-lg border border-white/20 overflow-hidden mx-auto">
-                            <img src={screenshotPreview} alt="Preview" className="w-full h-full object-cover" />
-                            <button 
-                              onClick={() => {
-                                setScreenshotFile(null);
-                                setScreenshotPreview("");
-                              }}
-                              className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white hover:bg-red-500 transition-colors"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {errorMessage && (
-                    <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{errorMessage}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-4">
-                    <button
-                      onClick={handleSubmitUtr}
-                      disabled={isRegistering || !isValidUtr || !screenshotFile}
-                      className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-                    >
-                      {isRegistering ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <Check className="w-5 h-5" /> Submit Payment Proof
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </>
               )}
             </motion.div>
           </div>
@@ -886,8 +743,8 @@ export default function FeaturedEvent() {
               </div>
               <div className="mt-4 pt-5 border-t border-emerald-500/20 text-sm text-emerald-200/90 font-medium space-y-2">
                 <p className="flex items-start gap-2.5 font-bold text-emerald-300">
-                  <span className="text-xl leading-none">⏳</span>
-                  <span className="leading-relaxed">Your payment UTR is being verified by the team. Confirmation email will be sent once approved!</span>
+                  <span className="text-xl leading-none">🎉</span>
+                  <span className="leading-relaxed">You're in! Check your email for event updates. See you there!</span>
                 </p>
               </div>
               

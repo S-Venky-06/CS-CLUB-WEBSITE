@@ -229,9 +229,9 @@ export default function RegistrationsManagement() {
       "Other Comments",
       "Registered At",
       "Attended Status",
+      "Registered At",
+      "Attended Status",
       "Payment Status",
-      "UTR Number",
-      "Screenshot URL",
     ];
     const rows = filteredRegistrations.map((reg) => [
       reg.registrationId,
@@ -251,9 +251,9 @@ export default function RegistrationsManagement() {
       reg.otherComments || "",
       new Date(reg.registeredAt).toISOString(),
       reg.attended ? "TRUE" : "FALSE",
+      new Date(reg.registeredAt).toISOString(),
+      reg.attended ? "TRUE" : "FALSE",
       reg.paymentStatus || "N/A",
-      reg.utrNumber || "N/A",
-      reg.screenshotUrl || "N/A",
     ]);
 
     const csvContent = 
@@ -625,9 +625,6 @@ export default function RegistrationsManagement() {
                 <div>
                   <h4 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
                     Student Registration Profile
-                    {selectedReg.paymentStatus !== "SUCCESS" && selectedReg.paymentStatus !== "FREE" && (
-                      <span className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded border border-amber-500/30 uppercase tracking-widest animate-pulse">Action Required</span>
-                    )}
                   </h4>
                   <p className="text-xs text-muted mt-0.5">
                     Registration ID: <span className="font-mono text-primary font-bold">{selectedReg.registrationId}</span>
@@ -641,63 +638,7 @@ export default function RegistrationsManagement() {
                 </button>
               </div>
 
-              <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-1 text-sm text-muted custom-scrollbar">
-                
-                {/* Verification Priority Block */}
-                {selectedReg.paymentStatus !== "SUCCESS" && selectedReg.paymentStatus !== "FREE" && (
-                  <div className="bg-amber-500/5 rounded-xl border border-amber-500/20 p-5">
-                    <h5 className="text-amber-500 font-bold flex items-center gap-2 mb-4">
-                      <IndianRupee className="w-4 h-4" /> Verify Payment Status
-                    </h5>
-                    
-                    <div className="grid grid-cols-2 gap-4 mb-5">
-                      <div>
-                        <p className="text-xs text-muted mb-1 uppercase tracking-wider font-semibold">User Submitted UTR Number</p>
-                        <p className="text-lg font-mono text-white font-bold bg-[#13131A] px-3 py-2 rounded-lg border border-glass-border">
-                          {selectedReg.utrNumber || "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted mb-1 uppercase tracking-wider font-semibold">Screenshot Proof</p>
-                        {selectedReg.screenshotUrl ? (
-                          <a 
-                            href={selectedReg.screenshotUrl} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 w-full text-sm font-semibold bg-[#13131A] text-cyan px-3 py-2.5 rounded-lg border border-cyan/30 hover:bg-cyan/10 transition-colors"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            View Screenshot
-                          </a>
-                        ) : (
-                          <p className="text-sm font-medium text-gray-500 mt-2">No screenshot provided</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => handleUpdatePaymentStatus(selectedReg.registrationId, "SUCCESS")}
-                        disabled={updatingId === selectedReg.registrationId + "_payment"}
-                        className="flex-1 inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        {updatingId === selectedReg.registrationId + "_payment" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                        Approve Payment
-                      </button>
-                      <button
-                        onClick={() => handleUpdatePaymentStatus(selectedReg.registrationId, "REJECTED")}
-                        disabled={updatingId === selectedReg.registrationId + "_payment"}
-                        className="flex-1 inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-surface border border-red-500/30 hover:bg-red-500/10 text-red-400 font-bold rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        <XCircle className="w-4 h-4" />
-                        Reject (Invalid UTR)
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-1 text-sm text-muted custom-scrollbar">                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-[#181824] rounded-xl border border-glass-border/30 p-4 space-y-2">
                     <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Academic History</span>
                     <div>
@@ -790,36 +731,14 @@ export default function RegistrationsManagement() {
                         <div>
                           <span className="text-[11px] text-muted block mb-1">Status</span>
                           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border inline-block ${
-                            selectedReg.paymentStatus === "SUCCESS" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                            selectedReg.paymentStatus === "CONFIRMED" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
                             selectedReg.paymentStatus === "FREE" ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
-                            selectedReg.paymentStatus === "REJECTED" ? "bg-red-500/10 text-red-400 border-red-500/20" :
+                            selectedReg.paymentStatus === "FAILED" ? "bg-red-500/10 text-red-400 border-red-500/20" :
                             "bg-surface text-muted border-glass-border"
                           }`}>
                             {selectedReg.paymentStatus || "N/A"}
                           </span>
                         </div>
-                        {selectedReg.utrNumber && (
-                          <div>
-                            <span className="text-[11px] text-muted block mb-1">UTR Number</span>
-                            <span className="text-xs font-semibold text-foreground font-mono bg-surface px-2 py-1 rounded border border-glass-border inline-block">
-                              {selectedReg.utrNumber}
-                            </span>
-                          </div>
-                        )}
-                        {selectedReg.screenshotUrl && (
-                          <div>
-                            <span className="text-[11px] text-muted block mb-1">Screenshot Proof</span>
-                            <a 
-                              href={selectedReg.screenshotUrl} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-glass-border text-cyan text-xs font-semibold hover:bg-cyan/10 hover:border-cyan/30 transition-colors"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              View
-                            </a>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
