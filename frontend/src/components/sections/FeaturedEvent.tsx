@@ -235,7 +235,7 @@ export default function FeaturedEvent() {
       } else if (json.data?.paymentSessionId) {
         // Paid event - Invoke Cashfree
         const cashfree = await load({
-          mode: "sandbox", // Use "sandbox" for testing. Use "production" for live
+          mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "PRODUCTION" ? "production" : "sandbox",
         });
 
         if (!cashfree) {
