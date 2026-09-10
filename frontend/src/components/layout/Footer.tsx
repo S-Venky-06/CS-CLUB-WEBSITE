@@ -12,6 +12,13 @@ const quickLinks = [
   { label: "About", href: "/#about" },
 ];
 
+const legalLinks = [
+  { label: "Refund Policy", href: "/pages/refund-policy" },
+  { label: "Terms & Conditions", href: "/pages/terms-and-conditions" },
+  { label: "Privacy Policy", href: "/pages/privacy-policy" },
+  { label: "Contact Us", href: "/pages/contact" },
+];
+
 const socialLinks = [
   { icon: Github, href: "https://github.com/cyber438", label: "GitHub", hoverColor: "hover:text-white hover:border-white hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]" },
   { icon: Linkedin, href: "https://www.linkedin.com/in/cyber-security-club-gcet-72572a378/", label: "LinkedIn", hoverColor: "hover:text-cyan hover:border-cyan hover:shadow-[0_0_15px_rgba(178,58,135,0.4)]" },
@@ -36,7 +43,7 @@ export default function Footer() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
           
           {/* Brand Column */}
-          <div className="sm:col-span-2 lg:col-span-5">
+          <div className="sm:col-span-2 lg:col-span-4">
             <div className="flex items-center gap-4 mb-6 group">
               <div className="relative">
                 {/* Spinning Neon Halo */}
@@ -66,7 +73,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="lg:col-span-2 lg:col-start-7">
+          <div className="lg:col-span-2 lg:col-start-6">
             <h4 className="font-heading font-bold text-foreground text-sm tracking-widest uppercase mb-6 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-cyan" />
               Links
@@ -86,8 +93,29 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal Links */}
+          <div className="lg:col-span-2 lg:col-start-8">
+            <h4 className="font-heading font-bold text-foreground text-sm tracking-widest uppercase mb-6 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" />
+              Legal
+            </h4>
+            <ul className="space-y-3">
+              {legalLinks.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="group flex items-center gap-2 text-sm text-muted transition-all duration-300 hover:translate-x-1"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-glass-border group-hover:bg-accent transition-colors" />
+                    <span className="group-hover:text-white transition-colors">{link.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Contact */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3 lg:col-start-10">
             <h4 className="font-heading font-bold text-foreground text-sm tracking-widest uppercase mb-6 flex items-center gap-2">
               <Mail className="w-4 h-4 text-accent" />
               Contact
@@ -101,8 +129,23 @@ export default function Footer() {
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-cyan/20 group-hover:text-cyan transition-colors">
                     <Mail className="w-4 h-4" />
                   </div>
-                  <span className="text-sm text-muted group-hover:text-white transition-colors">
+                  <span className="text-sm text-muted group-hover:text-white transition-colors truncate block w-full max-w-[200px]">
                     cybersecurityclub@gcet.edu.in
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/919866930336"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 p-3 rounded-xl bg-surface/30 border border-glass-border hover:border-green-500/50 hover:bg-surface/60 transition-all duration-300"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 group-hover:bg-green-500/10 transition-colors">
+                    <img src="/whatsapp.png" alt="WhatsApp" className="w-full h-full object-contain" />
+                  </div>
+                  <span className="text-sm text-muted group-hover:text-white transition-colors">
+                    +91 98669 30336
                   </span>
                 </a>
               </li>
