@@ -1,4 +1,4 @@
 export { getHealth } from "./health.controller.js";
 export { googleLogin, getMe, logout } from "./auth.controller.js";
 export { postRegistration, getMeRegistrations } from "./registration.controller.js";
-export { createOrder, verifyPayment } from "./payment.controller.js";
+export { createOrder, verifyPayment, cashfreeWebhook } from "./payment.controller.js";

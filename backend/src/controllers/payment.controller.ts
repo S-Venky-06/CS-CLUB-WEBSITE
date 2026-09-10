@@ -165,9 +165,22 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
  */
 export async function verifyPayment(req: Request, res: Response): Promise<void> {
   const { orderId, registrationId } = req.body;
+  const user = req.session!.user!;
 
   if (!orderId || !registrationId) {
     throw new ApiError(HttpStatus.BAD_REQUEST, "orderId and registrationId are required.");
+  }
+
+  // IDOR Protection: Validate orderId structure
+  if (!orderId.startsWith(`ORDER_${registrationId}_`)) {
+    throw new ApiError(HttpStatus.FORBIDDEN, "Invalid orderId for this registration.");
+  }
+
+  // IDOR Protection: Ensure registration belongs to the authenticated user
+  const allRegistrations = await findAllRegistrations();
+  const registration = allRegistrations.find(r => r.registrationId === registrationId);
+  if (!registration || registration.email.toLowerCase() !== user.email.toLowerCase()) {
+    throw new ApiError(HttpStatus.FORBIDDEN, "Registration does not belong to the authenticated user.");
   }
 
   try {
@@ -200,5 +213,44 @@ export async function verifyPayment(req: Request, res: Response): Promise<void> 
   } catch (error: any) {
     console.error("Cashfree Fetch Order Error:", error.response?.data || error.message);
     throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to verify payment status.");
+  }
+}
+
+/**
+ * POST /api/v1/webhooks/cashfree
+ * Handles Cashfree server-to-server webhook events securely.
+ */
+export async function cashfreeWebhook(req: Request, res: Response): Promise<void> {
+  try {
+    const signature = req.headers["x-webhook-signature"] as string;
+    const timestamp = req.headers["x-webhook-timestamp"] as string;
+    
+    // Expecting req.body to be the raw unparsed string (configured in route middleware)
+    const payload = req.body.toString();
+
+    // Cryptographically verify the webhook signature
+    cashfree.PGVerifyWebhookSignature(signature, payload, timestamp);
+
+    const event = JSON.parse(payload);
+    
+    if (event.type === "PAYMENT_SUCCESS_WEBHOOK") {
+      const order = event.data.order;
+      const payment = event.data.payment;
+      
+      const orderId = order.order_id;
+      const transactionId = payment.cf_payment_id || order.cf_order_id;
+      
+      // Extract registrationId from orderId (ORDER_{registrationId}_{timestamp})
+      const parts = orderId.split("_");
+      if (parts.length >= 3 && parts[0] === "ORDER") {
+         const registrationId = parts.slice(1, -1).join("_");
+         await updatePaymentStatus(registrationId, "CONFIRMED", transactionId.toString());
+      }
+    }
+    
+    res.status(200).send("OK");
+  } catch (error: any) {
+    console.error("Webhook Verification Failed:", error.message);
+    res.status(400).send("Webhook Verification Failed");
   }
 }

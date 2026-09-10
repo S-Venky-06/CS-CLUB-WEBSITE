@@ -152,6 +152,30 @@ All registration routes require authentication (`requireAuth`).
 
 ---
 
+### 💳 Payment Endpoints (`/api/v1/payments`) 🔒
+
+All payment routes require authentication (`requireAuth`).
+
+#### `POST /api/v1/payments/create-order`
+- **Description:** Initiates a Cashfree payment order for an event registration. If the event is free, registers the user immediately.
+- **Validation:** Zod schema (`eventRegistrationSchema`).
+- **Response:** `{ success: true, message: "...", data: { registrationId, paymentSessionId, orderId } }`
+
+#### `POST /api/v1/payments/verify`
+- **Description:** Verifies the payment status with Cashfree and confirms the registration if paid.
+- **Validation:** Zod schema (`verifyPaymentSchema` requiring `orderId` and `registrationId`).
+- **Security:** Protected against IDOR; verifies that `orderId` corresponds to the `registrationId` and the authenticated user.
+
+---
+
+### 🌐 Webhook Endpoints (`/api/v1/webhooks`)
+
+#### `POST /api/v1/webhooks/cashfree`
+- **Description:** Cashfree server-to-server webhook endpoint. Listens for `PAYMENT_SUCCESS_WEBHOOK` to asynchronously confirm registrations.
+- **Security:** Requires `x-webhook-signature` cryptographic validation using the Cashfree SDK.
+
+---
+
 ### 🛡️ Admin Endpoints (`/api/v1/admin`) 🔒👑
 
 All admin routes require `requireAuth` + `requireRole("admin")`. Some routes additionally require `requireRole("super_admin")`.

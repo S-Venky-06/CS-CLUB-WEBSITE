@@ -47,7 +47,7 @@ export async function findRegistration(
     attended: match[16] === "TRUE",
     domain: match[17] || "",
     paymentStatus: match[18] || "",
-    utrNumber: match[19] || "",
+    transactionId: match[19] || "",
     screenshotUrl: match[20] || "",
   };
 }
@@ -81,7 +81,7 @@ export async function createRegistration(
       "FALSE", // Attended is column Q (index 16), defaults to false
       registration.domain || "", // Domain is column R (index 17)
       registration.paymentStatus || "", // Column S
-      registration.utrNumber || "", // Column T
+      registration.transactionId || "", // Column T
       registration.screenshotUrl || "", // Column U
     ],
   ];
@@ -150,7 +150,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       attended: row[16] === "TRUE",
       domain: row[17] || "",
       paymentStatus: row[18] || "",
-      utrNumber: row[19] || "",
+      transactionId: row[19] || "",
       screenshotUrl: row[20] || "",
     }));
 }
@@ -191,7 +191,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       attended: row[16] === "TRUE",
       domain: row[17] || "",
       paymentStatus: row[18] || "",
-      utrNumber: row[19] || "",
+      transactionId: row[19] || "",
       screenshotUrl: row[20] || "",
     }));
 }
@@ -242,7 +242,7 @@ export async function updateAttendance(
 export async function updatePaymentStatus(
   registrationId: string,
   status: string,
-  utrNumber?: string
+  transactionId?: string
 ): Promise<void> {
   const sheets = getSheetsClient();
 
@@ -265,10 +265,10 @@ export async function updatePaymentStatus(
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: utrNumber ? `Registrations!S${rowIndex}:T${rowIndex}` : `Registrations!S${rowIndex}`,
+    range: transactionId ? `Registrations!S${rowIndex}:T${rowIndex}` : `Registrations!S${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
-      values: utrNumber ? [[status, utrNumber]] : [[status]],
+      values: transactionId ? [[status, transactionId]] : [[status]],
     },
   });
 }

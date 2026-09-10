@@ -47,7 +47,7 @@ This web application serves as the club's central digital hub — featuring memb
   - **Fresh Talent**: Newly onboarded recruits and rising security associates.
   - **Team DDMM (CTF)**: Tournament triumphs, national podium finishes, and competition history.
 - **🎟️ Real-Time Event Management**: Live workshop/hackathon registration flow with branch selection, roll number validation, and instant Google Sheets synchronization.
-  - **💳 Integrated Payments**: Seamless Manual UPI QR payment flow with 12-digit UTR validation and admin verification for paid event registrations.
+  - **💳 Integrated Payments**: Automated Cashfree Payment Gateway integration for paid event registrations with secure webhook verification.
 - **📊 Admin Command Center**:
   - **Dashboard Overview**: Metrics on registrations, branch distributions, and live activity streams.
   - **GD Management System**: Evaluator interface for group discussions, candidate scoring, and shortlisting.
@@ -68,7 +68,7 @@ This web application serves as the club's central digital hub — featuring memb
                           │   Next.js 16 App Router (Vercel)  │
                           │   - Dynamic Cyber Components      │
                           │   - Google OAuth Provider         │
-                          │   - Manual UPI Flow UI            │
+                          │   - Cashfree Payment Flow         │
                           └─────────────────┬─────────────────┘
                                             │ HTTPS REST API
                                             ▼
@@ -99,13 +99,13 @@ This web application serves as the club's central digital hub — featuring memb
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Authentication**: [@react-oauth/google](https://www.npmjs.com/package/@react-oauth/google)
-- **Payments**: Manual UPI with UTR validation and admin verification
+- **Payments**: Cashfree Payment Gateway Integration
 - **PDF Generation**: [jsPDF](https://github.com/parallax/jsPDF) & [jspdf-autotable](https://github.com/simonbengtsson/jsPDF-AutoTable)
 
 ### Backend
 - **Runtime**: [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Payments**: Manual UPI QR flow (Zero-Dependency)
+- **Payments**: Cashfree PG SDK (`cashfree-pg`) with secure webhook verification
 - **Database & Storage**: [Google Sheets API v4](https://developers.google.com/sheets/api) via Google APIs Client Library
 - **Security & Utilities**: `cors`, `helmet`, `express-rate-limit`, `crypto`, `winston`, `dotenv`
 

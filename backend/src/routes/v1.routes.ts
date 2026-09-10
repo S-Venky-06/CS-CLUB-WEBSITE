@@ -5,6 +5,7 @@ import authRoutes from "./auth.routes.js";
 import registrationRoutes from "./registration.routes.js";
 import adminRoutes from "./admin.routes.js";
 import paymentRoutes from "./payment.routes.js";
+import webhookRoutes from "./webhook.routes.js";
 
 const router = Router();
 
@@ -28,6 +29,9 @@ router.use("/registrations", registrationRoutes);
 
 /** Mount /api/v1/payments/* endpoints */
 router.use("/payments", paymentRoutes);
+
+/** Mount /api/v1/webhooks/* endpoints */
+router.use("/webhooks", webhookRoutes);
 
 /** Mount /api/v1/admin/* endpoints */
 router.use("/admin", adminRoutes);

@@ -30,7 +30,7 @@ export interface Registration {
   hackthebox?: string;
   otherComments?: string;
   paymentStatus?: string;
-  utrNumber?: string;
+  transactionId?: string;
   screenshotUrl?: string;
 }
 
