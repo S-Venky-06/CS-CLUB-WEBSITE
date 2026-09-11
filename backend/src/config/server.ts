@@ -25,9 +25,12 @@ export const corsOptions: CorsOptions = {
     const cleanOrigin = origin.replace(/\/$/, "");
     const allowed = getAllowedOrigins();
 
+    const isVercelPreview = cleanOrigin.match(/^https:\/\/cs-club-website(-[a-zA-Z0-9-]+)?\.vercel\.app$/);
+
     const isMatch =
       allowed.includes(cleanOrigin) ||
-      (!isProduction && cleanOrigin.startsWith("http://localhost:"));
+      (!isProduction && cleanOrigin.startsWith("http://localhost:")) ||
+      Boolean(isVercelPreview);
 
     if (isMatch) {
       callback(null, true);
