@@ -119,7 +119,7 @@ export default function RegistrationsManagement() {
     const matchesPayment =
       paymentFilter === "all" ||
       (paymentFilter === "pending" && reg.paymentStatus === "PENDING") ||
-      (paymentFilter === "success" && reg.paymentStatus === "SUCCESS");
+      (paymentFilter === "success" && (reg.paymentStatus === "SUCCESS" || reg.paymentStatus === "CONFIRMED" || reg.paymentStatus === "FREE"));
       
     return matchesSearch && matchesEvent && matchesAttendance && matchesBranch && matchesPayment;
   });
@@ -550,7 +550,7 @@ export default function RegistrationsManagement() {
                           <AlertCircle className="w-3 h-3" />
                           Pending Verify
                         </span>
-                      ) : reg.paymentStatus === "SUCCESS" || reg.paymentStatus === "FREE" ? (
+                      ) : reg.paymentStatus === "SUCCESS" || reg.paymentStatus === "CONFIRMED" || reg.paymentStatus === "FREE" ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase">
                           <CheckCircle className="w-3 h-3" />
                           {reg.paymentStatus}
@@ -585,13 +585,13 @@ export default function RegistrationsManagement() {
                       <button
                         onClick={() => setSelectedReg(reg)}
                         className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border hover:text-foreground hover:bg-surface/50 text-xs font-medium transition-all cursor-pointer animate-hover ${
-                          reg.paymentStatus !== "SUCCESS" && reg.paymentStatus !== "FREE"
+                          reg.paymentStatus !== "SUCCESS" && reg.paymentStatus !== "CONFIRMED" && reg.paymentStatus !== "FREE"
                             ? "border-amber-500/30 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                             : "border-glass-border hover:border-primary/30 text-muted"
                         }`}
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        {reg.paymentStatus !== "SUCCESS" && reg.paymentStatus !== "FREE" ? "Review Payment" : "Details"}
+                        {reg.paymentStatus !== "SUCCESS" && reg.paymentStatus !== "CONFIRMED" && reg.paymentStatus !== "FREE" ? "Review Payment" : "Details"}
                       </button>
                     </td>
                   </tr>
