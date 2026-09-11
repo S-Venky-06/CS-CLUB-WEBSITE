@@ -27,8 +27,7 @@ export const corsOptions: CorsOptions = {
 
     const isMatch =
       allowed.includes(cleanOrigin) ||
-      (!isProduction && cleanOrigin.startsWith("http://localhost:")) ||
-      (env.FRONTEND_URL.includes("vercel.app") && cleanOrigin.endsWith(".vercel.app"));
+      (!isProduction && cleanOrigin.startsWith("http://localhost:"));
 
     if (isMatch) {
       callback(null, true);

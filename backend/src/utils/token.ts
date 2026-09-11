@@ -2,7 +2,10 @@ import crypto from "crypto";
 import { env } from "../config/index.js";
 
 // Use SESSION_SECRET as the token signing key
-const SECRET = env.SESSION_SECRET || "default-session-secret-change-me-in-production-32-chars-long";
+if (!env.SESSION_SECRET) {
+  throw new Error("FATAL ERROR: SESSION_SECRET environment variable is missing. The server cannot start securely.");
+}
+const SECRET = env.SESSION_SECRET;
 
 /**
  * Generates a signed token (JWT-style) for a given user payload.
@@ -29,7 +32,20 @@ export function verifyToken(token: string): any | null {
     .update(data)
     .digest("base64url");
     
-  if (signature !== expectedSignature) return null;
+  try {
+    const sigBuffer = Buffer.from(signature);
+    const expectedSigBuffer = Buffer.from(expectedSignature);
+    
+    if (sigBuffer.length !== expectedSigBuffer.length) {
+      return null;
+    }
+    
+    if (!crypto.timingSafeEqual(sigBuffer, expectedSigBuffer)) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
   
   try {
     return JSON.parse(Buffer.from(data, "base64url").toString("utf8"));
