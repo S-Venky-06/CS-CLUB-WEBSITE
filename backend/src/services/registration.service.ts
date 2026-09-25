@@ -26,7 +26,7 @@ export async function registerForEvent(
   tryhackme?: string,
   hackthebox?: string,
   otherComments?: string,
-): Promise<Omit<Registration, "attended">> {
+): Promise<Omit<Registration, "attendedMembers">> {
   // 1. Check if event exists (throws 404 if not)
   const event = await getEventDetails(eventId);
 
@@ -95,6 +95,8 @@ export async function registerForEvent(
     tryhackme: tryhackme || "",
     hackthebox: hackthebox || "",
     otherComments: otherComments || "",
+    teamSize: 1,
+    teamMembers: [],
   };
 
   // 7. Write to storage (Google Sheets)
