@@ -45,6 +45,9 @@ export const env = {
   CASHFREE_APP_ID: process.env.CASHFREE_APP_ID || "",
   CASHFREE_SECRET_KEY: process.env.CASHFREE_SECRET_KEY || "",
   CASHFREE_ENVIRONMENT: process.env.CASHFREE_ENVIRONMENT || "SANDBOX",
+  
+  /** Brevo API Key for transactional emails */
+  BREVO_API_KEY: process.env.BREVO_API_KEY || "",
 } as const;
 
 /** Whether the app is running in production */

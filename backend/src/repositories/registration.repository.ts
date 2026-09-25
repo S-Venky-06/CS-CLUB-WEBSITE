@@ -14,7 +14,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:U10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -33,22 +33,18 @@ export async function findRegistration(
     email: match[2],
     name: match[3] || "",
     registeredAt: match[4] || "",
-    motivation: match[5] || "",
-    phone: match[6] || "",
-    year: match[7] || "",
-    section: match[8] || "",
-    branch: match[9] || "",
-    rollNumber: match[10] || "",
-    projects: match[11] || "",
-    linkedin: match[12] || "",
-    tryhackme: match[13] || "",
-    hackthebox: match[14] || "",
-    otherComments: match[15] || "",
-    attended: match[16] === "TRUE",
-    domain: match[17] || "",
-    paymentStatus: match[18] || "",
-    transactionId: match[19] || "",
-    screenshotUrl: match[20] || "",
+    phone: match[5] || "",
+    year: match[6] || "",
+    section: match[7] || "",
+    branch: match[8] || "",
+    rollNumber: match[9] || "",
+    otherComments: match[10] || "",
+    attendedMembers: (match[11] && match[11] !== "TRUE" && match[11] !== "FALSE") ? (() => { try { return JSON.parse(match[11]); } catch { return []; } })() : [],
+    paymentStatus: match[12] || "",
+    transactionId: match[13] || "",
+    teamSize: parseInt(match[14] || "1", 10),
+    teamMembers: match[15] ? JSON.parse(match[15]) : [],
+    emailStatus: match[16] || "",
   };
 }
 
@@ -56,7 +52,7 @@ export async function findRegistration(
  * Creates a new registration row in the spreadsheet.
  */
 export async function createRegistration(
-  registration: Omit<Registration, "attended">,
+  registration: Omit<Registration, "attendedMembers">,
 ): Promise<void> {
   const sheets = getSheetsClient();
 
@@ -67,28 +63,24 @@ export async function createRegistration(
       registration.email,
       registration.name,
       registration.registeredAt,
-      registration.motivation,
       registration.phone || "",
       registration.year || "",
       registration.section || "",
       registration.branch || "",
       registration.rollNumber || "",
-      registration.projects || "",
-      registration.linkedin || "",
-      registration.tryhackme || "",
-      registration.hackthebox || "",
       registration.otherComments || "",
-      "FALSE", // Attended is column Q (index 16), defaults to false
-      registration.domain || "", // Domain is column R (index 17)
-      registration.paymentStatus || "", // Column S
-      registration.transactionId || "", // Column T
-      registration.screenshotUrl || "", // Column U
+      "[]", // Attended is column L (index 11)
+      registration.paymentStatus || "", // Column M
+      registration.transactionId || "", // Column N
+      String(registration.teamSize || 1), // Column O
+      registration.teamMembers && registration.teamMembers.length > 0 ? JSON.stringify(registration.teamMembers) : "", // Column P
+      registration.emailStatus || "", // Column Q
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:U2",
+    range: "Registrations!A2:Q2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -122,7 +114,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:R10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -136,22 +128,17 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
       email: row[2],
       name: row[3] || "",
       registeredAt: row[4] || "",
-      motivation: row[5] || "",
-      phone: row[6] || "",
-      year: row[7] || "",
-      section: row[8] || "",
-      branch: row[9] || "",
-      rollNumber: row[10] || "",
-      projects: row[11] || "",
-      linkedin: row[12] || "",
-      tryhackme: row[13] || "",
-      hackthebox: row[14] || "",
-      otherComments: row[15] || "",
-      attended: row[16] === "TRUE",
-      domain: row[17] || "",
-      paymentStatus: row[18] || "",
-      transactionId: row[19] || "",
-      screenshotUrl: row[20] || "",
+      phone: row[5] || "",
+      year: row[6] || "",
+      section: row[7] || "",
+      branch: row[8] || "",
+      rollNumber: row[9] || "",
+      otherComments: row[10] || "",
+      attendedMembers: (row[11] && row[11] !== "TRUE" && row[11] !== "FALSE") ? (() => { try { return JSON.parse(row[11]); } catch { return []; } })() : [],
+      paymentStatus: row[12] || "",
+      transactionId: row[13] || "",
+      teamSize: parseInt(row[14] || "1", 10),
+      teamMembers: row[15] ? JSON.parse(row[15]) : [],
     }));
 }
 
@@ -163,7 +150,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:U10000",
+    range: "Registrations!A2:Q10000",
   });
 
   const rows = response.data.values;
@@ -177,22 +164,17 @@ export async function findAllRegistrations(): Promise<Registration[]> {
       email: row[2],
       name: row[3] || "",
       registeredAt: row[4] || "",
-      motivation: row[5] || "",
-      phone: row[6] || "",
-      year: row[7] || "",
-      section: row[8] || "",
-      branch: row[9] || "",
-      rollNumber: row[10] || "",
-      projects: row[11] || "",
-      linkedin: row[12] || "",
-      tryhackme: row[13] || "",
-      hackthebox: row[14] || "",
-      otherComments: row[15] || "",
-      attended: row[16] === "TRUE",
-      domain: row[17] || "",
-      paymentStatus: row[18] || "",
-      transactionId: row[19] || "",
-      screenshotUrl: row[20] || "",
+      phone: row[5] || "",
+      year: row[6] || "",
+      section: row[7] || "",
+      branch: row[8] || "",
+      rollNumber: row[9] || "",
+      otherComments: row[10] || "",
+      attendedMembers: (row[11] && row[11] !== "TRUE" && row[11] !== "FALSE") ? (() => { try { return JSON.parse(row[11]); } catch { return []; } })() : [],
+      paymentStatus: row[12] || "",
+      transactionId: row[13] || "",
+      teamSize: parseInt(row[14] || "1", 10),
+      teamMembers: row[15] ? JSON.parse(row[15]) : [],
     }));
 }
 
@@ -202,14 +184,14 @@ export async function findAllRegistrations(): Promise<Registration[]> {
  */
 export async function updateAttendance(
   registrationId: string,
-  attended: boolean,
+  attendedMembers: string[],
 ): Promise<void> {
   const sheets = getSheetsClient();
 
   // 1. Fetch current rows to locate row index
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:L10000",
   });
 
   const rows = response.data.values;
@@ -227,10 +209,10 @@ export async function updateAttendance(
   // 2. Write TRUE/FALSE back to Column Q of that row
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: `Registrations!Q${rowIndex}`,
+    range: `Registrations!L${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
-      values: [[attended ? "TRUE" : "FALSE"]],
+      values: [[JSON.stringify(attendedMembers)]],
     },
   });
 }
@@ -248,7 +230,7 @@ export async function updatePaymentStatus(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:S10000",
+    range: "Registrations!A2:M10000",
   });
 
   const rows = response.data.values;
@@ -265,10 +247,47 @@ export async function updatePaymentStatus(
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: transactionId ? `Registrations!S${rowIndex}:T${rowIndex}` : `Registrations!S${rowIndex}`,
+    range: transactionId ? `Registrations!M${rowIndex}:N${rowIndex}` : `Registrations!M${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: {
       values: transactionId ? [[status, transactionId]] : [[status]],
+    },
+  });
+}
+
+/**
+ * Updates the email status cell for a specific registration.
+ * Column Q is 'emailStatus'.
+ */
+export async function updateEmailStatus(
+  registrationId: string,
+  status: string,
+): Promise<void> {
+  const sheets = getSheetsClient();
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
+    range: "Registrations!A2:A10000",
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    throw new Error("Registration not found.");
+  }
+
+  const index = rows.findIndex((row: any[]) => row[0] === registrationId);
+  if (index === -1) {
+    throw new Error("Registration not found.");
+  }
+
+  const rowIndex = index + 2; 
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
+    range: `Registrations!Q${rowIndex}`,
+    valueInputOption: "RAW",
+    requestBody: {
+      values: [[status]],
     },
   });
 }

@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getEventDetails } from "../services/event.service.js";
+import { sendRegistrationConfirmationEmail } from "../services/email.service.js";
 import { findAllRegistrations, createRegistration, updatePaymentStatus } from "../repositories/index.js";
 import { ApiError } from "../utils/index.js";
 import { HttpStatus } from "../constants/index.js";
@@ -80,16 +81,17 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       email,
       name: input.name || user.name || "Unknown",
       registeredAt: new Date().toISOString(),
-      projects: input.projects || "",
-      linkedin: input.linkedin || "",
-      tryhackme: input.tryhackme || "",
-      hackthebox: input.hackthebox || "",
       otherComments: input.otherComments || "",
-      domain: input.domain || "",
       paymentStatus: "FREE",
+      attendedMembers: [],
+      teamSize: input.teamSize || 1,
+      teamMembers: input.teamMembers || [],
     };
 
     await createRegistration(newRegistration);
+    
+    // Send Brevo email asynchronously
+    sendRegistrationConfirmationEmail(newRegistration, event.title).catch(console.error);
 
     res.status(HttpStatus.CREATED).json({
       success: true,
@@ -114,19 +116,19 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       email,
       name: input.name || user.name || "Unknown",
       registeredAt: new Date().toISOString(),
-      projects: input.projects || "",
-      linkedin: input.linkedin || "",
-      tryhackme: input.tryhackme || "",
-      hackthebox: input.hackthebox || "",
       otherComments: input.otherComments || "",
-      domain: input.domain || "",
       paymentStatus: "PENDING",
+      attendedMembers: [],
+      teamSize: input.teamSize || 1,
+      teamMembers: input.teamMembers || [],
     };
     await createRegistration(pendingRegistration);
   }
 
+  const finalAmount = event.price * (input.teamSize || 1);
+
   const request = {
-    order_amount: event.price,
+    order_amount: finalAmount,
     order_currency: "INR",
     order_id: orderId,
     customer_details: {
@@ -191,6 +193,9 @@ export async function verifyPayment(req: Request, res: Response): Promise<void> 
       const transactionId = response.data.cf_order_id?.toString() || orderId;
       await updatePaymentStatus(registrationId, "CONFIRMED", transactionId);
       
+      // Send confirmation email
+      sendRegistrationConfirmationEmail(registration, "Featured Event").catch(console.error);
+      
       res.status(HttpStatus.OK).json({
         success: true,
         message: "Payment successful and registration confirmed.",
@@ -245,6 +250,12 @@ export async function cashfreeWebhook(req: Request, res: Response): Promise<void
       if (parts.length >= 3 && parts[0] === "ORDER") {
          const registrationId = parts.slice(1, -1).join("_");
          await updatePaymentStatus(registrationId, "CONFIRMED", transactionId.toString());
+         
+         const allRegs = await findAllRegistrations();
+         const reg = allRegs.find(r => r.registrationId === registrationId);
+         if (reg) {
+            sendRegistrationConfirmationEmail(reg, "Featured Event").catch(console.error);
+         }
       }
     }
     

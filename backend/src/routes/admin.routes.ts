@@ -18,7 +18,8 @@ import {
   getAdminAnnouncements,
   postAdminAnnouncement,
   patchAdminAnnouncementActive,
-  deleteAdminAnnouncement
+  deleteAdminAnnouncement,
+  postAdminResendEmail
 } from "../controllers/admin.controller.js";
 
 
@@ -38,6 +39,7 @@ router.delete("/events/:eventId", deleteAdminEvent);
 router.get("/registrations", getAdminRegistrations);
 router.put("/registrations/:registrationId/attendance", putAdminAttendance);
 router.put("/registrations/:registrationId/payment-status", putAdminPaymentStatus);
+router.post("/registrations/:registrationId/resend-email", postAdminResendEmail);
 
 // Member Management routes (role editing is super_admin only)
 router.get("/members", getAdminMembers);

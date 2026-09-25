@@ -10,28 +10,33 @@ export interface Event {
   price: number;
 }
 
+export interface TeamMember {
+  name: string;
+  email: string;
+  phone: string;
+  rollNumber: string;
+  branch: string;
+  section: string;
+}
+
 export interface Registration {
   registrationId: string;
   eventId: string;
   email: string;
   name: string;
   registeredAt: string;
-  attended: boolean;
-  motivation: string;
   phone: string;
   year: string;
   section: string;
   branch: string;
-  domain?: string;
   rollNumber: string;
-  projects?: string;
-  linkedin?: string;
-  tryhackme?: string;
-  hackthebox?: string;
   otherComments?: string;
+  attendedMembers: string[];
   paymentStatus?: string;
   transactionId?: string;
-  screenshotUrl?: string;
+  teamSize: number;
+  teamMembers?: TeamMember[];
+  emailStatus?: string;
 }
 
 export interface Member {
