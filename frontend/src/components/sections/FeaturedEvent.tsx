@@ -53,21 +53,10 @@ export default function FeaturedEvent() {
   const [successMessage, setSuccessMessage] = useState("");
   
   const [teamSize, setTeamSize] = useState(3);
-  const [teamMembers, setTeamMembers] = useState<{name:string, email:string, phone:string, rollNumber:string, branch:string, section:string}[]>([]);
-
-  useEffect(() => {
-    if (teamSize > 1) {
-      setTeamMembers((prev) => {
-        const newMembers = [...prev];
-        while (newMembers.length < teamSize - 1) {
-          newMembers.push({ name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" });
-        }
-        return newMembers.slice(0, teamSize - 1);
-      });
-    } else {
-      setTeamMembers([]);
-    }
-  }, [teamSize]);
+  const [teamMembers, setTeamMembers] = useState<{name:string, email:string, phone:string, rollNumber:string, branch:string, section:string}[]>([
+    { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
+    { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
+  ]);
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
   const isValidRoll = rollNumber.trim().length > 0;
@@ -295,7 +284,10 @@ export default function FeaturedEvent() {
 
   const resetForm = () => {
     setTeamSize(3);
-    setTeamMembers([]);
+    setTeamMembers([
+      { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
+      { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
+    ]);
     setPhone("");
     setSection("");
     setRollNumber("");
@@ -558,7 +550,21 @@ export default function FeaturedEvent() {
                       </label>
                       <select
                         value={teamSize}
-                        onChange={(e) => setTeamSize(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const size = parseInt(e.target.value);
+                          setTeamSize(size);
+                          if (size > 1) {
+                            setTeamMembers((prev) => {
+                              const newMembers = [...prev];
+                              while (newMembers.length < size - 1) {
+                                newMembers.push({ name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" });
+                              }
+                              return newMembers.slice(0, size - 1);
+                            });
+                          } else {
+                            setTeamMembers([]);
+                          }
+                        }}
                         className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
                       >
                         <option value={3}>Team of 3 - ₹{eventDetails.price * 3}</option>
