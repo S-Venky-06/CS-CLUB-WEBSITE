@@ -116,7 +116,15 @@ export default function RegistrationsManagement() {
   }, []);
 
   const uniqueBranches = Array.from(
-    new Set(registrations.map((r) => r.branch).filter((b): b is string => Boolean(b)))
+    new Set(
+      registrations.flatMap((r) => {
+        const branches = [r.branch];
+        if (r.teamMembers && r.teamMembers.length > 0) {
+          branches.push(...r.teamMembers.map((m) => m.branch));
+        }
+        return branches;
+      }).filter((b): b is string => Boolean(b))
+    )
   ).sort();
 
   const filteredRegistrations = registrations.filter((reg) => {
