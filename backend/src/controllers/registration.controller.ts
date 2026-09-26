@@ -23,6 +23,8 @@ export const postRegistration = asyncHandler(
       tryhackme,
       hackthebox,
       otherComments,
+      teamSize,
+      teamMembers,
     } = req.body;
     const { email, name: sessionName } = req.session!.user!; // Ensured by requireAuth middleware
     const displayName = customName || sessionName;
@@ -42,6 +44,8 @@ export const postRegistration = asyncHandler(
       tryhackme,
       hackthebox,
       otherComments,
+      teamSize,
+      teamMembers,
     );
 
     sendResponse(

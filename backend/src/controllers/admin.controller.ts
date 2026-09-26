@@ -65,7 +65,7 @@ export const postAdminEvent = asyncHandler(
       );
     }
 
-    const { eventId, title, description, date, capacity, deadline, status, price } = parsed.data;
+    const { eventId, title, description, date, capacity, deadline, status, price, location } = parsed.data;
 
     // 2. Check duplicate Event ID
     const existing = await findEventById(eventId);
@@ -86,6 +86,7 @@ export const postAdminEvent = asyncHandler(
       deadline,
       status,
       price,
+      location,
     });
 
     await logActivity(req.session.user!.email, "CREATE_EVENT", `Created event: ${title} (${eventId})`);
@@ -123,6 +124,10 @@ export const putAdminEvent = asyncHandler(
         HttpStatus.BAD_REQUEST,
         parsed.error.errors[0]?.message || "Invalid input parameters.",
       );
+    }
+
+    if (parsed.data.eventId !== undefined && parsed.data.eventId !== eventId) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "Event IDs cannot be changed.");
     }
 
     // 3. Save updates to Google Sheets
@@ -192,6 +197,13 @@ export const putAdminAttendance = asyncHandler(
 
     if (!registrationId || !Array.isArray(attendedMembers)) {
       throw new ApiError(HttpStatus.BAD_REQUEST, "registrationId and attendedMembers array are required.");
+    }
+
+    const registration = (await findAllRegistrations()).find(item => item.registrationId === registrationId);
+    if (!registration) throw new ApiError(HttpStatus.NOT_FOUND, "Registration not found.");
+    const memberRolls = new Set([registration.rollNumber, ...(registration.teamMembers || []).map(member => member.rollNumber)]);
+    if (attendedMembers.some(roll => !memberRolls.has(roll))) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "Attendance must only include registered team members.");
     }
 
     await updateAttendance(registrationId, attendedMembers);

@@ -24,13 +24,13 @@ async function checkRows() {
   console.log("Checking Registrations sheet rows...");
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: "Registrations!A1:R100",
+    range: "Registrations!A1:Q100",
   });
 
   const rows = response.data.values || [];
   console.log(`Total rows found: ${rows.length}`);
   rows.forEach((row, i) => {
-    console.log(`Row ${i + 1}: ID=${row[0]}, Email=${row[2]}, Name=${row[3]}, Attended(Q)=${row[16]}, MailStatus(R)=${row[17]}`);
+    console.log(`Row ${i + 1}: ID=${row[0]}, Email=${row[2]}, Name=${row[3]}, Attended(L)=${row[11]}, MailStatus(Q)=${row[16]}`);
   });
 }
 

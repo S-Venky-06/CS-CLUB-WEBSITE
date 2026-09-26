@@ -28,7 +28,7 @@ const spreadsheetId = env.GOOGLE_SPREADSHEET_ID;
 const requiredSheets = [
   {
     title: "Events",
-    headers: ["eventId", "title", "description", "date", "capacity", "deadline", "status", "location"],
+    headers: ["eventId", "title", "description", "date", "capacity", "deadline", "status", "location", "price"],
   },
   {
     title: "Members",
@@ -37,33 +37,18 @@ const requiredSheets = [
   {
     title: "Registrations",
     headers: [
-      "registrationId",
-      "eventId",
-      "email",
-      "name",
-      "registeredAt",
-      "motivation",
-      "phone",
-      "year",
-      "section",
-      "branch",
-      "rollNumber",
-      "projects",
-      "linkedin",
-      "tryhackme",
-      "hackthebox",
-      "otherComments",
-      "attended",
-      "domain",
+      "registrationId", "eventId", "email", "name", "registeredAt",
+      "phone", "year", "section", "branch", "rollNumber", "otherComments",
+      "attended", "paymentStatus", "transactionId", "teamSize", "teamMembers", "emailStatus",
     ],
   },
   {
     title: "Announcements",
-    headers: ["announcementId", "message", "active", "createdAt"],
+    headers: ["announcementId", "title", "message", "type", "active", "createdAt"],
   },
   {
-    title: "ActivityLogs",
-    headers: ["logId", "timestamp", "email", "action", "details", "ipAddress"],
+    title: "ActivityLog",
+    headers: ["timestamp", "email", "action", "details"],
   },
   {
     title: "Settings",
@@ -112,6 +97,7 @@ async function bootstrap() {
 
   // 3. Populate Header Rows (Row 1)
   for (const sheetDef of requiredSheets) {
+    if (existingTitles.has(sheetDef.title)) continue; // Never relabel existing data without a migration.
     console.log(`Writing headers for tab: ${sheetDef.title}...`);
     await sheets.spreadsheets.values.update({
       spreadsheetId,

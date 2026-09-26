@@ -2,6 +2,7 @@ import { BrevoClient } from "@getbrevo/brevo";
 import { env } from "../config/index.js";
 import { Registration } from "../types/index.js";
 import { updateEmailStatus } from "../repositories/index.js";
+import { escapeHtml } from "../utils/escapeHtml.js";
 
 // Initialize Brevo API
 const apiInstance = new BrevoClient({ apiKey: env.BREVO_API_KEY || "" });
@@ -49,31 +50,31 @@ export const sendRegistrationConfirmationEmail = async (registration: Registrati
               <h1>Registration Confirmed</h1>
             </div>
             <div class="content">
-              <div class="greeting">Hello ${registration.name},</div>
+              <div class="greeting">Hello ${escapeHtml(registration.name)},</div>
               <p style="color: #475569; line-height: 1.6; margin-bottom: 25px;">
-                Thank you for registering for <strong>${eventTitle}</strong>. We are thrilled to have you! Here are your registration details.
+                Thank you for registering for <strong>${escapeHtml(eventTitle)}</strong>. We are thrilled to have you! Here are your registration details.
               </p>
 
               <div class="info-box">
                 <div class="info-row">
                   <span class="info-label">Registration ID</span>
-                  <span class="info-value" style="font-family: monospace; color: #6366f1;">${registration.registrationId}</span>
+                  <span class="info-value" style="font-family: monospace; color: #6366f1;">${escapeHtml(registration.registrationId)}</span>
                   <div class="clear"></div>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Event</span>
-                  <span class="info-value">${eventTitle}</span>
+                  <span class="info-value">${escapeHtml(eventTitle)}</span>
                   <div class="clear"></div>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Payment Status</span>
-                  <span class="info-value"><span class="success-badge">${registration.paymentStatus || 'FREE'}</span></span>
+                  <span class="info-value"><span class="success-badge">${escapeHtml(registration.paymentStatus || 'FREE')}</span></span>
                   <div class="clear"></div>
                 </div>
                 ${registration.transactionId ? `
                 <div class="info-row">
                   <span class="info-label">Transaction ID</span>
-                  <span class="info-value" style="font-family: monospace; font-size: 12px;">${registration.transactionId}</span>
+                  <span class="info-value" style="font-family: monospace; font-size: 12px;">${escapeHtml(registration.transactionId)}</span>
                   <div class="clear"></div>
                 </div>
                 ` : ""}
@@ -89,10 +90,10 @@ export const sendRegistrationConfirmationEmail = async (registration: Registrati
                 <div class="team-title">Team Members</div>
                 ${registration.teamMembers.map((member, index) => `
                   <div class="member-card">
-                    <p class="member-name">${index + 1}. ${member.name}</p>
+                    <p class="member-name">${index + 1}. ${escapeHtml(member.name)}</p>
                     <p class="member-details">
-                      <strong>Roll No:</strong> ${member.rollNumber} &nbsp;|&nbsp; <strong>Branch:</strong> ${member.branch} (${member.section})<br/>
-                      <strong>Phone:</strong> ${member.phone} &nbsp;|&nbsp; <strong>Email:</strong> ${member.email}
+                      <strong>Roll No:</strong> ${escapeHtml(member.rollNumber)} &nbsp;|&nbsp; <strong>Branch:</strong> ${escapeHtml(member.branch)} (${escapeHtml(member.section)})<br/>
+                      <strong>Phone:</strong> ${escapeHtml(member.phone)} &nbsp;|&nbsp; <strong>Email:</strong> ${escapeHtml(member.email)}
                     </p>
                   </div>
                 `).join('')}

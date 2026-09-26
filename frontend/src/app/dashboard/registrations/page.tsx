@@ -1,5 +1,8 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+import { csvCell } from "@/lib/csv";
+
 import { useState, useEffect } from "react";
 import { 
   ClipboardList, 
@@ -87,8 +90,8 @@ export default function RegistrationsManagement() {
     setErrorMessage("");
     try {
       const [regRes, eventRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/registrations`, { credentials: "include" }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/events`, { credentials: "include" }),
+        apiFetch(`${API_URL}/api/v1/admin/registrations`, { credentials: "include" }),
+        apiFetch(`${API_URL}/api/v1/admin/events`, { credentials: "include" }),
       ]);
 
       if (regRes.ok && eventRes.ok) {
@@ -127,10 +130,20 @@ export default function RegistrationsManagement() {
     )
   ).sort();
 
-  const filteredRegistrations = registrations.filter((reg) => {
-    return reg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           reg.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           reg.registrationId.toLowerCase().includes(searchQuery.toLowerCase());
+  const query = searchQuery.trim().toLowerCase();
+  const matchesSearch = (person: { name: string; email: string; rollNumber?: string }, id: string) =>
+    [person.name, person.email, person.rollNumber || "", id].some(value => value.toLowerCase().includes(query));
+  const matchesPayment = (status?: string) => paymentFilter === "all" ||
+    (paymentFilter === "pending" && status === "PENDING") ||
+    (paymentFilter === "success" && ["SUCCESS", "CONFIRMED", "FREE"].includes(status || ""));
+  const filteredRegistrations = registrations.filter(reg => {
+    const members = [reg, ...(reg.teamMembers || [])];
+    const present = reg.attendedMembers.length > 0;
+    return (selectedEventId === "" || reg.eventId === selectedEventId) &&
+      members.some(person => matchesSearch(person, reg.registrationId)) &&
+      (selectedBranch === "" || members.some(person => person.branch === selectedBranch)) &&
+      (attendanceFilter === "all" || (attendanceFilter === "present" ? present : !present)) &&
+      matchesPayment(reg.paymentStatus);
   });
 
 
@@ -149,9 +162,9 @@ export default function RegistrationsManagement() {
     individualAttended: boolean;
   }
 
-  const flattenedRegistrations = typeof window !== 'undefined' ? (function() {
+  const flattenedRegistrations = (function() {
     const flat: FlattenedIndividual[] = [];
-    filteredRegistrations.forEach(reg => {
+    registrations.forEach(reg => {
       // Leader
       flat.push({
         registrationId: reg.registrationId,
@@ -197,9 +210,9 @@ export default function RegistrationsManagement() {
         (paymentFilter === "pending" && ind.paymentStatus === "PENDING") ||
         (paymentFilter === "success" && (ind.paymentStatus === "SUCCESS" || ind.paymentStatus === "CONFIRMED" || ind.paymentStatus === "FREE"));
 
-      return matchesEvent && matchesAttendance && matchesBranch && matchesPayment;
+      return matchesSearch(ind, ind.registrationId) && matchesEvent && matchesAttendance && matchesBranch && matchesPayment;
     });
-  })() : [];
+  })();
 
   // Calculate metrics based on the visible dataset
   const currentDataset = viewMode === "individuals" ? flattenedRegistrations : filteredRegistrations;
@@ -215,8 +228,8 @@ export default function RegistrationsManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/registrations/${registrationId}/attendance`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/registrations/${registrationId}/attendance`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -251,8 +264,8 @@ export default function RegistrationsManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/registrations/${registrationId}/payment-status`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/registrations/${registrationId}/payment-status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -294,8 +307,8 @@ export default function RegistrationsManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/registrations/${registrationId}/resend-email`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/registrations/${registrationId}/resend-email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -383,17 +396,14 @@ export default function RegistrationsManagement() {
         reg.projects || "",
         reg.motivation || "",
         reg.otherComments || "",
-        new Date(reg.registeredAt).toISOString(),
+        reg.registeredAt,
         reg.attendedMembers?.join(", ") || "",
         reg.paymentStatus || "N/A",
       ]);
     }
 
-    const csvContent = 
-      "data:text/csv;charset=utf-8," + 
-      [headers.join(","), ...rows.map((e) => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = [headers.map(csvCell).join(","), ...rows.map(row => row.map(csvCell).join(","))].join("\r\n");
+    const encodedUri = URL.createObjectURL(new Blob(["\uFEFF", csvContent], { type: "text/csv;charset=utf-8;" }));
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     const branchTag = selectedBranch ? selectedBranch.replace(/[^a-zA-Z0-9]/g, "_") : "All_Branches";
@@ -403,13 +413,14 @@ export default function RegistrationsManagement() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(encodedUri), 1000);
 
     setSuccessMessage("CSV exported successfully!");
     setTimeout(() => setSuccessMessage(""), 4000);
   };
 
   const handleExportPDF = () => {
-    if (filteredRegistrations.length === 0) return;
+    if (currentDataset.length === 0) return;
 
     const doc = new jsPDF();
     const currentEvent = events.find(e => e.eventId === selectedEventId);
@@ -513,7 +524,7 @@ export default function RegistrationsManagement() {
         <div className="flex flex-wrap gap-3 self-start sm:self-auto">
           <button
             onClick={handleExportCSV}
-            disabled={filteredRegistrations.length === 0}
+            disabled={currentDataset.length === 0}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-surface hover:bg-surface/80 border border-glass-border text-foreground font-semibold text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
@@ -521,7 +532,7 @@ export default function RegistrationsManagement() {
           </button>
           <button
             onClick={handleExportPDF}
-            disabled={filteredRegistrations.length === 0}
+            disabled={currentDataset.length === 0}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FileText className="w-4 h-4" />
@@ -683,7 +694,7 @@ export default function RegistrationsManagement() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <span className="text-sm font-medium">Fetching database registrations...</span>
           </div>
-        ) : filteredRegistrations.length === 0 ? (
+        ) : currentDataset.length === 0 ? (
           <div className="py-24 text-center text-muted">
             <ClipboardList className="w-12 h-12 mx-auto text-muted/30 mb-3" />
             <p className="text-sm font-medium">No registrations match active filter parameters.</p>

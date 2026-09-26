@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { X, ArrowUpRight } from "lucide-react";
@@ -35,7 +37,7 @@ export default function GalleryPreview() {
   const [allGalleryItems, setAllGalleryItems] = useState<any[]>(galleryItems);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/past`)
+    apiFetch(`${API_URL}/api/v1/events/past`)
       .then((res) => res.json())
       .then((json) => {
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

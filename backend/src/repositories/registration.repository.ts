@@ -1,5 +1,6 @@
 import { getSheetsClient } from "./googleSheets.client.js";
 import { env } from "../config/index.js";
+import { parseRegistrationRow } from "./registrationRow.js";
 import type { Registration } from "../types/index.js";
 
 /**
@@ -27,25 +28,7 @@ export async function findRegistration(
 
   if (!match) return null;
 
-  return {
-    registrationId: match[0],
-    eventId: match[1],
-    email: match[2],
-    name: match[3] || "",
-    registeredAt: match[4] || "",
-    phone: match[5] || "",
-    year: match[6] || "",
-    section: match[7] || "",
-    branch: match[8] || "",
-    rollNumber: match[9] || "",
-    otherComments: match[10] || "",
-    attendedMembers: (match[11] && match[11] !== "TRUE" && match[11] !== "FALSE") ? (() => { try { return JSON.parse(match[11]); } catch { return []; } })() : [],
-    paymentStatus: match[12] || "",
-    transactionId: match[13] || "",
-    teamSize: parseInt(match[14] || "1", 10),
-    teamMembers: match[15] ? JSON.parse(match[15]) : [],
-    emailStatus: match[16] || "",
-  };
+  return parseRegistrationRow(match);
 }
 
 /**
@@ -122,24 +105,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   return rows
     .filter((row: any[]) => row[2]?.toLowerCase().trim() === normalizedEmail)
-    .map((row: any[]) => ({
-      registrationId: row[0],
-      eventId: row[1],
-      email: row[2],
-      name: row[3] || "",
-      registeredAt: row[4] || "",
-      phone: row[5] || "",
-      year: row[6] || "",
-      section: row[7] || "",
-      branch: row[8] || "",
-      rollNumber: row[9] || "",
-      otherComments: row[10] || "",
-      attendedMembers: (row[11] && row[11] !== "TRUE" && row[11] !== "FALSE") ? (() => { try { return JSON.parse(row[11]); } catch { return []; } })() : [],
-      paymentStatus: row[12] || "",
-      transactionId: row[13] || "",
-      teamSize: parseInt(row[14] || "1", 10),
-      teamMembers: row[15] ? JSON.parse(row[15]) : [],
-    }));
+    .map(parseRegistrationRow);
 }
 
 /**
@@ -158,29 +124,12 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   return rows
     .filter((row: any[]) => row[0]) // Filter out empty rows
-    .map((row: any[]) => ({
-      registrationId: row[0],
-      eventId: row[1],
-      email: row[2],
-      name: row[3] || "",
-      registeredAt: row[4] || "",
-      phone: row[5] || "",
-      year: row[6] || "",
-      section: row[7] || "",
-      branch: row[8] || "",
-      rollNumber: row[9] || "",
-      otherComments: row[10] || "",
-      attendedMembers: (row[11] && row[11] !== "TRUE" && row[11] !== "FALSE") ? (() => { try { return JSON.parse(row[11]); } catch { return []; } })() : [],
-      paymentStatus: row[12] || "",
-      transactionId: row[13] || "",
-      teamSize: parseInt(row[14] || "1", 10),
-      teamMembers: row[15] ? JSON.parse(row[15]) : [],
-    }));
+    .map(parseRegistrationRow);
 }
 
 /**
  * Updates the attendance status cell for a specific registration.
- * Column Q is 'attended'.
+ * Column L is 'attended'.
  */
 export async function updateAttendance(
   registrationId: string,
@@ -206,7 +155,7 @@ export async function updateAttendance(
 
   const rowIndex = index + 2; // Range A2 starts at index 0, so target row is index + 2
 
-  // 2. Write TRUE/FALSE back to Column Q of that row
+  // 2. Write member roll numbers back to Column L of that row
   await sheets.spreadsheets.values.update({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
     range: `Registrations!L${rowIndex}`,
@@ -219,7 +168,7 @@ export async function updateAttendance(
 
 /**
  * Updates the payment status cell for a specific registration.
- * Column S is 'paymentStatus'.
+ * Column M is 'paymentStatus'.
  */
 export async function updatePaymentStatus(
   registrationId: string,

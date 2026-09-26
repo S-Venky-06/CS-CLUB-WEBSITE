@@ -43,11 +43,9 @@ app.use((req, _res, next) => {
     const token = authHeader.substring(7);
     const decodedUser = verifyToken(token);
     if (decodedUser) {
-      if (!req.session) {
-        req.session = { user: decodedUser } as any;
-      } else {
-        req.session.user = decodedUser;
-      }
+      req.session.user = decodedUser;
+    } else {
+      delete req.session.user;
     }
   }
   next();

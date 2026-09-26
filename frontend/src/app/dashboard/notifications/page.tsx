@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { 
   Bell, 
@@ -40,7 +42,7 @@ export default function NotificationsManagement() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/announcements`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/announcements`, {
         credentials: "include",
       });
       const json = await res.json();
@@ -69,7 +71,7 @@ export default function NotificationsManagement() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/announcements`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/announcements`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -101,8 +103,8 @@ export default function NotificationsManagement() {
   const handleToggleActive = async (id: string, currentActive: boolean) => {
     setErrorMessage("");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/announcements/${id}/active`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/announcements/${id}/active`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -129,8 +131,8 @@ export default function NotificationsManagement() {
   const handleDeleteAnnouncement = async (id: string) => {
     setErrorMessage("");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/announcements/${id}`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/announcements/${id}`,
         {
           method: "DELETE",
           credentials: "include",

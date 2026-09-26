@@ -8,6 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "init-db": "tsx src/scripts/bootstrapSheets.ts",
     "build": "tsc",
+    "test": "npm run build && node --test tests/regressions.cjs && tsx --test tests/frontend.test.ts",
     "start": "node dist/server.js",
     "lint": "eslint src/",
     "clean": "rimraf dist"

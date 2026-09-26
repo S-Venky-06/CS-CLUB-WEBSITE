@@ -57,7 +57,7 @@ export const eventRegistrationSchema = z.object({
     })
     .max(2000, "otherComments cannot exceed 2000 characters.")
     .optional(),
-  teamSize: z.number().optional().default(1),
+  teamSize: z.number().int().min(1).max(4).optional().default(1),
   teamMembers: z.array(
     z.object({
       name: z.string().min(1, "Member name is required."),
@@ -67,7 +67,16 @@ export const eventRegistrationSchema = z.object({
       branch: z.string().min(1, "Member branch is required."),
       section: z.string().min(1, "Member section is required.")
     })
-  ).optional().default([]),
+  ).max(3).optional().default([]),
+}).superRefine((input, ctx) => {
+  if (input.teamMembers.length !== input.teamSize - 1) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamSize"], message: "Team size must include the leader and match the member list." });
+  }
+  const rolls = [input.rollNumber, ...input.teamMembers.map(member => member.rollNumber)]
+    .map(roll => roll.trim().toUpperCase());
+  if (rolls.some(roll => !roll) || new Set(rolls).size !== rolls.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamMembers"], message: "Every participant must have a unique, nonempty roll number." });
+  }
 });
 
 export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;

@@ -14,7 +14,7 @@ export default function TermsAndConditionsPage() {
     <>
       <AnimatedBackground />
       <Navbar />
-      <main className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+      <main id="main-content" className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
         <PageTransition>
           <div className="max-w-4xl w-full mx-auto bg-black/60 backdrop-blur-xl border border-blue-500/20 rounded-2xl p-8 sm:p-12 shadow-[0_0_40px_-10px_rgba(59,130,246,0.2)]">
             <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">

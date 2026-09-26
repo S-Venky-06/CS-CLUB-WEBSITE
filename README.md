@@ -153,7 +153,7 @@ CS-CLUB/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js**: `v18.x` or higher
+- **Node.js**: `20.9` or higher
 - **npm** or **pnpm**
 - Google Cloud Service Account credentials (for Google Sheets backend)
 
@@ -176,7 +176,7 @@ npm install
 
 Create a `.env.local` file inside the `frontend` directory:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id_here
 ```
 
@@ -199,15 +199,17 @@ Configure your `.env` file inside the `backend` directory:
 ```env
 PORT=5000
 NODE_ENV=development
-CLIENT_ORIGIN=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
+GOOGLE_CLIENT_ID=your_google_client_id_here
 
 # Google Sheets Config
-GOOGLE_SHEET_ID=your_spreadsheet_id_here
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account_email@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GOOGLE_SPREADSHEET_ID=your_spreadsheet_id_here
+GOOGLE_SERVICE_ACCOUNT={"client_email":"service-account@project.iam.gserviceaccount.com","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"}
 
-# ─── Google Drive (Screenshot Storage) ───────────────────
-GOOGLE_DRIVE_FOLDER_ID=your_folder_id_here
+# Optional transactional email
+BREVO_API_KEY=your_brevo_api_key
+
 ```
 
 Start the backend server:

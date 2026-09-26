@@ -1,10 +1,44 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles, UploadCloud } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { load } from "@cashfreepayments/cashfree-js";
+
+const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
+  const btnRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mSpringX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
+  const mSpringY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
+
+  const handleBtnMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = btnRef.current!.getBoundingClientRect();
+    x.set((clientX - (left + width / 2)) * 0.3);
+    y.set((clientY - (top + height / 2)) * 0.3);
+  };
+
+  const handleBtnLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={btnRef}
+      onMouseMove={handleBtnMove}
+      onMouseLeave={handleBtnLeave}
+      style={{ x: mSpringX, y: mSpringY }}
+      className="w-full sm:w-auto inline-block z-10"
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 export default function FeaturedEvent() {
   const ref = useRef(null);
@@ -85,7 +119,7 @@ export default function FeaturedEvent() {
 
     const checkRegistration = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations/me`, {
+        const res = await apiFetch(`${API_URL}/api/v1/registrations/me`, {
           credentials: "include",
         });
         if (res.ok) {
@@ -109,7 +143,7 @@ export default function FeaturedEvent() {
   useEffect(() => {
     const fetchFeaturedEvent = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/featured`);
+        const res = await apiFetch(`${API_URL}/api/v1/events/featured`);
         const json = await res.json();
         if (res.ok && json.success && json.data) {
           const event = json.data;
@@ -198,7 +232,7 @@ export default function FeaturedEvent() {
         teamMembers,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order`, {
+      const res = await apiFetch(`${API_URL}/api/v1/payments/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +283,7 @@ export default function FeaturedEvent() {
 
         if (result.paymentDetails) {
           // Verify with backend
-          const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
+          const verifyRes = await apiFetch(`${API_URL}/api/v1/payments/verify`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -296,37 +330,7 @@ export default function FeaturedEvent() {
     setPendingRegistrationId("");
   };
 
-  const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
-    const btnRef = useRef<HTMLDivElement>(null);
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-    const mSpringX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
-    const mSpringY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
 
-    const handleBtnMove = (e: React.MouseEvent<HTMLDivElement>) => {
-      const { clientX, clientY } = e;
-      const { height, width, left, top } = btnRef.current!.getBoundingClientRect();
-      x.set((clientX - (left + width / 2)) * 0.3);
-      y.set((clientY - (top + height / 2)) * 0.3);
-    };
-
-    const handleBtnLeave = () => {
-      x.set(0);
-      y.set(0);
-    };
-
-    return (
-      <motion.div
-        ref={btnRef}
-        onMouseMove={handleBtnMove}
-        onMouseLeave={handleBtnLeave}
-        style={{ x: mSpringX, y: mSpringY }}
-        className="w-full sm:w-auto inline-block z-10"
-      >
-        {children}
-      </motion.div>
-    );
-  };
 
   return (
     <section id="events" className="relative py-28 sm:py-36 overflow-hidden" ref={ref}>

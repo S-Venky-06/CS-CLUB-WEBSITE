@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useEffect, useState } from "react";
+import { API_URL, apiFetch } from "@/lib/api";
 import { 
   Calendar, 
   Users, 
@@ -14,27 +16,56 @@ import { motion } from "framer-motion";
 
 export default function DashboardOverview() {
   const { user } = useAuth();
+  const [summary, setSummary] = useState<{ events: number; active: number; registrations: number; operators: number; healthy: boolean } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSummary() {
+      try {
+        const responses = await Promise.all(["events", "registrations", "members", "settings"].map(
+          path => apiFetch(`${API_URL}/api/v1/admin/${path}`),
+        ));
+        if (responses.some(response => !response.ok)) throw new Error("Summary unavailable");
+        const [events, registrations, members, settings] = await Promise.all(responses.map(response => response.json()));
+        if ([events, registrations, members, settings].some(result => !result.success)) throw new Error("Summary unavailable");
+        const operators = new Set<string>([
+          ...members.data.filter((member: { role: string }) => ["admin", "super_admin"].includes(member.role)).map((member: { email: string }) => member.email.toLowerCase()),
+          ...settings.data.system.adminEmails, ...settings.data.system.superAdminEmails,
+        ]);
+        if (!cancelled) setSummary({ events: events.data.length,
+          active: events.data.filter((event: { status: string }) => event.status === "active").length,
+          registrations: registrations.data.length, operators: operators.size,
+          healthy: settings.data.system.connectionStatus === "healthy" });
+      } catch {
+        if (!cancelled) setLoadError(true);
+      }
+    }
+    void loadSummary();
+    return () => { cancelled = true; };
+  }, []);
+  const placeholder = loadError ? "Unavailable" : "Loading…";
 
   const metrics = [
     {
       title: "Total Events",
-      value: "1",
-      detail: "1 active, 0 archived",
+      value: summary ? String(summary.events) : placeholder,
+      detail: summary ? `${summary.active} active, ${summary.events - summary.active} inactive` : "Event records",
       icon: Calendar,
       color: "text-blue-400",
       bgColor: "bg-blue-500/10 border-blue-500/20",
     },
     {
       title: "Event Registrations",
-      value: "1",
-      detail: "Registered for evt-01",
+      value: summary ? String(summary.registrations) : placeholder,
+      detail: "Across all events",
       icon: ClipboardList,
       color: "text-emerald-400",
       bgColor: "bg-emerald-500/10 border-emerald-500/20",
     },
     {
       title: "Active Operators",
-      value: "3",
+      value: summary ? String(summary.operators) : placeholder,
       detail: "Super Admins & Admins",
       icon: Shield,
       color: "text-purple-400",
@@ -42,8 +73,8 @@ export default function DashboardOverview() {
     },
     {
       title: "Database Node",
-      value: "Stable",
-      detail: "Google Sheets API Connected",
+      value: summary ? (summary.healthy ? "Connected" : "Unreachable") : placeholder,
+      detail: "Google Sheets API",
       icon: Cpu,
       color: "text-amber-400",
       bgColor: "bg-amber-500/10 border-amber-500/20",
@@ -65,7 +96,7 @@ export default function DashboardOverview() {
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/50 border border-glass-border text-xs text-muted font-medium self-start sm:self-auto">
           <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-          Live Server Connection Active
+          {summary ? (summary.healthy ? "Data loaded from server" : "Database unavailable") : placeholder}
         </div>
       </div>
 

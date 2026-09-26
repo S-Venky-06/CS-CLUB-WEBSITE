@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { 
   Settings, 
@@ -56,7 +58,7 @@ export default function SettingsPortal() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/settings`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/settings`, {
         credentials: "include",
       });
       const json = await res.json();
@@ -84,7 +86,7 @@ export default function SettingsPortal() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/settings`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { 
   Users, 
@@ -62,7 +64,7 @@ export default function MembersManagement() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/members`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -112,8 +114,8 @@ export default function MembersManagement() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members/${targetMember.email}/role`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/members/${encodeURIComponent(targetMember.email)}/role`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -150,8 +152,8 @@ export default function MembersManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members/${email}/display`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/members/${encodeURIComponent(email)}/display`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -184,8 +186,8 @@ export default function MembersManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members/${email}/display`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/members/${encodeURIComponent(email)}/display`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -238,7 +240,7 @@ export default function MembersManagement() {
     };
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -268,8 +270,8 @@ export default function MembersManagement() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/members/${email}/display`,
+      const res = await apiFetch(
+        `${API_URL}/api/v1/admin/members/${encodeURIComponent(email)}/display`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

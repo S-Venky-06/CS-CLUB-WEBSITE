@@ -2,6 +2,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+if (process.env.NODE_ENV === "production" &&
+    (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32 ||
+     process.env.SESSION_SECRET === "default-session-secret-change-me-in-production-32-chars-long" ||
+     process.env.SESSION_SECRET === "your-secure-session-secret-at-least-32-chars-long")) {
+  throw new Error("Set a unique SESSION_SECRET of at least 32 characters in production.");
+}
+
 export const env = {
   /** Server port — defaults to 5000 */
   PORT: parseInt(process.env.PORT || "5000", 10),

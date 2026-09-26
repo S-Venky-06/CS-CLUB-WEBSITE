@@ -7,6 +7,8 @@ import { getEventDetails } from "./event.service.js";
 import { ApiError } from "../utils/index.js";
 import { HttpStatus } from "../constants/index.js";
 import type { Registration } from "../types/index.js";
+import type { TeamMember } from "../types/event.js";
+import { findSettings } from "../repositories/settings.repository.js";
 
 /**
  * Registers a user for a specific event after performing business rule validations.
@@ -26,9 +28,17 @@ export async function registerForEvent(
   tryhackme?: string,
   hackthebox?: string,
   otherComments?: string,
+  teamSize = 1,
+  teamMembers: TeamMember[] = [],
 ): Promise<Omit<Registration, "attendedMembers">> {
   // 1. Check if event exists (throws 404 if not)
   const event = await getEventDetails(eventId);
+  if (!(await findSettings()).registrationOpen) {
+    throw new ApiError(HttpStatus.BAD_REQUEST, "Registrations are currently closed.");
+  }
+  if (event.price !== 0) {
+    throw new ApiError(HttpStatus.BAD_REQUEST, "Use the payment checkout to register for a paid event.");
+  }
 
   // 2. Validate event status is active
   if (event.status !== "active") {
@@ -41,7 +51,7 @@ export async function registerForEvent(
   // 3. Validate deadline
   const now = new Date();
   const deadlineDate = new Date(event.deadline);
-  if (now > deadlineDate) {
+  if (!Number.isFinite(deadlineDate.getTime()) || now >= deadlineDate) {
     throw new ApiError(
       HttpStatus.BAD_REQUEST,
       "Registration deadline for this event has passed.",
@@ -81,7 +91,7 @@ export async function registerForEvent(
   const newRegistration = {
     registrationId,
     eventId,
-    email,
+    email: normalizedEmail,
     name,
     registeredAt,
     motivation,
@@ -95,8 +105,9 @@ export async function registerForEvent(
     tryhackme: tryhackme || "",
     hackthebox: hackthebox || "",
     otherComments: otherComments || "",
-    teamSize: 1,
-    teamMembers: [],
+    teamSize,
+    teamMembers,
+    paymentStatus: "FREE",
   };
 
   // 7. Write to storage (Google Sheets)

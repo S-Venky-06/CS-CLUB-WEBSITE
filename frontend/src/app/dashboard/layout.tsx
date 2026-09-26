@@ -206,7 +206,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content Portal */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#0B0B0F] relative">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#0B0B0F] relative">
           {children}
         </main>
       </div>
