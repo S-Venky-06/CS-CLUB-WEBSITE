@@ -369,9 +369,13 @@ export default function FeaturedEvent() {
           >
             
             {/* Left/Top side: Visual Banner */}
-            <div className="relative md:w-2/5 h-56 md:h-auto overflow-hidden perspective-[1000px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#54276A]/80 via-[#2E1740] to-[#F47820]/30 z-10 mix-blend-multiply pointer-events-none" />
-              <div className="absolute inset-0 bg-grid opacity-50 z-10" />
+            <div className="relative md:w-2/5 h-80 md:h-auto overflow-hidden">
+              <img 
+                src="/event-poster.png" 
+                alt="Event Poster" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               
               <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
                 <span className="px-3 py-1.5 rounded-full bg-accent text-white text-[10px] font-bold tracking-widest uppercase shadow-[0_0_15px_rgba(244,120,32,0.4)] flex items-center gap-1.5 animate-pulse-soft">
@@ -379,34 +383,6 @@ export default function FeaturedEvent() {
                   Live Event
                 </span>
               </div>
-              
-              <motion.svg
-                style={{ x: layer1X, y: layer1Y }}
-                className="absolute right-0 bottom-0 w-40 h-40 opacity-30 z-20 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
-                viewBox="0 0 120 120"
-                fill="none"
-              >
-                <polygon
-                  points="60,10 110,40 110,90 60,120 10,90 10,40"
-                  stroke="rgba(0, 240, 255, 0.5)"
-                  strokeWidth="0.5"
-                />
-                <polygon
-                  points="60,30 90,50 90,80 60,100 30,80 30,50"
-                  stroke="rgba(255, 85, 0, 0.5)"
-                  strokeWidth="1"
-                />
-              </motion.svg>
-
-              <motion.div 
-                style={{ x: layer2X, y: layer2Y }}
-                className="absolute inset-0 flex flex-col items-center justify-center z-20 p-6 text-center pointer-events-none"
-              >
-                <Sparkles className="w-8 h-8 text-cyan mb-3 opacity-80" />
-                <p className="font-heading text-2xl sm:text-3xl font-bold text-white text-glow leading-tight">
-                  Junior<br/>Registrations
-                </p>
-              </motion.div>
             </div>
 
             {/* Right/Bottom side: Details & Action */}
