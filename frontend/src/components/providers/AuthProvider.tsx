@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -20,45 +22,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "407408718192.apps.googleusercontent.com";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Setup global fetch interceptor to automatically attach Authorization header
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const originalFetch = window.fetch;
-    window.fetch = async function (input, init) {
-      const urlStr =
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-          ? input.toString()
-          : (input as any).url || "";
-
-      if (urlStr.startsWith(API_URL)) {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const newInit = { ...init };
-          const headers = new Headers(newInit.headers || {});
-          if (!headers.has("Authorization")) {
-            headers.set("Authorization", `Bearer ${token}`);
-          }
-          newInit.headers = headers;
-          return originalFetch(input, newInit);
-        }
-      }
-      return originalFetch(input, init);
-    };
-
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, []);
 
   // Check if session token is already active on mount
   useEffect(() => {
@@ -72,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const res = await fetch(`${API_URL}/api/v1/auth/me`, {
+        const res = await apiFetch(`${API_URL}/api/v1/auth/me`, {
           method: "GET",
           headers,
           credentials: "include", // Required to send cookies cross-origin
@@ -101,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (idToken: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/auth/google`, {
+      const res = await apiFetch(`${API_URL}/api/v1/auth/google`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      await fetch(`${API_URL}/api/v1/auth/logout`, {
+      await apiFetch(`${API_URL}/api/v1/auth/logout`, {
         method: "POST",
         headers,
         credentials: "include",

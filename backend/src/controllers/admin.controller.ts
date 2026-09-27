@@ -14,6 +14,7 @@ import {
 import { eventSchema } from "../validators/event.schema.js";
 import { sendResponse, asyncHandler, ApiError } from "../utils/index.js";
 import { HttpStatus } from "../constants/index.js";
+import { sendRegistrationConfirmationEmail } from "../services/email.service.js";
 import { getSheetsClient } from "../repositories/googleSheets.client.js";
 import { env } from "../config/index.js";
 import {
@@ -64,7 +65,7 @@ export const postAdminEvent = asyncHandler(
       );
     }
 
-    const { eventId, title, description, date, capacity, deadline, status, price } = parsed.data;
+    const { eventId, title, description, date, capacity, deadline, status, price, location } = parsed.data;
 
     // 2. Check duplicate Event ID
     const existing = await findEventById(eventId);
@@ -85,6 +86,7 @@ export const postAdminEvent = asyncHandler(
       deadline,
       status,
       price,
+      location,
     });
 
     await logActivity(req.session.user!.email, "CREATE_EVENT", `Created event: ${title} (${eventId})`);
@@ -122,6 +124,10 @@ export const putAdminEvent = asyncHandler(
         HttpStatus.BAD_REQUEST,
         parsed.error.errors[0]?.message || "Invalid input parameters.",
       );
+    }
+
+    if (parsed.data.eventId !== undefined && parsed.data.eventId !== eventId) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "Event IDs cannot be changed.");
     }
 
     // 3. Save updates to Google Sheets
@@ -187,19 +193,26 @@ export const getAdminRegistrations = asyncHandler(
 export const putAdminAttendance = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { registrationId } = req.params as { registrationId: string };
-    const { attended } = req.body;
+    const { attendedMembers } = req.body;
 
-    if (!registrationId || attended === undefined) {
-      throw new ApiError(HttpStatus.BAD_REQUEST, "registrationId and attended status are required.");
+    if (!registrationId || !Array.isArray(attendedMembers)) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "registrationId and attendedMembers array are required.");
     }
 
-    await updateAttendance(registrationId, !!attended);
+    const registration = (await findAllRegistrations()).find(item => item.registrationId === registrationId);
+    if (!registration) throw new ApiError(HttpStatus.NOT_FOUND, "Registration not found.");
+    const memberRolls = new Set([registration.rollNumber, ...(registration.teamMembers || []).map(member => member.rollNumber)]);
+    if (attendedMembers.some(roll => !memberRolls.has(roll))) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "Attendance must only include registered team members.");
+    }
 
-    await logActivity(req.session.user!.email, "TOGGLE_ATTENDANCE", `Toggled attendance status to ${attended ? "PRESENT" : "ABSENT"} for registration ${registrationId}`);
+    await updateAttendance(registrationId, attendedMembers);
+
+    await logActivity(req.session.user!.email, "UPDATE_ATTENDANCE", `Updated attendance members (${attendedMembers.length} present) for registration ${registrationId}`);
 
     sendResponse(res, HttpStatus.OK, "Attendance updated successfully.", {
       registrationId,
-      attended: !!attended,
+      attendedMembers,
     });
   },
 );
@@ -226,6 +239,39 @@ export const putAdminPaymentStatus = asyncHandler(
       status,
     });
   },
+);
+
+/**
+ * POST /api/v1/admin/registrations/:registrationId/resend-email
+ * Resends the registration confirmation email.
+ */
+export const postAdminResendEmail = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { registrationId } = req.params as { registrationId: string };
+
+    if (!registrationId) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, "registrationId is required.");
+    }
+
+    const allRegs = await findAllRegistrations();
+    const registration = allRegs.find(r => r.registrationId === registrationId);
+    
+    if (!registration) {
+      throw new ApiError(HttpStatus.NOT_FOUND, "Registration not found.");
+    }
+
+    const event = await findEventById(registration.eventId);
+    const eventTitle = event ? event.title : "Featured Event";
+
+    // Re-trigger the email service asynchronously
+    sendRegistrationConfirmationEmail(registration, eventTitle).catch(console.error);
+
+    await logActivity(req.session.user!.email, "RESEND_EMAIL", `Triggered confirmation email resend for registration ${registrationId}`);
+
+    sendResponse(res, HttpStatus.OK, "Email resend triggered successfully.", {
+      registrationId,
+    });
+  }
 );
 
 /**

@@ -6,7 +6,7 @@ This document provides step-by-step instructions for deploying both the frontend
 
 ## Prerequisites
 
-- **Node.js:** v18.x or higher
+- **Node.js:** 20.9 or higher
 - **npm** (or pnpm)
 - **Vercel Account:** [vercel.com](https://vercel.com) (free tier is sufficient)
 - **Google Cloud Project** with:
@@ -130,7 +130,7 @@ Visit your frontend URL. You should see the full Cyberpunk-themed homepage with:
 After setting up custom domains, update the **Authorized JavaScript Origins** in your Google Cloud OAuth Client to include the new frontend domain.
 
 ### 4.4 Update CORS
-Update the backend's `FRONTEND_URL` environment variable to include the new frontend domain.
+Update the backend's `FRONTEND_URL` environment variable to include the new frontend domain. List every allowed production and preview origin explicitly, separated by commas; similar Vercel project names are not automatically trusted.
 
 ---
 

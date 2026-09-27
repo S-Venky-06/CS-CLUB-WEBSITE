@@ -7,4 +7,5 @@ export {
   findRegistrationsByUser,
   findAllRegistrations,
   updatePaymentStatus,
+  updateEmailStatus,
 } from "./registration.repository.js";

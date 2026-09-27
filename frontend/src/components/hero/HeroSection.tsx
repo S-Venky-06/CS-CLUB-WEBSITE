@@ -40,7 +40,7 @@ function AnimatedCounter({ value, label, href, delay }: { value: number; label: 
   const isInView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || value <= 0) return;
     let start = 0;
     const end = value;
     const duration = 2000;
@@ -59,7 +59,7 @@ function AnimatedCounter({ value, label, href, delay }: { value: number; label: 
     };
     
     // Initial delay before counting
-    setTimeout(runTimer, delay * 1000);
+    timer = setTimeout(runTimer, delay * 1000);
     
     return () => clearTimeout(timer);
   }, [value, isInView, delay]);

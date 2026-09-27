@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Shield, Cpu, CheckCircle, Wifi, AlertTriangle } from "lucide-react";
@@ -12,7 +14,6 @@ interface BackendWakeupContextType {
 
 const BackendWakeupContext = createContext<BackendWakeupContextType>({ isAwake: false });
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 interface LogEntry {
   text: string;
@@ -29,7 +30,6 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
   const [showSkip, setShowSkip] = useState(false);
   const [dotCount, setDotCount] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [pingFailedCount, setPingFailedCount] = useState(0);
 
   const formatTime = () => {
     const d = new Date();
@@ -58,13 +58,17 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
   // Main wakeup loop on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isAwake) {
+      setShowOverlay(false);
+      return;
+    }
 
     // Skip visual loader if entering on a subpage directly
     if (pathname !== "/") {
       setIsAwake(true);
       setShowOverlay(false);
       // Silent background wake-up ping
-      fetch(`${API_URL}/api/v1/health`).catch(() => {});
+      apiFetch(`${API_URL}/api/v1/health`).catch(() => {});
       return;
     }
 
@@ -79,19 +83,24 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
     let isSubscribed = true;
     let timeoutId: NodeJS.Timeout;
     let skipTimerId: NodeJS.Timeout;
+    let requestController: AbortController | undefined;
+    let failures = 0;
 
     const startWakeupProcess = async () => {
       setProgress(10);
       addLog("Initializing secure handshake protocols...", "info");
       await new Promise((r) => setTimeout(r, 300));
+      if (!isSubscribed) return;
 
       setProgress(30);
       addLog("Verifying integrity signatures... [OK]", "success");
       await new Promise((r) => setTimeout(r, 350));
+      if (!isSubscribed) return;
 
       setProgress(50);
       addLog("Initializing local sandbox modules... [OK]", "success");
       await new Promise((r) => setTimeout(r, 250));
+      if (!isSubscribed) return;
 
       setProgress(75);
       addLog("Establishing secure uplink connection...", "info");
@@ -106,22 +115,25 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
         if (!isSubscribed) return;
 
         const controller = new AbortController();
+        requestController = controller;
         const timeout = setTimeout(() => controller.abort(), 6000);
 
         try {
-          const res = await fetch(`${API_URL}/api/v1/health`, {
+          const res = await apiFetch(`${API_URL}/api/v1/health`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             signal: controller.signal,
           });
 
           clearTimeout(timeout);
+          if (!isSubscribed) return;
 
           if (res.ok) {
             setProgress(100);
             setIsConnecting(false);
             addLog("Secure handshake verified. Connection established.", "success");
             await new Promise((r) => setTimeout(r, 500));
+            if (!isSubscribed) return;
             addLog("Node active. Decrypting main dashboard...", "success");
             await new Promise((r) => setTimeout(r, 800));
 
@@ -144,15 +156,12 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
 
       const handleRetry = () => {
         if (!isSubscribed) return;
-        setPingFailedCount((prev) => {
-          const next = prev + 1;
-          if (next === 4) {
-            addLog("Core node is currently inactive. Launching remote boot trigger...", "warn");
-          } else if (next > 4 && next % 6 === 0) {
-            addLog("Waking up central node... This may take up to 45 seconds to initialize.", "warn");
-          }
-          return next;
-        });
+        const next = ++failures;
+        if (next === 4) {
+          addLog("Core node is currently inactive. Launching remote boot trigger...", "warn");
+        } else if (next > 4 && next % 6 === 0) {
+          addLog("Waking up central node... This may take up to 45 seconds to initialize.", "warn");
+        }
 
         timeoutId = setTimeout(checkHealth, 2000);
       };
@@ -166,8 +175,9 @@ export function BackendWakeupProvider({ children }: { children: ReactNode }) {
       isSubscribed = false;
       clearTimeout(timeoutId);
       clearTimeout(skipTimerId);
+      requestController?.abort();
     };
-  }, [pathname]);
+  }, [pathname, isAwake]);
 
   return (
     <BackendWakeupContext.Provider value={{ isAwake }}>

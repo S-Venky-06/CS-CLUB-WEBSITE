@@ -1,6 +1,8 @@
 import type { CorsOptions } from "cors";
 import type { Options as RateLimitOptions } from "express-rate-limit";
 import { env, isProduction } from "./environment.js";
+import { ApiError } from "../utils/ApiError.js";
+import { HttpStatus } from "../constants/index.js";
 
 /** Parse allowed origins from FRONTEND_URL */
 const getAllowedOrigins = (): string[] => {
@@ -27,13 +29,12 @@ export const corsOptions: CorsOptions = {
 
     const isMatch =
       allowed.includes(cleanOrigin) ||
-      (!isProduction && cleanOrigin.startsWith("http://localhost:")) ||
-      (env.FRONTEND_URL.includes("vercel.app") && cleanOrigin.endsWith(".vercel.app"));
+      (!isProduction && /^http:\/\/localhost:\d+$/.test(cleanOrigin));
 
     if (isMatch) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked for origin: ${origin}`));
+      callback(new ApiError(HttpStatus.FORBIDDEN, "Origin is not allowed."));
     }
   },
   credentials: true,

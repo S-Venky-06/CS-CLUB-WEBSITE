@@ -17,27 +17,6 @@ export const eventRegistrationSchema = z.object({
     .min(1, "Name cannot be empty.")
     .max(100, "Name cannot exceed 100 characters.")
     .optional(),
-  motivation: z
-    .string({
-      required_error: "motivation is required.",
-      invalid_type_error: "motivation must be a string.",
-    })
-    .refine(
-      (val) => {
-        const matches = val.match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu);
-        const count = matches ? matches.length : 0;
-        return count >= 10;
-      },
-      { message: "Motivation must be at least 10 words." }
-    )
-    .refine(
-      (val) => {
-        const matches = val.match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu);
-        const count = matches ? matches.length : 0;
-        return count <= 2000;
-      },
-      { message: "Motivation cannot exceed 2000 words." }
-    ),
   phone: z
     .string({
       required_error: "phone is required.",
@@ -65,12 +44,6 @@ export const eventRegistrationSchema = z.object({
     })
     .min(1, "branch cannot be empty.")
     .max(20, "branch cannot exceed 20 characters."),
-  domain: z
-    .string({
-      invalid_type_error: "domain must be a string.",
-    })
-    .max(50, "domain cannot exceed 50 characters.")
-    .optional(),
   rollNumber: z
     .string({
       required_error: "rollNumber is required.",
@@ -78,36 +51,32 @@ export const eventRegistrationSchema = z.object({
     })
     .min(1, "rollNumber cannot be empty.")
     .max(20, "rollNumber cannot exceed 20 characters."),
-  projects: z
-    .string({
-      invalid_type_error: "projects must be a string.",
-    })
-    .max(2000, "projects cannot exceed 2000 characters.")
-    .optional(),
-  linkedin: z
-    .string({
-      invalid_type_error: "linkedin must be a string.",
-    })
-    .max(200, "linkedin link cannot exceed 200 characters.")
-    .optional(),
-  tryhackme: z
-    .string({
-      invalid_type_error: "tryhackme must be a string.",
-    })
-    .max(200, "tryhackme link cannot exceed 200 characters.")
-    .optional(),
-  hackthebox: z
-    .string({
-      invalid_type_error: "hackthebox must be a string.",
-    })
-    .max(200, "hackthebox link cannot exceed 200 characters.")
-    .optional(),
   otherComments: z
     .string({
       invalid_type_error: "otherComments must be a string.",
     })
     .max(2000, "otherComments cannot exceed 2000 characters.")
     .optional(),
+  teamSize: z.number().int().min(1).max(4).optional().default(1),
+  teamMembers: z.array(
+    z.object({
+      name: z.string().min(1, "Member name is required."),
+      email: z.string().email("Invalid member email."),
+      phone: z.string().regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits."),
+      rollNumber: z.string().min(1, "Member roll number is required."),
+      branch: z.string().min(1, "Member branch is required."),
+      section: z.string().min(1, "Member section is required.")
+    })
+  ).max(3).optional().default([]),
+}).superRefine((input, ctx) => {
+  if (input.teamMembers.length !== input.teamSize - 1) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamSize"], message: "Team size must include the leader and match the member list." });
+  }
+  const rolls = [input.rollNumber, ...input.teamMembers.map(member => member.rollNumber)]
+    .map(roll => roll.trim().toUpperCase());
+  if (rolls.some(roll => !roll) || new Set(rolls).size !== rolls.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamMembers"], message: "Every participant must have a unique, nonempty roll number." });
+  }
 });
 
 export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;

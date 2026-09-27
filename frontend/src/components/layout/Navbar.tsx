@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
@@ -55,7 +57,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchActiveAnnouncements = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/announcements`);
+        const res = await apiFetch(`${API_URL}/api/v1/announcements`);
         const json = await res.json();
         if (res.ok && json.success) {
           const activeItems = json.data;
@@ -104,7 +106,7 @@ export default function Navbar() {
 
   const getHref = (href: string) => {
     if (href.startsWith("/")) return href;
-    if (pathname === "/events" || pathname === "/members" || pathname.startsWith("/dashboard")) {
+    if (pathname !== "/") {
       return `/${href}`;
     }
     return href;

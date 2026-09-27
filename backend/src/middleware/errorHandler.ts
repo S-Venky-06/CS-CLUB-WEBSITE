@@ -9,6 +9,13 @@ import { isProduction } from "../config/index.js";
  * then returns a consistent JSON envelope.
  */
 export const errorHandler: ErrorRequestHandler = (err, _req: Request, res: Response, _next) => {
+  if (res.headersSent) return _next(err);
+  if (err?.type === "entity.parse.failed" || err?.type === "entity.too.large") {
+    res.status(err.type === "entity.too.large" ? 413 : 400).json({
+      success: false, message: err.type === "entity.too.large" ? "Request body is too large." : "Invalid JSON body.", data: null,
+    });
+    return;
+  }
   // Operational errors thrown via ApiError
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({

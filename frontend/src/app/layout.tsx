@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     "student organization",
   ],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/club-logo.png",
   },
   robots: {
     index: true,

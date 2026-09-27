@@ -1,10 +1,44 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, ArrowRight, Check, AlertCircle, Loader2, X, Sparkles, UploadCloud } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { load } from "@cashfreepayments/cashfree-js";
+
+const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
+  const btnRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mSpringX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
+  const mSpringY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
+
+  const handleBtnMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = btnRef.current!.getBoundingClientRect();
+    x.set((clientX - (left + width / 2)) * 0.3);
+    y.set((clientY - (top + height / 2)) * 0.3);
+  };
+
+  const handleBtnLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={btnRef}
+      onMouseMove={handleBtnMove}
+      onMouseLeave={handleBtnLeave}
+      style={{ x: mSpringX, y: mSpringY }}
+      className="w-full sm:w-auto inline-block z-10"
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 export default function FeaturedEvent() {
   const ref = useRef(null);
@@ -43,20 +77,20 @@ export default function FeaturedEvent() {
   
   // Form fields
   const [userName, setUserName] = useState("");
-  const [motivationText, setMotivationText] = useState("");
   const [phone, setPhone] = useState("");
   const [year, setYear] = useState("2nd Year");
   const [section, setSection] = useState("");
   const [branch, setBranch] = useState("CSE");
-  const [domain, setDomain] = useState("Logistics");
   const [rollNumber, setRollNumber] = useState("");
-  const [projects, setProjects] = useState("");
-  const [linkedin, setLinkedin] = useState("");
-  const [tryhackme, setTryhackme] = useState("");
-  const [hackthebox, setHackthebox] = useState("");
   const [otherComments, setOtherComments] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  
+  const [teamSize, setTeamSize] = useState(3);
+  const [teamMembers, setTeamMembers] = useState<{name:string, email:string, phone:string, rollNumber:string, branch:string, section:string}[]>([
+    { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
+    { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
+  ]);
 
   const isValidPhone = /^[0-9]{10}$/.test(phone);
   const isValidRoll = rollNumber.trim().length > 0;
@@ -73,12 +107,6 @@ export default function FeaturedEvent() {
     price: 0,
   });
 
-  const getWordCount = (text: string) => {
-    const normalized = text.replace(/[\s\r\n\t\u00a0\u2000-\u200b\u2028\u2029]+/g, " ");
-    return normalized.trim().split(" ").filter(Boolean).length;
-  };
-  const wordCount = getWordCount(motivationText);
-  const isValidMotivation = wordCount >= 10 && wordCount <= 2000;
   const isValidName = userName.trim().length > 0;
 
   useEffect(() => {
@@ -91,7 +119,7 @@ export default function FeaturedEvent() {
 
     const checkRegistration = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/registrations/me`, {
+        const res = await apiFetch(`${API_URL}/api/v1/registrations/me`, {
           credentials: "include",
         });
         if (res.ok) {
@@ -115,7 +143,7 @@ export default function FeaturedEvent() {
   useEffect(() => {
     const fetchFeaturedEvent = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/featured`);
+        const res = await apiFetch(`${API_URL}/api/v1/events/featured`);
         const json = await res.json();
         if (res.ok && json.success && json.data) {
           const event = json.data;
@@ -194,21 +222,17 @@ export default function FeaturedEvent() {
       const formPayload = {
         eventId: eventDetails.eventId,
         name: userName,
-        motivation: motivationText,
         phone,
         year,
         section,
         branch,
-        domain,
         rollNumber,
-        projects,
-        linkedin,
-        tryhackme,
-        hackthebox,
         otherComments,
+        teamSize,
+        teamMembers,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order`, {
+      const res = await apiFetch(`${API_URL}/api/v1/payments/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +283,7 @@ export default function FeaturedEvent() {
 
         if (result.paymentDetails) {
           // Verify with backend
-          const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`, {
+          const verifyRes = await apiFetch(`${API_URL}/api/v1/payments/verify`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -293,51 +317,20 @@ export default function FeaturedEvent() {
   };
 
   const resetForm = () => {
-    setMotivationText("");
+    setTeamSize(3);
+    setTeamMembers([
+      { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
+      { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
+    ]);
     setPhone("");
     setSection("");
-    setDomain("Logistics");
     setRollNumber("");
-    setProjects("");
-    setLinkedin("");
-    setTryhackme("");
-    setHackthebox("");
     setOtherComments("");
     setModalStep("idle");
     setPendingRegistrationId("");
   };
 
-  const MagneticButtonWrapper = ({ children }: { children: React.ReactNode }) => {
-    const btnRef = useRef<HTMLDivElement>(null);
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-    const mSpringX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
-    const mSpringY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
 
-    const handleBtnMove = (e: React.MouseEvent<HTMLDivElement>) => {
-      const { clientX, clientY } = e;
-      const { height, width, left, top } = btnRef.current!.getBoundingClientRect();
-      x.set((clientX - (left + width / 2)) * 0.3);
-      y.set((clientY - (top + height / 2)) * 0.3);
-    };
-
-    const handleBtnLeave = () => {
-      x.set(0);
-      y.set(0);
-    };
-
-    return (
-      <motion.div
-        ref={btnRef}
-        onMouseMove={handleBtnMove}
-        onMouseLeave={handleBtnLeave}
-        style={{ x: mSpringX, y: mSpringY }}
-        className="w-full sm:w-auto inline-block z-10"
-      >
-        {children}
-      </motion.div>
-    );
-  };
 
   return (
     <section id="events" className="relative py-28 sm:py-36 overflow-hidden" ref={ref}>
@@ -465,35 +458,45 @@ export default function FeaturedEvent() {
                     You're Registered!
                   </button>
                 ) : (
-                  <MagneticButtonWrapper>
-                    <div className="relative group/btn w-full sm:w-auto inline-block">
-                      <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
-                      <button
-                        onClick={() => {
-                          if (!user) {
-                            setErrorMessage("Please sign in with Google in the top navigation menu to register.");
-                            setTimeout(() => setErrorMessage(""), 5000);
-                          } else {
-                            setModalStep("form");
-                          }
-                        }}
-                        disabled={isRegistering}
-                        className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#F47820] text-white font-extrabold text-sm hover:bg-[#FFA24A] hover:text-white border-2 border-accent shadow-[0_0_25px_rgba(244,120,32,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
-                      >
-                        {isRegistering ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin text-white" />
-                            Registering...
-                          </>
-                        ) : (
-                          <>
-                            Register Now
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </MagneticButtonWrapper>
+                  <div className="flex flex-col gap-2 items-center sm:items-start w-full sm:w-auto">
+                    <MagneticButtonWrapper>
+                      <div className="relative group/btn w-full sm:w-auto inline-block">
+                        <div className="absolute -inset-1 rounded-xl bg-accent blur-md opacity-40 group-hover/btn:opacity-80 transition-opacity duration-300 animate-pulse-soft" />
+                        <button
+                          onClick={() => {
+                            if (!user) {
+                              setErrorMessage("Please sign in with Google in the top navigation menu to register.");
+                              setTimeout(() => setErrorMessage(""), 5000);
+                            } else {
+                              setModalStep("form");
+                            }
+                          }}
+                          disabled={isRegistering}
+                          className="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#F47820] text-white font-extrabold text-sm hover:bg-[#FFA24A] hover:text-white border-2 border-accent shadow-[0_0_25px_rgba(244,120,32,0.7)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 z-10"
+                        >
+                          {isRegistering ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin text-white" />
+                              Registering...
+                            </>
+                          ) : (
+                            <>
+                              Register Now
+                              <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </MagneticButtonWrapper>
+                    {eventDetails.price > 0 && (
+                      <div className="flex items-center justify-center gap-1.5 mt-1 sm:mt-1.5 sm:ml-2 px-4 py-1.5 rounded-full bg-[#F47820]/10 border border-[#F47820]/20 text-[#F47820] text-xs font-bold tracking-wide shadow-[0_0_15px_rgba(244,120,32,0.1)] transition-all hover:bg-[#F47820]/20">
+                        <svg className="w-3.5 h-3.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        <span>₹{eventDetails.price}/- per person</span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -544,7 +547,40 @@ export default function FeaturedEvent() {
               {modalStep === "form" && (
                 <>
                   <div className="overflow-y-auto pr-2 pb-4 space-y-5 custom-scrollbar flex-grow">
-                    {/* Form Fields... */}
+                    {/* Team Size Selection */}
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                        Team Size *
+                      </label>
+                      <select
+                        value={teamSize}
+                        onChange={(e) => {
+                          const size = parseInt(e.target.value);
+                          setTeamSize(size);
+                          if (size > 1) {
+                            setTeamMembers((prev) => {
+                              const newMembers = [...prev];
+                              while (newMembers.length < size - 1) {
+                                newMembers.push({ name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" });
+                              }
+                              return newMembers.slice(0, size - 1);
+                            });
+                          } else {
+                            setTeamMembers([]);
+                          }
+                        }}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
+                      >
+                        <option value={3}>Team of 3 - ₹{eventDetails.price * 3}</option>
+                        <option value={4}>Team of 4 - ₹{eventDetails.price * 4}</option>
+                      </select>
+                    </div>
+                    {teamSize > 1 && (
+                      <div className="p-4 rounded-xl bg-[#F47820]/10 border border-[#F47820]/30 text-[#F47820] text-sm font-medium">
+                        You are signed in with Google, so you will be designated as the <strong>Team Leader</strong>. Please enter the details of the other {teamSize - 1} members below.
+                      </div>
+                    )}
+                    
                     <div>
                       <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
                         Email Address (Google Account)
@@ -627,49 +663,112 @@ export default function FeaturedEvent() {
                         <option value="Others">Others</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                        Which domain do you want to choose? *
-                      </label>
-                      <select
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
-                      >
-                        <option value="Logistics">Logistics</option>
-                        <option value="Operations">Operations</option>
-                        <option value="Network & Outreach">Network & Outreach</option>
-                        <option value="Designing">Designing</option>
-                        <option value="Technical">Technical</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
-                        LinkedIn URL (Optional)
-                      </label>
-                      <input
-                        type="url"
-                        value={linkedin}
-                        onChange={(e) => setLinkedin(e.target.value)}
-                        placeholder="https://linkedin.com/in/..."
-                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5 flex justify-between items-center">
-                        <span>Why do you want to join this club? *</span>
-                        <span className={`text-[10px] font-bold ${wordCount < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
-                          {wordCount < 10 ? `Need ${10 - wordCount} more words` : `${wordCount}/2000`}
-                        </span>
-                      </label>
-                      <textarea
-                        rows={4}
-                        value={motivationText}
-                        onChange={(e) => setMotivationText(e.target.value)}
-                        placeholder="Describe your interest..."
-                        className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-[#F47820] resize-none custom-scrollbar transition-all"
-                      />
-                    </div>
+                    {teamMembers.map((member, idx) => (
+                      <div key={idx} className="mt-6 pt-6 border-t border-white/10 space-y-5">
+                        <h5 className="font-heading text-lg font-bold text-[#F47820]">Team Member {idx + 2}</h5>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={member.name}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].name = e.target.value;
+                              setTeamMembers(newMembers);
+                            }}
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Email *
+                          </label>
+                          <input
+                            type="email"
+                            value={member.email}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].email = e.target.value;
+                              setTeamMembers(newMembers);
+                            }}
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Phone Number *
+                          </label>
+                          <input
+                            type="tel"
+                            value={member.phone}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].phone = e.target.value.replace(/\D/g, "").substring(0, 10);
+                              setTeamMembers(newMembers);
+                            }}
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Roll Number *
+                          </label>
+                          <input
+                            type="text"
+                            value={member.rollNumber}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].rollNumber = e.target.value.toUpperCase();
+                              setTeamMembers(newMembers);
+                            }}
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Section *
+                          </label>
+                          <input
+                            type="text"
+                            value={member.section}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].section = e.target.value.toUpperCase();
+                              setTeamMembers(newMembers);
+                            }}
+                            placeholder="e.g. A, B, C"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Branch *
+                          </label>
+                          <select
+                            value={member.branch}
+                            onChange={(e) => {
+                              const newMembers = [...teamMembers];
+                              newMembers[idx].branch = e.target.value;
+                              setTeamMembers(newMembers);
+                            }}
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all cursor-pointer"
+                          >
+                            <option value="CSE">CSE</option>
+                            <option value="CSE (AIML)">CSE (AIML)</option>
+                            <option value="CSE (DS)">CSE (DS)</option>
+                            <option value="CSE (CS)">CSE (CS)</option>
+                            <option value="IT">IT</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="Others">Others</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   
                   {errorMessage && (
@@ -688,7 +787,7 @@ export default function FeaturedEvent() {
                     </button>
                     <button
                       onClick={handleRegister}
-                      disabled={isRegistering || !isValidMotivation || !isValidName || !isValidPhone || !isValidRoll || !isValidSection}
+                      disabled={isRegistering || !isValidName || !isValidPhone || !isValidRoll || !isValidSection || teamMembers.some(m => !m.name || !m.email || !m.phone || !m.rollNumber || !m.branch || !m.section)}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#F47820] text-white hover:bg-[#FFA24A] border-2 border-accent shadow-[0_0_20px_rgba(244,120,32,0.6)]"
                     >
                       {isRegistering ? (
@@ -697,7 +796,7 @@ export default function FeaturedEvent() {
                         </>
                       ) : (
                         <>
-                          {eventDetails.price > 0 ? `Confirm and Pay ₹${eventDetails.price}` : "Confirm & Register"}
+                          {eventDetails.price > 0 ? `Confirm and Pay ₹${eventDetails.price * teamSize}` : "Confirm & Register"}
                           <ArrowRight className="w-5 h-5" />
                         </>
                       )}

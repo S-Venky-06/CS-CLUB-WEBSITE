@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { 
   ClipboardList, 
@@ -35,7 +37,7 @@ export default function ActivityLogPortal() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/activities`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/activities`, {
         credentials: "include",
       });
       const json = await res.json();
@@ -64,7 +66,7 @@ export default function ActivityLogPortal() {
     if (categoryFilter === "events") {
       matchesCategory = ["CREATE_EVENT", "UPDATE_EVENT", "DELETE_EVENT"].includes(log.action);
     } else if (categoryFilter === "registrations") {
-      matchesCategory = log.action === "TOGGLE_ATTENDANCE";
+      matchesCategory = ["TOGGLE_ATTENDANCE", "UPDATE_ATTENDANCE", "UPDATE_PAYMENT", "RESEND_EMAIL"].includes(log.action);
     } else if (categoryFilter === "members") {
       matchesCategory = ["ADD_MEMBER", "UPDATE_ROLE", "UPDATE_MEMBER_DISPLAY"].includes(log.action);
     } else if (categoryFilter === "settings") {

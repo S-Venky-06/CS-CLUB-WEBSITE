@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +16,7 @@ interface ActiveEventPopupProps {
 export default function ActiveEventPopup({
   eventTitle = "New Club Members Registration — For Juniors",
   eventCategory = "Recruitment Drive",
-  registerTargetId = "featured-event",
+  registerTargetId = "events",
 }: ActiveEventPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [dynamicTitle, setDynamicTitle] = useState(eventTitle);
@@ -30,13 +32,13 @@ export default function ActiveEventPopup({
     // Fetch live event status from API
     const checkEventStatus = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/events/featured`);
+        const res = await apiFetch(`${API_URL}/api/v1/events/featured`);
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
             const eventData = json.data;
             // Only show popup if event status is strictly "active"
-            if (eventData.status === "active") {
+            if (eventData.status === "active" && Date.parse(eventData.deadline) > Date.now()) {
               if (eventData.title) setDynamicTitle(eventData.title);
               if (eventData.location) setDynamicCategory(eventData.location);
               setIsVisible(true);
@@ -48,7 +50,7 @@ export default function ActiveEventPopup({
         }
       } catch (err) {
         // Fallback if API unreachable
-        setIsVisible(true);
+        setIsVisible(false);
       }
     };
 
@@ -72,7 +74,7 @@ export default function ActiveEventPopup({
         element.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     } else {
-      router.push("/events");
+      router.push(`/events#${registerTargetId}`);
     }
   };
 

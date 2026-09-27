@@ -1,5 +1,8 @@
 "use client";
 
+import { API_URL, apiFetch } from "@/lib/api";
+import { toLocalDateTime } from "@/lib/date";
+
 import { useState, useEffect } from "react";
 import { 
   Calendar, 
@@ -56,7 +59,7 @@ export default function EventsManagement() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/events`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/events`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -99,9 +102,9 @@ export default function EventsManagement() {
     setTitle(event.title);
     setDescription(event.description);
     // Format ISO string to datetime-local format (YYYY-MM-DDThh:mm)
-    setDate(new Date(event.date).toISOString().substring(0, 16));
+    setDate(toLocalDateTime(event.date));
     setCapacity(String(event.capacity));
-    setDeadline(new Date(event.deadline).toISOString().substring(0, 16));
+    setDeadline(toLocalDateTime(event.deadline));
     setStatus(event.status);
     setLocation(event.location || "");
     setPrice(String(event.price || 0));
@@ -115,26 +118,26 @@ export default function EventsManagement() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const payload = {
-      eventId,
-      title,
-      description,
-      date: new Date(date).toISOString(),
-      capacity: parseInt(capacity, 10),
-      deadline: new Date(deadline).toISOString(),
-      status,
-      location: location.trim(),
-      price: parseFloat(price) || 0,
-    };
-
     try {
+      const payload = {
+        eventId,
+        title,
+        description,
+        date: new Date(date).toISOString(),
+        capacity: parseInt(capacity, 10),
+        deadline: new Date(deadline).toISOString(),
+        status,
+        location: location.trim(),
+        price: parseFloat(price) || 0,
+      };
+
       const url = editingEvent 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/events/${editingEvent.eventId}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/events`;
+        ? `${API_URL}/api/v1/admin/events/${editingEvent.eventId}`
+        : `${API_URL}/api/v1/admin/events`;
       
       const method = editingEvent ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +169,7 @@ export default function EventsManagement() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/events/${id}`, {
+      const res = await apiFetch(`${API_URL}/api/v1/admin/events/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

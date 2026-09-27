@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getEventDetails } from "../services/event.service.js";
+import { sendRegistrationConfirmationEmail } from "../services/email.service.js";
 import { findAllRegistrations, createRegistration, updatePaymentStatus } from "../repositories/index.js";
 import { ApiError } from "../utils/index.js";
 import { HttpStatus } from "../constants/index.js";
@@ -80,16 +81,17 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       email,
       name: input.name || user.name || "Unknown",
       registeredAt: new Date().toISOString(),
-      projects: input.projects || "",
-      linkedin: input.linkedin || "",
-      tryhackme: input.tryhackme || "",
-      hackthebox: input.hackthebox || "",
       otherComments: input.otherComments || "",
-      domain: input.domain || "",
       paymentStatus: "FREE",
+      attendedMembers: [],
+      teamSize: input.teamSize || 1,
+      teamMembers: input.teamMembers || [],
     };
 
     await createRegistration(newRegistration);
+    
+    // Send Brevo email asynchronously
+    sendRegistrationConfirmationEmail(newRegistration, event.title).catch(console.error);
 
     res.status(HttpStatus.CREATED).json({
       success: true,
@@ -114,19 +116,19 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       email,
       name: input.name || user.name || "Unknown",
       registeredAt: new Date().toISOString(),
-      projects: input.projects || "",
-      linkedin: input.linkedin || "",
-      tryhackme: input.tryhackme || "",
-      hackthebox: input.hackthebox || "",
       otherComments: input.otherComments || "",
-      domain: input.domain || "",
       paymentStatus: "PENDING",
+      attendedMembers: [],
+      teamSize: input.teamSize || 1,
+      teamMembers: input.teamMembers || [],
     };
     await createRegistration(pendingRegistration);
   }
 
+  const finalAmount = event.price * (input.teamSize || 1);
+
   const request = {
-    order_amount: event.price,
+    order_amount: finalAmount,
     order_currency: "INR",
     order_id: orderId,
     customer_details: {
@@ -165,9 +167,22 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
  */
 export async function verifyPayment(req: Request, res: Response): Promise<void> {
   const { orderId, registrationId } = req.body;
+  const user = req.session!.user!;
 
   if (!orderId || !registrationId) {
     throw new ApiError(HttpStatus.BAD_REQUEST, "orderId and registrationId are required.");
+  }
+
+  // IDOR Protection: Validate orderId structure
+  if (!orderId.startsWith(`ORDER_${registrationId}_`)) {
+    throw new ApiError(HttpStatus.FORBIDDEN, "Invalid orderId for this registration.");
+  }
+
+  // IDOR Protection: Ensure registration belongs to the authenticated user
+  const allRegistrations = await findAllRegistrations();
+  const registration = allRegistrations.find(r => r.registrationId === registrationId);
+  if (!registration || registration.email.toLowerCase() !== user.email.toLowerCase()) {
+    throw new ApiError(HttpStatus.FORBIDDEN, "Registration does not belong to the authenticated user.");
   }
 
   try {
@@ -177,6 +192,9 @@ export async function verifyPayment(req: Request, res: Response): Promise<void> 
       // Mark registration as confirmed in Google Sheets, and save the Cashfree transaction ID (cf_order_id) into the UTR column
       const transactionId = response.data.cf_order_id?.toString() || orderId;
       await updatePaymentStatus(registrationId, "CONFIRMED", transactionId);
+      
+      // Send confirmation email
+      sendRegistrationConfirmationEmail(registration, "Featured Event").catch(console.error);
       
       res.status(HttpStatus.OK).json({
         success: true,
@@ -200,5 +218,50 @@ export async function verifyPayment(req: Request, res: Response): Promise<void> 
   } catch (error: any) {
     console.error("Cashfree Fetch Order Error:", error.response?.data || error.message);
     throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to verify payment status.");
+  }
+}
+
+/**
+ * POST /api/v1/webhooks/cashfree
+ * Handles Cashfree server-to-server webhook events securely.
+ */
+export async function cashfreeWebhook(req: Request, res: Response): Promise<void> {
+  try {
+    const signature = req.headers["x-webhook-signature"] as string;
+    const timestamp = req.headers["x-webhook-timestamp"] as string;
+    
+    // Expecting req.body to be the raw unparsed string (configured in route middleware)
+    const payload = req.body.toString();
+
+    // Cryptographically verify the webhook signature
+    cashfree.PGVerifyWebhookSignature(signature, payload, timestamp);
+
+    const event = JSON.parse(payload);
+    
+    if (event.type === "PAYMENT_SUCCESS_WEBHOOK") {
+      const order = event.data.order;
+      const payment = event.data.payment;
+      
+      const orderId = order.order_id;
+      const transactionId = payment.cf_payment_id || order.cf_order_id;
+      
+      // Extract registrationId from orderId (ORDER_{registrationId}_{timestamp})
+      const parts = orderId.split("_");
+      if (parts.length >= 3 && parts[0] === "ORDER") {
+         const registrationId = parts.slice(1, -1).join("_");
+         await updatePaymentStatus(registrationId, "CONFIRMED", transactionId.toString());
+         
+         const allRegs = await findAllRegistrations();
+         const reg = allRegs.find(r => r.registrationId === registrationId);
+         if (reg) {
+            sendRegistrationConfirmationEmail(reg, "Featured Event").catch(console.error);
+         }
+      }
+    }
+    
+    res.status(200).send("OK");
+  } catch (error: any) {
+    console.error("Webhook Verification Failed:", error.message);
+    res.status(400).send("Webhook Verification Failed");
   }
 }

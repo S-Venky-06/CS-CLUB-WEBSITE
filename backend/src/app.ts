@@ -23,7 +23,14 @@ app.use(cors(corsOptions));
 app.use(rateLimit(rateLimitOptions));
 
 // ─── Parsing & Sessions ──────────────────────────
-app.use(express.json({ limit: "10kb" }));
+// Skip express.json() for webhooks to preserve the raw body for signature verification
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/api/v1/webhooks")) {
+    next();
+  } else {
+    express.json({ limit: "10kb" })(req, res, next);
+  }
+});
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 app.use(session(sessionConfig));
@@ -36,11 +43,9 @@ app.use((req, _res, next) => {
     const token = authHeader.substring(7);
     const decodedUser = verifyToken(token);
     if (decodedUser) {
-      if (!req.session) {
-        req.session = { user: decodedUser } as any;
-      } else {
-        req.session.user = decodedUser;
-      }
+      req.session.user = decodedUser;
+    } else {
+      delete req.session.user;
     }
   }
   next();
