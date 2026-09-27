@@ -41,6 +41,9 @@ export const sendRegistrationConfirmationEmail = async (registration: Registrati
             .member-details { font-size: 13px; color: #64748b; margin: 0; line-height: 1.5; }
             .footer { text-align: center; padding: 20px; font-size: 13px; color: #94a3b8; background-color: #f8fafc; border-top: 1px solid #e2e8f0; }
             .success-badge { display: inline-block; background-color: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+            .whatsapp-box { background-color: #dcf8c6; border-left: 4px solid #25d366; padding: 15px; margin-top: 25px; border-radius: 4px; }
+            .whatsapp-box p { margin: 0 0 10px 0; color: #075e54; font-weight: 600; font-size: 15px; }
+            .whatsapp-button { display: inline-block; background-color: #25d366; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; }
             .clear { clear: both; }
           </style>
         </head>
@@ -99,7 +102,12 @@ export const sendRegistrationConfirmationEmail = async (registration: Registrati
                 `).join('')}
               </div>
               ` : ""}
-
+              
+              <div class="whatsapp-box">
+                <p>Stay Connected!</p>
+                <span style="color: #0f172a; display: block; margin-bottom: 15px; font-size: 14px;">Please join our official WhatsApp group for important updates, announcements, and networking with other attendees.</span>
+                <a href="https://chat.whatsapp.com/GnpItmuk2gCLeq7ezwNawX" class="whatsapp-button">Join Cyber Congress 2026 Delegates</a>
+              </div>
 
               <p style="color: #0f172a; font-weight: 600; margin-top: 25px;">
                 Best Regards,<br/>
