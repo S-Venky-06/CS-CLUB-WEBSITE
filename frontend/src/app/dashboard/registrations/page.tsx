@@ -46,6 +46,7 @@ interface Registration {
   screenshotUrl?: string;
   emailStatus?: string;
   teamSize?: number;
+  teamName?: string;
   attendedMembers: string[];
   teamMembers?: Array<{
     name: string;
@@ -783,7 +784,14 @@ export default function RegistrationsManagement() {
                       <tr key={reg.registrationId} className="hover:bg-surface/10 transition-colors">
                     <td className="p-4 text-xs font-mono font-bold text-primary">{reg.registrationId}</td>
                      <td className="p-4">
-                      <div className="font-semibold text-sm text-foreground">{reg.name}</div>
+                      <div className="font-semibold text-sm text-foreground flex items-center gap-2">
+                        {reg.name}
+                        {reg.teamName && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-widest bg-primary/10 text-primary border-primary/30">
+                            Team: {reg.teamName}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted flex items-center gap-1.5 mt-0.5">
                         <span className="font-mono text-[10px] bg-glass-border/30 px-1.5 py-0.5 rounded text-secondary font-bold">
                           {reg.rollNumber || "N/A"}
@@ -909,7 +917,7 @@ export default function RegistrationsManagement() {
                     <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Academic History</span>
                     <div>
                       <span className="text-[11px] text-muted block">Student Name</span>
-                      <span className="text-sm font-semibold text-foreground">{selectedReg.name}</span>
+                      <span className="text-sm font-semibold text-foreground flex items-center gap-2">{selectedReg.name}{selectedReg.teamName && <span className="text-[9px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-widest bg-primary/10 text-primary border-primary/30">Team: {selectedReg.teamName}</span>}</span>
                     </div>
                     <div>
                       <span className="text-[11px] text-muted block">Roll Number</span>

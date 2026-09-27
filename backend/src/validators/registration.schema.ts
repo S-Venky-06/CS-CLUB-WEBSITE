@@ -58,6 +58,7 @@ export const eventRegistrationSchema = z.object({
     .max(2000, "otherComments cannot exceed 2000 characters.")
     .optional(),
   teamSize: z.number().int().min(1).max(4).optional().default(1),
+  teamName: z.string().max(100, "Team name cannot exceed 100 characters.").optional(),
   teamMembers: z.array(
     z.object({
       name: z.string().min(1, "Member name is required."),
@@ -71,6 +72,9 @@ export const eventRegistrationSchema = z.object({
 }).superRefine((input, ctx) => {
   if (input.teamMembers.length !== input.teamSize - 1) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamSize"], message: "Team size must include the leader and match the member list." });
+  }
+  if (input.teamSize > 1 && (!input.teamName || input.teamName.trim() === "")) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["teamName"], message: "Team name is required for teams." });
   }
   const rolls = [input.rollNumber, ...input.teamMembers.map(member => member.rollNumber)]
     .map(roll => roll.trim().toUpperCase());

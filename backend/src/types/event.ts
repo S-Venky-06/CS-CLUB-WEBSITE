@@ -35,6 +35,7 @@ export interface Registration {
   paymentStatus?: string;
   transactionId?: string;
   teamSize: number;
+  teamName?: string;
   teamMembers?: TeamMember[];
   emailStatus?: string;
 }

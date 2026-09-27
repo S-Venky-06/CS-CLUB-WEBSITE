@@ -87,6 +87,7 @@ export default function FeaturedEvent() {
   const [successMessage, setSuccessMessage] = useState("");
   
   const [teamSize, setTeamSize] = useState(3);
+  const [teamName, setTeamName] = useState("");
   const [teamMembers, setTeamMembers] = useState<{name:string, email:string, phone:string, rollNumber:string, branch:string, section:string}[]>([
     { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
     { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
@@ -227,6 +228,7 @@ export default function FeaturedEvent() {
         rollNumber,
         otherComments,
         teamSize,
+        teamName,
         teamMembers,
       };
 
@@ -316,6 +318,7 @@ export default function FeaturedEvent() {
 
   const resetForm = () => {
     setTeamSize(3);
+    setTeamName("");
     setTeamMembers([
       { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" },
       { name: "", email: "", phone: "", rollNumber: "", branch: "CSE", section: "" }
@@ -565,12 +568,26 @@ export default function FeaturedEvent() {
                       </select>
                     </div>
                     {teamSize > 1 && (
-                      <div className="p-4 rounded-xl bg-[#F47820]/10 border border-[#F47820]/30 text-[#F47820] text-sm font-medium">
-                        You are signed in with Google, so you will be designated as the <strong>Team Leader</strong>. Please enter the details of the other {teamSize - 1} members below.
-                      </div>
+                      <>
+                        <div className="mt-5">
+                          <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
+                            Team Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            placeholder="Enter your team name"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0B0B13] border border-white/10 text-white text-sm focus:outline-none focus:border-[#F47820] transition-all"
+                          />
+                        </div>
+                        <div className="mt-5 p-4 rounded-xl bg-[#F47820]/10 border border-[#F47820]/30 text-[#F47820] text-sm font-medium">
+                          You are signed in with Google, so you will be designated as the <strong>Team Leader</strong>. Please enter the details of the other {teamSize - 1} members below.
+                        </div>
+                      </>
                     )}
                     
-                    <div>
+                    <div className="mt-5">
                       <label className="block text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1.5">
                         Email Address (Google Account)
                       </label>

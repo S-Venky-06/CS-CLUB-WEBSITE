@@ -15,7 +15,7 @@ export async function findRegistration(
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;
@@ -58,12 +58,13 @@ export async function createRegistration(
       String(registration.teamSize || 1), // Column O
       registration.teamMembers && registration.teamMembers.length > 0 ? JSON.stringify(registration.teamMembers) : "", // Column P
       registration.emailStatus || "", // Column Q
+      registration.teamName || "", // Column R
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q2",
+    range: "Registrations!A2:R2",
     valueInputOption: "RAW",
     requestBody: {
       values,
@@ -97,7 +98,7 @@ export async function findRegistrationsByUser(email: string): Promise<Registrati
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;
@@ -116,7 +117,7 @@ export async function findAllRegistrations(): Promise<Registration[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
-    range: "Registrations!A2:Q10000",
+    range: "Registrations!A2:R10000",
   });
 
   const rows = response.data.values;

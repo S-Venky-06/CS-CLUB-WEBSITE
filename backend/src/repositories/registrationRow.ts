@@ -29,6 +29,7 @@ export function parseRegistrationRow(row: unknown[]): Registration {
     branch: cell(8), rollNumber: cell(9), otherComments: cell(10),
     attendedMembers, paymentStatus: cell(12), transactionId: cell(13),
     teamSize: Number.isInteger(teamSize) && teamSize > 0 ? teamSize : teamMembers.length + 1,
+    teamName: cell(17),
     teamMembers, emailStatus: cell(16),
   };
 }
