@@ -150,6 +150,10 @@ export default function EventsManagement() {
 
       if (res.ok && json.success) {
         setSuccessMessage(editingEvent ? "Event updated successfully!" : "Event created successfully!");
+        if (json.data?.warning) {
+          setErrorMessage(`Warning: ${json.data?.warning}`);
+          setTimeout(() => setErrorMessage(""), 10000); // 10 seconds for warnings
+        }
         setIsModalOpen(false);
         fetchEvents();
         setTimeout(() => setSuccessMessage(""), 5000);
@@ -176,6 +180,11 @@ export default function EventsManagement() {
 
       if (res.ok) {
         setSuccessMessage("Event archived successfully!");
+        const json = await res.json();
+        if (json.data?.warning) {
+          setErrorMessage(`Warning: ${json.data?.warning}`);
+          setTimeout(() => setErrorMessage(""), 10000);
+        }
         fetchEvents();
         setTimeout(() => setSuccessMessage(""), 5000);
       } else {

@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL, apiFetch } from "@/lib/api";
+import { API_URL, apiFetch, publicApiFetch } from "@/lib/api";
 
 import { motion, useInView, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
@@ -108,6 +108,64 @@ export default function FeaturedEvent() {
   });
 
   const isValidName = userName.trim().length > 0;
+  
+  const [fetchError, setFetchError] = useState(false);
+  const fetchFeaturedEvent = async () => {
+    setFetchError(false);
+    try {
+      const res = await publicApiFetch(`${API_URL}/api/v1/events/featured`);
+      if (res.status === 404) {
+        setEventDetails({
+          eventId: "none",
+          title: "Stay Tuned for Upcoming Events!",
+          description: "We are currently planning our next exciting event. Keep an eye on this space and our social media channels for announcements soon!",
+          dateLabel: "TBA",
+          location: "To Be Announced",
+          warningNote: "",
+          status: "inactive",
+          price: 0,
+        });
+        return;
+      }
+      
+      const json = await res.json();
+      if (res.ok && json.success && json.data) {
+        const event = json.data;
+        
+        const formattedDate = new Date(event.date).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        let cleanDesc = event.description || "";
+        let note = "";
+        const noteIndex = cleanDesc.toLowerCase().indexOf("note :");
+        if (noteIndex !== -1) {
+          note = cleanDesc.substring(noteIndex);
+          cleanDesc = cleanDesc.substring(0, noteIndex).trim();
+        }
+
+        setEventDetails({
+          eventId: event.eventId,
+          title: event.title,
+          description: cleanDesc,
+          dateLabel: formattedDate,
+          location: event.location || "Online Registration",
+          warningNote: note,
+          status: event.status || "active",
+          price: event.price || 0,
+        });
+      } else {
+        setFetchError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load featured event:", err);
+      setFetchError(true);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -141,66 +199,6 @@ export default function FeaturedEvent() {
   }, [user, eventDetails.eventId]);
 
   useEffect(() => {
-    const fetchFeaturedEvent = async () => {
-      try {
-        const res = await apiFetch(`${API_URL}/api/v1/events/featured`);
-        const json = await res.json();
-        if (res.ok && json.success && json.data) {
-          const event = json.data;
-          
-          const formattedDate = new Date(event.date).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-          let cleanDesc = event.description || "";
-          let note = "";
-          const noteIndex = cleanDesc.toLowerCase().indexOf("note :");
-          if (noteIndex !== -1) {
-            note = cleanDesc.substring(noteIndex);
-            cleanDesc = cleanDesc.substring(0, noteIndex).trim();
-          }
-
-          setEventDetails({
-            eventId: event.eventId,
-            title: event.title,
-            description: cleanDesc,
-            dateLabel: formattedDate,
-            location: event.location || "Online Registration",
-            warningNote: note,
-            status: event.status || "active",
-            price: event.price || 0,
-          });
-        } else {
-          setEventDetails({
-            eventId: "none",
-            title: "Stay Tuned for Upcoming Events!",
-            description: "We are currently planning our next exciting event. Keep an eye on this space and our social media channels for announcements soon!",
-            dateLabel: "TBA",
-            location: "To Be Announced",
-            warningNote: "",
-            status: "inactive",
-            price: 0,
-          });
-        }
-      } catch (err) {
-        console.warn("Failed to load featured event details, using fallbacks:", err);
-        setEventDetails({
-          eventId: "none",
-          title: "Stay Tuned for Upcoming Events!",
-          description: "We are currently planning our next exciting event. Keep an eye on this space and our social media channels for announcements soon!",
-          dateLabel: "TBA",
-          location: "To Be Announced",
-          warningNote: "",
-          status: "inactive",
-          price: 0,
-        });
-      }
-    };
-
     fetchFeaturedEvent();
   }, []);
 
@@ -417,31 +415,44 @@ export default function FeaturedEvent() {
                 {eventDetails.title}
               </h3>
 
-              <div className="flex flex-wrap gap-4 sm:gap-6 mb-6">
-                <div className="flex items-center gap-2 text-sm text-cyan font-medium">
-                  <Calendar className="w-4 h-4" />
-                  <span>{eventDetails.dateLabel}</span>
+              {fetchError ? (
+                <div className="flex-grow flex flex-col items-center justify-center p-8 bg-surface/50 rounded-xl border border-glass-border">
+                  <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
+                  <p className="text-muted text-center mb-4">Failed to load event details.</p>
+                  <button 
+                    onClick={fetchFeaturedEvent}
+                    className="px-4 py-2 bg-[#F47820] text-white rounded-lg hover:bg-[#FFA24A] transition-colors text-sm font-bold"
+                  >
+                    Retry
+                  </button>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-cyan font-medium">
-                  <Clock className="w-4 h-4" />
-                  <span>All Day</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-cyan font-medium">
-                  <MapPin className="w-4 h-4" />
-                  <span>{eventDetails.location}</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-4 sm:gap-6 mb-6">
+                    <div className="flex items-center gap-2 text-sm text-cyan font-medium">
+                      <Calendar className="w-4 h-4" />
+                      <span>{eventDetails.dateLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-cyan font-medium">
+                      <Clock className="w-4 h-4" />
+                      <span>All Day</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-cyan font-medium">
+                      <MapPin className="w-4 h-4" />
+                      <span>{eventDetails.location}</span>
+                    </div>
+                  </div>
 
-              <p className="text-muted text-base leading-relaxed mb-8 flex-grow">
-                {eventDetails.description}
-                {eventDetails.warningNote && (
-                  <span className="block mt-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm">
-                    {eventDetails.warningNote}
-                  </span>
-                )}
-              </p>
+                  <p className="text-muted text-base leading-relaxed mb-8 flex-grow">
+                    {eventDetails.description}
+                    {eventDetails.warningNote && (
+                      <span className="block mt-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm">
+                        {eventDetails.warningNote}
+                      </span>
+                    )}
+                  </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 {eventDetails.status !== "active" ? (
                   <button
                     disabled
@@ -499,6 +510,8 @@ export default function FeaturedEvent() {
                   </div>
                 )}
               </div>
+            </>
+          )}
 
               {errorMessage && (
                 <div className="mt-5 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">

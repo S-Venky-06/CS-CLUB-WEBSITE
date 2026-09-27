@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL, apiFetch } from "@/lib/api";
+import { API_URL, publicApiFetch } from "@/lib/api";
 
 import { useState, useEffect } from "react";
 import { Megaphone, X } from "lucide-react";
@@ -21,7 +21,7 @@ export default function AnnouncementBanner() {
   useEffect(() => {
     const fetchActiveBanners = async () => {
       try {
-        const res = await apiFetch(`${API_URL}/api/v1/announcements`);
+        const res = await publicApiFetch(`${API_URL}/api/v1/announcements`);
         const json = await res.json();
         if (res.ok && json.success && json.data.length > 0) {
           const activeItems: Announcement[] = json.data;

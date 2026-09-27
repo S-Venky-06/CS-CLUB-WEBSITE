@@ -10,6 +10,10 @@ import { isProduction } from "../config/index.js";
  */
 export const errorHandler: ErrorRequestHandler = (err, _req: Request, res: Response, _next) => {
   if (res.headersSent) return _next(err);
+  
+  res.removeHeader("Vercel-Cache-Tag");
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+
   if (err?.type === "entity.parse.failed" || err?.type === "entity.too.large") {
     res.status(err.type === "entity.too.large" ? 413 : 400).json({
       success: false, message: err.type === "entity.too.large" ? "Request body is too large." : "Invalid JSON body.", data: null,

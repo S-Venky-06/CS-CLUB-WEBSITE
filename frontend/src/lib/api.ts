@@ -20,3 +20,14 @@ export function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
   }
   return fetch(input, { credentials: "include", ...init, headers });
 }
+
+/** For strictly anonymous public reads to utilize Vercel Edge caching. */
+export function publicApiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+  headers.delete("Authorization");
+  // Ensure we don't accidentally send a JSON content-type on bodyless GETs, which some proxies might dislike
+  if (!init?.method || init.method.toUpperCase() === "GET") {
+    headers.delete("Content-Type");
+  }
+  return fetch(input, { ...init, credentials: "omit", headers });
+}

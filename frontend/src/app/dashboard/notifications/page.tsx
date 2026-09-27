@@ -85,6 +85,10 @@ export default function NotificationsManagement() {
 
       if (res.ok && json.success) {
         setSuccessMessage("Announcement published successfully!");
+        if (json.data?.warning) {
+          setErrorMessage(`Warning: ${json.data?.warning}`);
+          setTimeout(() => setErrorMessage(""), 10000);
+        }
         setTitleInput("");
         setMessageInput("");
         setTypeInput("info");
@@ -115,6 +119,10 @@ export default function NotificationsManagement() {
       const json = await res.json();
 
       if (res.ok && json.success) {
+        if (json.data?.warning) {
+          setErrorMessage(`Warning: ${json.data?.warning}`);
+          setTimeout(() => setErrorMessage(""), 10000);
+        }
         setAnnouncements((prev) =>
           prev.map((item) =>
             item.announcementId === id ? { ...item, active: !currentActive } : item
@@ -143,6 +151,10 @@ export default function NotificationsManagement() {
       if (res.ok && json.success) {
         setAnnouncements((prev) => prev.filter((item) => item.announcementId !== id));
         setSuccessMessage("Announcement deleted successfully!");
+        if (json.data?.warning) {
+          setErrorMessage(`Warning: ${json.data?.warning}`);
+          setTimeout(() => setErrorMessage(""), 10000);
+        }
         setTimeout(() => setSuccessMessage(""), 5000);
       } else {
         setErrorMessage(json.message || "Failed to delete announcement.");

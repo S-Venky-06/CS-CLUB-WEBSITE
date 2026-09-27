@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL, apiFetch } from "@/lib/api";
+import { API_URL, publicApiFetch } from "@/lib/api";
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
@@ -37,7 +37,7 @@ export default function GalleryPreview() {
   const [allGalleryItems, setAllGalleryItems] = useState<any[]>(galleryItems);
 
   useEffect(() => {
-    apiFetch(`${API_URL}/api/v1/events/past`)
+    publicApiFetch(`${API_URL}/api/v1/events/past`)
       .then((res) => res.json())
       .then((json) => {
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

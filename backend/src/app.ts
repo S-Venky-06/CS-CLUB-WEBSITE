@@ -10,6 +10,7 @@ import session from "express-session";
 import { corsOptions, rateLimitOptions, morganFormat, sessionConfig } from "./config/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 import apiRoutes from "./routes/index.js";
+import publicRoutes from "./routes/public.routes.js";
 
 const app = express();
 
@@ -22,6 +23,12 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(rateLimit(rateLimitOptions));
 
+// ─── Performance ─────────────────────────────────
+app.use(compression());
+
+// ─── Logging ─────────────────────────────────────
+app.use(morgan(morganFormat));
+
 // ─── Parsing & Sessions ──────────────────────────
 // Skip express.json() for webhooks to preserve the raw body for signature verification
 app.use((req, res, next) => {
@@ -32,6 +39,10 @@ app.use((req, res, next) => {
   }
 });
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+// ─── Public Routes (Stateless / Cacheable) ───────
+// Mounted before cookie-parser and session to prevent Set-Cookie headers
+app.use("/api/v1", publicRoutes);
+
 app.use(cookieParser());
 app.use(session(sessionConfig));
 
@@ -50,12 +61,6 @@ app.use((req, _res, next) => {
   }
   next();
 });
-
-// ─── Performance ─────────────────────────────────
-app.use(compression());
-
-// ─── Logging ─────────────────────────────────────
-app.use(morgan(morganFormat));
 
 // ─── Routes ──────────────────────────────────────
 app.get("/", (_req, res) => {

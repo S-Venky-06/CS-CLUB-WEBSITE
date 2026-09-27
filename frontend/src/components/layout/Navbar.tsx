@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL, apiFetch } from "@/lib/api";
+import { API_URL, apiFetch, publicApiFetch } from "@/lib/api";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -57,7 +57,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchActiveAnnouncements = async () => {
       try {
-        const res = await apiFetch(`${API_URL}/api/v1/announcements`);
+        const res = await publicApiFetch(`${API_URL}/api/v1/announcements`);
         const json = await res.json();
         if (res.ok && json.success) {
           const activeItems = json.data;

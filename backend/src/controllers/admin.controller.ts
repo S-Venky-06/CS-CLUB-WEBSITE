@@ -39,6 +39,8 @@ import {
   findActiveAnnouncements
 } from "../repositories/announcement.repository.js";
 
+import { purgeCache } from "../services/cache.service.js";
+
 /**
  * GET /api/v1/admin/events
  * Retrieves all events (including cancelled & completed) for admin overview.
@@ -89,13 +91,14 @@ export const postAdminEvent = asyncHandler(
       location,
     });
 
+    const purgeRes = await purgeCache(["public-events"]);
     await logActivity(req.session.user!.email, "CREATE_EVENT", `Created event: ${title} (${eventId})`);
 
     sendResponse(
       res,
       HttpStatus.CREATED,
       "Event created successfully.",
-      parsed.data,
+      { ...parsed.data, warning: purgeRes.warning }
     );
   },
 );
@@ -133,13 +136,14 @@ export const putAdminEvent = asyncHandler(
     // 3. Save updates to Google Sheets
     await editEvent(eventId, parsed.data);
 
+    const purgeRes = await purgeCache(["public-events"]);
     await logActivity(req.session.user!.email, "UPDATE_EVENT", `Updated details for event: ${event.title} (${eventId})`);
 
     sendResponse(
       res,
       HttpStatus.OK,
       "Event updated successfully.",
-      { eventId, ...parsed.data },
+      { eventId, ...parsed.data, warning: purgeRes.warning },
     );
   },
 );
@@ -164,13 +168,14 @@ export const deleteAdminEvent = asyncHandler(
     // 2. Cancel/Archive
     await removeEvent(eventId);
 
+    const purgeRes = await purgeCache(["public-events"]);
     await logActivity(req.session.user!.email, "DELETE_EVENT", `Deleted event with ID: ${eventId}`);
 
     sendResponse(
       res,
       HttpStatus.OK,
       "Event archived/cancelled successfully.",
-      { eventId },
+      { eventId, warning: purgeRes.warning },
     );
   },
 );
@@ -503,9 +508,10 @@ export const postAdminAnnouncement = asyncHandler(
 
     const cleanType = (type === "warning" || type === "urgent") ? type : "info";
     const item = await createAnnouncement(title || "Announcement", message.trim(), cleanType);
+    const purgeRes = await purgeCache(["public-announcements"]);
     await logActivity(req.session.user!.email, "CREATE_ANNOUNCEMENT", `Published announcement: "${title || message.trim()}"`);
 
-    sendResponse(res, HttpStatus.CREATED, "Announcement published successfully.", item);
+    sendResponse(res, HttpStatus.CREATED, "Announcement published successfully.", { ...item, warning: purgeRes.warning });
   },
 );
 
@@ -523,9 +529,10 @@ export const patchAdminAnnouncementActive = asyncHandler(
     }
 
     await toggleAnnouncementActive(id, !!active);
+    const purgeRes = await purgeCache(["public-announcements"]);
     await logActivity(req.session.user!.email, "TOGGLE_ANNOUNCEMENT", `Toggled status of announcement ${id} to ${active ? "ACTIVE" : "ARCHIVED"}`);
 
-    sendResponse(res, HttpStatus.OK, "Announcement status updated successfully.", { id, active: !!active });
+    sendResponse(res, HttpStatus.OK, "Announcement status updated successfully.", { id, active: !!active, warning: purgeRes.warning });
   },
 );
 
@@ -541,9 +548,10 @@ export const deleteAdminAnnouncement = asyncHandler(
     }
 
     await deleteAnnouncement(id);
+    const purgeRes = await purgeCache(["public-announcements"]);
     await logActivity(req.session.user!.email, "DELETE_ANNOUNCEMENT", `Deleted announcement with ID: ${id}`);
 
-    sendResponse(res, HttpStatus.OK, "Announcement deleted successfully.", { id });
+    sendResponse(res, HttpStatus.OK, "Announcement deleted successfully.", { id, warning: purgeRes.warning });
   },
 );
 
@@ -553,13 +561,10 @@ export const deleteAdminAnnouncement = asyncHandler(
  */
 export const getPublicAnnouncements = asyncHandler(
   async (_req: Request, res: Response): Promise<void> => {
-    try {
-      const items = await findActiveAnnouncements();
-      sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", items);
-    } catch (err: any) {
-      console.warn("[ANNOUNCEMENTS] Failed to fetch public announcements, returning empty roster:", err.message || err);
-      sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", []);
-    }
+    const items = await findActiveAnnouncements();
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60");
+    res.setHeader("Vercel-Cache-Tag", "public-announcements");
+    sendResponse(res, HttpStatus.OK, "Active announcements retrieved successfully.", items);
   },
 );
 
@@ -572,8 +577,11 @@ export const getFeaturedEvent = asyncHandler(
     const allEvents = await findAllEvents();
     const activeEvent = allEvents.find((e) => e.status === "active");
     if (!activeEvent) {
+      res.setHeader("Cache-Control", "no-store, max-age=0");
       throw new ApiError(HttpStatus.NOT_FOUND, "No active event is currently configured in Google Sheets.");
     }
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60");
+    res.setHeader("Vercel-Cache-Tag", "public-events");
     sendResponse(res, HttpStatus.OK, "Featured event details retrieved successfully.", activeEvent);
   },
 );
@@ -584,16 +592,13 @@ export const getFeaturedEvent = asyncHandler(
  */
 export const getPastEvents = asyncHandler(
   async (_req: Request, res: Response): Promise<void> => {
-    try {
-      const allEvents = await findAllEvents();
-      const pastEvents = allEvents.filter(
-        (e) => e.status === "completed" || e.status === "cancelled"
-      );
-      sendResponse(res, HttpStatus.OK, "Past events retrieved successfully.", pastEvents);
-    } catch (err: any) {
-      console.warn("[EVENTS] Failed to fetch past events:", err.message || err);
-      sendResponse(res, HttpStatus.OK, "Past events retrieved successfully.", []);
-    }
+    const allEvents = await findAllEvents();
+    const pastEvents = allEvents.filter(
+      (e) => e.status === "completed" || e.status === "cancelled"
+    );
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60");
+    res.setHeader("Vercel-Cache-Tag", "public-events");
+    sendResponse(res, HttpStatus.OK, "Past events retrieved successfully.", pastEvents);
   },
 );
 

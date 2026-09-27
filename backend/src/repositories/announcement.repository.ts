@@ -12,8 +12,7 @@ export interface Announcement {
 
 export async function findActiveAnnouncements(): Promise<Announcement[]> {
   const sheets = getSheetsClient();
-  try {
-    const response = await sheets.spreadsheets.values.get({
+  const response = await sheets.spreadsheets.values.get({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
       range: "Announcements!A2:F1000",
     });
@@ -41,16 +40,11 @@ export async function findActiveAnnouncements(): Promise<Announcement[]> {
 
     // Sort newest first
     return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  } catch (error: any) {
-    console.warn("Failed to fetch active announcements:", error.message || error);
-    return [];
-  }
 }
 
 export async function findAllAnnouncements(): Promise<Announcement[]> {
   const sheets = getSheetsClient();
-  try {
-    const response = await sheets.spreadsheets.values.get({
+  const response = await sheets.spreadsheets.values.get({
       spreadsheetId: env.GOOGLE_SPREADSHEET_ID,
       range: "Announcements!A2:F1000",
     });
@@ -76,10 +70,6 @@ export async function findAllAnnouncements(): Promise<Announcement[]> {
 
     // Sort newest first
     return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  } catch (error: any) {
-    console.warn("Failed to fetch all announcements:", error.message || error);
-    return [];
-  }
 }
 
 export async function createAnnouncement(

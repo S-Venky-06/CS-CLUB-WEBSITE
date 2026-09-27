@@ -8,7 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "init-db": "tsx src/scripts/bootstrapSheets.ts",
     "build": "tsc",
-    "test": "npm run build && node --test tests/regressions.cjs && tsx --test tests/frontend.test.ts",
+    "test": "npm run build && node --test tests/regressions.cjs && tsx --test tests/frontend.test.ts && tsx --test tests/cache.test.ts",
     "start": "node dist/server.js",
     "lint": "eslint src/",
     "clean": "rimraf dist"
@@ -22,6 +22,7 @@
     "@types/helmet": "^4.0.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.0.0",
+    "@vercel/functions": "^3.9.9",
     "cashfree-pg": "^6.0.5",
     "compression": "^1.8.0",
     "cookie-parser": "^1.4.7",

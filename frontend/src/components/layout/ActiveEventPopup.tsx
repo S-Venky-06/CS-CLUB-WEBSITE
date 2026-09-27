@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL, apiFetch } from "@/lib/api";
+import { API_URL, publicApiFetch } from "@/lib/api";
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -32,7 +32,7 @@ export default function ActiveEventPopup({
     // Fetch live event status from API
     const checkEventStatus = async () => {
       try {
-        const res = await apiFetch(`${API_URL}/api/v1/events/featured`);
+        const res = await publicApiFetch(`${API_URL}/api/v1/events/featured`);
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {

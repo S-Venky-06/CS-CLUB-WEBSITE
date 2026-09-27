@@ -240,7 +240,7 @@ export default function HeroSection() {
                 style={{ y: yStats }}
                 className="flex items-center gap-6 sm:gap-12 justify-center lg:justify-start max-w-xs sm:max-w-none mx-auto lg:mx-0"
               >
-                <AnimatedCounter value={14} label="Members" href="/members" delay={1.8} />
+                <AnimatedCounter value={21} label="Members" href="/members" delay={1.8} />
                 <AnimatedCounter value={3} label="Major Events" href="/events" delay={2.0} />
               </motion.div>
             </motion.div>
