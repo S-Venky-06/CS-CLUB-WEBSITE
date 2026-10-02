@@ -75,6 +75,12 @@ export default function ContactPage() {
                   Our club administration team typically responds to emails within 24-48 business hours. If you have an urgent inquiry regarding an ongoing event, please approach the registration desk on campus.
                 </p>
               </div>
+
+              <div className="mt-8 p-4 bg-white/5 border border-white/10 rounded-xl text-xs text-gray-400">
+                <p>
+                  <strong>Legal Compliance:</strong> This website and its payment gateways are managed by <strong>S.S.S.Venkatesh</strong> on behalf of the Cybersecurity Club.
+                </p>
+              </div>
             </div>
           </div>
         </PageTransition>
